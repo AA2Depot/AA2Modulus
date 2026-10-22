@@ -1,0 +1,29 @@
+module "Receiver Calls" {
+  description "Card built-ins are members of the card they act on: variables, built-in receivers, properties and card storage";
+
+  trigger "On Card Added" {
+    on CARD_ADDED;
+    // Seats are cards: a card variable takes a card value or a seat literal.
+    let actor: card = ThisCard;
+    // The receiver is native parameter 0; the arguments fill the remaining parameters.
+    actor.AddLike(Context.NpcTalkTarget, 30);
+    // Explicit receivers: a quoted variable, a parenthesized value or a call result.
+    variable("actor").AddLike(Context.NpcTalkTarget, -10);
+    (TriggeringCard).AddLike(actor, 5);
+    Conversation.Actor(0).AddLike(actor, 1);
+    // A registered zero-argument expression is a receiver without parentheses.
+    TriggeringCard.AddLike(actor, 5);
+    // Properties read without parentheses and chain through further receivers.
+    let virtue: int = actor.Virtue;
+    actor.SetVirtue(virtue + ThisCard.Virtue);
+    Notification(ThisCard.FullName + " is at " + ToString(actor.Target.Virtue));
+    // Card storage is a member family of the card too.
+    if !actor.GetBool("seen", false) {
+      actor.SetBool("seen", true);
+      actor.SetInt("visits", actor.GetInt("visits", 0) + 1);
+    }
+    // Storage holds ints: Card(...) reads a stored seat back as a card.
+    actor.SetInt("lastPartner", TriggeringCard);
+    Card(actor.GetInt("lastPartner", 0)).AddLike(actor, 1);
+  }
+}

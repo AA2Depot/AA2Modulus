@@ -1,0 +1,64 @@
+min_version = "2026.9.7"
+
+[tools]
+python = "3.13.15"
+uv = "0.12.15"
+
+[env]
+PYTHONUTF8 = "1"
+_.python.venv = { path = ".venv", create = true }
+
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
+
+# Development. Extra arguments go to the underlying tool, for example
+# `mise run test -m lsp` or `mise run test tests/cli/test_runtime_independence.py`.
+
+[tasks.setup]
+description = "Install the locked dependencies into .venv"
+run = "uv sync --locked"
+
+[tasks.format]
+description = "Format the package, tests and tools with Ruff"
+run = "uv run --locked ruff format aa2modulus tests tools"
+
+[tasks.lint]
+description = "Run Ruff, the format check, mypy and the layer check"
+run = [
+  "uv run --locked ruff check aa2modulus tests tools",
+  "uv run --locked ruff format --check aa2modulus tests tools",
+  "uv run --locked python -m mypy",
+  "uv run --locked python tools/check_layers.py",
+]
+
+[tasks.test]
+description = "Run the test suite (pytest arguments are forwarded)"
+run = "uv run --locked python -m pytest"
+
+[tasks.coverage]
+description = "Run the test suite with branch coverage and the 85% floor"
+run = "uv run --locked python -m pytest --cov=aa2modulus --cov-report=term-missing --cov-report=xml"
+
+[tasks.verify]
+description = "Run lint and the test suite; run this before handing over work"
+depends = ["lint", "test"]
+
+# Documentation
+
+[tasks."docs:serve"]
+description = "Preview the documentation website locally"
+run = "uv run --locked zensical serve"
+
+[tasks."docs:build"]
+description = "Build the documentation website"
+run = "uv run --locked zensical build --clean --strict"
+
+# Maintenance
+
+[tasks.registry]
+description = "Regenerate the registry from --source-root <dir>; add --check to compare only"
+run = "uv run --locked python tools/generate_registry.py"
+
+[tasks.build]
+description = "Build and verify the standalone x64 executable"
+run = "uv run --locked --group build python tools/build.py"

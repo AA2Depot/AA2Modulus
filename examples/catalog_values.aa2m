@@ -1,0 +1,14 @@
+module "Catalog Values" {
+  description "Verified literal values and distinct native named references";
+
+  trigger "On Card Added" {
+    on CARD_ADDED;
+    let school: int = Constants.Room.SCHOOL_GATES;
+    let exam: int = Constants.Period.EXAM;
+    let keyEvent: int = Constants.EventType.KEY_PRESS;
+    let opinion: int = Constants.Opinion.OPINION_70;
+    let conversation: int = Conversation.Id;
+    StopThreadIf(false);
+    Notification("The catalog preserves each value and native identity");
+  }
+}

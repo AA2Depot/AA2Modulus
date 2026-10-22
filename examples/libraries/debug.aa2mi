@@ -1,0 +1,5 @@
+// Imported macros use typed parameters and positional calls.
+macro "debug" {
+  param "text" string;
+  WriteLog("DEBUG: " + text);
+}

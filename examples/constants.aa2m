@@ -1,0 +1,37 @@
+// Compile-time constants are substituted as literals; nothing is serialized.
+// Top-level constants are visible to the module and to macros.
+const Tag: string = "Naive";
+const Prefix: string = "Constants: ";
+const LEAD: int = 0;
+
+macro "announce" {
+  param "text" string;
+  Notification(Prefix + text);
+}
+
+module "Constants Example" {
+  description "Constants name literals and compile to the same bytes";
+
+  // Module constants are visible only here; references may use any order.
+  const "With Spaces": string = "Naive card";
+  const Label: string = const("With Spaces");
+  const StartDay: int = 3;
+  global day: int = StartDay;
+
+  trigger "Init" {
+    on CARD_ADDED;
+    if ThisCard == TriggeringCard {
+      // Bare name: the constant's name is an ordinary identifier.
+      ThisCard.SetBool(Tag, true);
+      // const("..."): required for names that are not identifiers; always valid.
+      announce(const("With Spaces"));
+      Notification(const("Label") + " added");
+    }
+  }
+
+  trigger "Receiver" {
+    on CONVERSATION_END;
+    // A constant can be a receiver exactly like a variable.
+    LEAD.SetVirtue(3);
+  }
+}

@@ -1,0 +1,18 @@
+import "libraries/naive.aa2mi";
+
+module "Library Example" {
+  description "Source libraries and typed trigger slots expand into native records";
+
+  import.trigger "Init" "Initialize" {
+    slot "name" = "Naive";
+  }
+
+  trigger "Conversation" {
+    on CONVERSATION_END;
+    if ThisCard.GetBool("Naive", true) {
+      if ThisCard == TriggeringCard {
+        debug(ThisCard.FullName + " is naive");
+      }
+    }
+  }
+}

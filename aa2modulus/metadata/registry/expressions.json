@@ -1,0 +1,5011 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "General"
+    },
+    {
+      "id": 1,
+      "name": "Event Response"
+    },
+    {
+      "id": 2,
+      "name": "Math"
+    },
+    {
+      "id": 3,
+      "name": "Character Property"
+    },
+    {
+      "id": 4,
+      "name": "Comparision - Int"
+    },
+    {
+      "id": 5,
+      "name": "Comparision - String"
+    },
+    {
+      "id": 6,
+      "name": "Comparision - Bool"
+    },
+    {
+      "id": 7,
+      "name": "Comparision - Float"
+    },
+    {
+      "id": 8,
+      "name": "AAU Styles"
+    },
+    {
+      "id": 9,
+      "name": "Conversation"
+    },
+    {
+      "id": 10,
+      "name": "Strings"
+    }
+  ],
+  "entries": {
+    "bool": {
+      "1": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "An arbitrary constant to input",
+        "id": 1,
+        "implementation": null,
+        "interactive_name": "Constant",
+        "name": "Constant",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "efe5b6224b2f76048f11493436192c1bdbe41a2c5cb2efa77edc8f0c9fc41b00",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 1,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "10": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "less than",
+        "id": 10,
+        "implementation": "Thread::LessThanIntegers",
+        "interactive_name": "(%p < %p)",
+        "name": "Less Than",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "61bcf0d2215c508f9f6844823d338bd0488e20503a3d04cba153bda90427e6cb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 10,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "11": {
+        "category": "Comparision - Bool",
+        "category_id": 6,
+        "declared_return_type": 2,
+        "description": "Logical Not",
+        "id": 11,
+        "implementation": "Thread::BoolNot",
+        "interactive_name": "!(%p)",
+        "name": "Not",
+        "parameter_types": [
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "2580f8d3281a48f486e1e130c71db8af8be91db2d54d08f0a30f095d9bdb578c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 11,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "12": {
+        "category": "Comparision - String",
+        "category_id": 5,
+        "declared_return_type": 2,
+        "description": "Compares two strings",
+        "id": 12,
+        "implementation": "Thread::EqualsStrings",
+        "interactive_name": "(%p == %p)",
+        "name": "String - Equal",
+        "parameter_types": [
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "12ea92b0ca65a177d4ecff67dbe519a8957908bb704a61f7253d6102019fdf89",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 12,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "13": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "Not Equal",
+        "id": 13,
+        "implementation": "Thread::NotEqualsIntegers",
+        "interactive_name": "(%p != %p)",
+        "name": "Not Equal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cf750241883f3ede09d951472011e153308ccee766e31e5db1cc07b2b6b74a25",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 13,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "14": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "If executed in a trigger with the Npc Answers Event, this is the original Answer the NPC made",
+        "id": 14,
+        "implementation": "Thread::GetNpcResponseOriginalAnswerSuccess",
+        "interactive_name": "OriginalResponseSuccess",
+        "name": "Npc Original Response Success",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d635fe5bc01cc11c2da65a784d1599af6fb90d300d91b5b4216f59c75da27320",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 14,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "15": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "If executed in a trigger with the Npc Answers Event, this is the normal answer, modified by this or previously executed Triggersusing the Set Npc Response Answer Success Action. Will not work for strong or absolute responses.Within After NPC Response event, this will return the original answer the NPC gave, or the answer modified by normal response modifier.",
+        "id": 15,
+        "implementation": "Thread::GetNpcResponseCurrentAnswerSuccess",
+        "interactive_name": "NormalResponseSuccess",
+        "name": "Npc Normal Response Success",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d20e1ee483e4cb8bd30dfe1ede32ce06b26282f892d13ee64dd2cdf373640067",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 15,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "16": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Whether the given Seat has a character behind it. Characters are identified using their seat number. Use this in a loop through all seats do determine if a character exists or not.",
+        "id": 16,
+        "implementation": "Thread::IsSeatFilled",
+        "interactive_name": "%p.IsSeatFilled",
+        "name": "Is Seat Filled",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "90176f275f7e66b11e3ed023aadb2e8a7cf0f420d0e939b55b94269eeff5b018",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 16,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "17": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "True if the characters are currently in a relationship. (technically, it checks if the first parameter is in a relationship with the second)",
+        "id": 17,
+        "implementation": "Thread::IsLover",
+        "interactive_name": "%p.HasLover(%p)",
+        "name": "Is Lover",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "5b7e06c914e3129e9c2897d961ab24d65d0215d7c0db2751715413f7445d6e62",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 17,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "18": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "Greater-Than",
+        "id": 18,
+        "implementation": "Thread::GreaterThanFloats",
+        "interactive_name": "(%p > %p)",
+        "name": "Greater Than",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "8aca51ee471346cceef0c746138e543ce3eefb913c4ae49fc50d0f16e582ca59",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 18,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "19": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "Greater-Than or equal",
+        "id": 19,
+        "implementation": "Thread::GreaterEqualsFloats",
+        "interactive_name": "(%p >= %p)",
+        "name": "Greater Than or Equal",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "6202bdcea31a0ba3c16e70d4a888a8912d926a3334e14765239e3f2039f92da8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 19,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "2": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "A Variable",
+        "id": 2,
+        "implementation": null,
+        "interactive_name": "Variable",
+        "name": "Variable",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "8037db5d1a85f0d1badb1f0f2c7b6b84a9c11ca8e1de33e79c460a0549a19499",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 2,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "20": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "Equal",
+        "id": 20,
+        "implementation": "Thread::EqualsFloats",
+        "interactive_name": "(%p == %p)",
+        "name": "Equal",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "595fc345bcbabaa97568afc203f258ca6fac544b568709721d0d5f5338bbbc65",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 20,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "21": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "less than or equal",
+        "id": 21,
+        "implementation": "Thread::LessEqualsFloats",
+        "interactive_name": "(%p <= %p)",
+        "name": "Less Than or Equal",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "5858d879ef61194fc9b8f545239a589066de84bf405c6926d8a0fca8e68d19ce",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 21,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "22": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "less than",
+        "id": 22,
+        "implementation": "Thread::LessThanFloats",
+        "interactive_name": "(%p < %p)",
+        "name": "Less Than",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "7e3df44d4f41062b2989ea0d78cd8d5363c95756a4dea2c8ff867b5473a35534",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 22,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "23": {
+        "category": "Comparision - Float",
+        "category_id": 7,
+        "declared_return_type": 2,
+        "description": "not equal",
+        "id": 23,
+        "implementation": "Thread::NotEqualsFloats",
+        "interactive_name": "(%p != %p)",
+        "name": "Not Equal",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "7720f2725aa801c6fe74d44d8289a6f5da55da86eb09da1ecf414dcb8e4a0b02",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 23,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "24": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Gets the bool from the given cards storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 24,
+        "implementation": "Thread::GetCardStorageBool",
+        "interactive_name": "%p.GetBool(key: %p, default: %p)",
+        "name": "Get Card Storage Bool",
+        "parameter_types": [
+          1,
+          4,
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "531adb5fd3191428834d1b1cf790a4e82e7f42720c64a5a316ff07f8833fc932",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 24,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "25": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "",
+        "id": 25,
+        "implementation": "Thread::GetCardTrait",
+        "interactive_name": "%p.Trait(%p)",
+        "name": "Trait",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "501be63620b5447721cb781d77c94ede165e758978834842ea47f959dd8fb0e4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 25,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "26": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returs true if INTERRUPT_COMPETE, INTERRUPT_STOP_QUARREL, INTERRUPT_WHAT_ARE_YOU_DOING, H_END, H_NOTE, BREAK_CHAT, BREAK_H",
+        "id": 26,
+        "implementation": "Thread::IsInterruptAction",
+        "interactive_name": "%p.isInterrupt",
+        "name": "Check Interruption Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cef9d0d23c348e058fa8c5a67f66a2d18c27e785a19f13344d5af890be172b5a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 26,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "27": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returs true if MINNA_BE_FRIENDLY, MINNA_CLUB, MINNA_COME, MINNA_EAT, MINNA_H, MINNA_KARAOKE, MINNA_LUNCH, MINNA_REST, MINNA_SPORTS, MINNA_STUDY",
+        "id": 27,
+        "implementation": "Thread::IsMinnaAction",
+        "interactive_name": "%p.isMinna",
+        "name": "Check Minna Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a05f5d93fb03ef800977b90eb34c1f71ae05fc86c114cc3f79ae8b31ece4f024",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 27,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "28": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if FIGHT, FORCE_H, FORCE_IGNORE, FORCE_PUT_THIS_ON, FORCE_SHOW_THAT, INSULT, SLAP",
+        "id": 28,
+        "implementation": "Thread::IsForceAction",
+        "interactive_name": "%p.isForce",
+        "name": "Check Force Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a385d3987a3eed9a38f538ed2e1111fadcf3ce425cc9a6ed8a5696b60b33ec77",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 28,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "29": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if FOLLOW_ME_H, FORCE_H, MINNA_H, NORMAL_H, NO_PROMPT_H, SKIP_CLASS_H, SKIP_CLASS_SURPRISE_H, STUDY_HOME_H, LEWD_REWARD",
+        "id": 29,
+        "implementation": "Thread::IsSexAction",
+        "interactive_name": "%p.isSex",
+        "name": "Check Sex Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "555dc5910c97f8f7b84ab0f49a2af98026c217f23b10728697b2b444298de93e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 29,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "3": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "A known constant with a name",
+        "id": 3,
+        "implementation": null,
+        "interactive_name": "Enumeration",
+        "name": "Enumeration",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d1a3e338d5f13c72e46e08ea5611ffece6a5abb185649c2612c4647b127b9735",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 3,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "30": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if EXPLOITABLE_LINE, FORCE_BREAKUP, GOOD_BYE_KISS, GOOD_MORNING_KISS, I_SAW_SOMEONE_HAVE_H, I_WILL_CHEAT, MURDER, MURDER_NOTICE, NEVERMIND, NO_PROMPT_H, NO_PROMPT_KISS, REVEAL_PREGNANCY, SHAMELESS, SLAP, SOMEONE_GOT_CONFESSED_TO, SOMEONE_LIKES_YOU, STOP_FOLLOWING, TOGETHER_FOREVER",
+        "id": 30,
+        "implementation": "Thread::IsNoPromptAction",
+        "interactive_name": "%p.isNoPrompt",
+        "name": "Check NoPrompt Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cc3d93bd89e45f3c8bd8b2689ea1870221510140e1b718db86475a31b792f6e6",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 30,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "31": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if MURDER, REVEAL_PREGNANCY, TOGETHER_FOREVER",
+        "id": 31,
+        "implementation": "Thread::IsGameOverAction",
+        "interactive_name": "%p.isGameOver",
+        "name": "Check Game Over Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "139a88e8f96a283d00e089f1d8553f7a453598c76ef491e5fcdb4dc371246cc2",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 31,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "32": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if CHANGE_CLOTHES, DO_CLUB, DO_EXERCISE, DO_STUDY",
+        "id": 32,
+        "implementation": "Thread::IsNoTargetAction",
+        "interactive_name": "%p.isNoTarget",
+        "name": "Check No Target Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "555c09ace029407784621c501e6039cfc9b6acd4ba2025e3c3394d5b538249e8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 32,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "33": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 2,
+        "description": "Generates a random [0.0, 1.0] float value and if it's less than or equal to the provided argument returns true. Arguments over 1.0 always roll success",
+        "id": 33,
+        "implementation": "Thread::RollFloat",
+        "interactive_name": "Roll(%p)",
+        "name": "Roll Float",
+        "parameter_types": [
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "1fad40c7d687a5846f0552ac365f00fb8a2c570dfdca12d50e222c718c0775e2",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 33,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "34": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 2,
+        "description": "Generates a random [1, 100] integer value and if it's less than or equal to the provided argument returns true. Arguments over 100 always roll success",
+        "id": 34,
+        "implementation": "Thread::RollInt",
+        "interactive_name": "Roll(%p)",
+        "name": "Roll Int",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "b4068a56f341ab1df08fc94580a50d2970753731ce3bc2a457fd180f2d51cf9e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 34,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "35": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character is not a virgin.",
+        "id": 35,
+        "implementation": "Thread::GetSexExperience",
+        "interactive_name": "%p.SexXP",
+        "name": "Sex Experience: Vaginal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "b6a931b0ba5394e66cacf9b069dec4de424cff4804ec9c36274774f376eafae3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 35,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "36": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character is not an anal virgin.",
+        "id": 36,
+        "implementation": "Thread::GetAnalSexExperience",
+        "interactive_name": "%p.AnalXP",
+        "name": "Sex Experience: Anal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "15767e384f0325b031529d86476a11c4e56cd27d164a08dbed91ed6d54c821f3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 36,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "37": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character is in at least one rleationship.",
+        "id": 37,
+        "implementation": "Thread::GetHasLovers",
+        "interactive_name": "%p.HasLovers",
+        "name": "Has Lovers",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1e9597fcc054538c441e1dadd65f5b6c80eaed8ab9270f67ea787a3bea35764f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 37,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "38": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "Returns whether AutoPC is toggled on or off.",
+        "id": 38,
+        "implementation": "Thread::GetAutoPC",
+        "interactive_name": "AutoPC",
+        "name": "Get Auto-PC",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d071f768d2820f46fa6d3e6f71e3c6e13506d1569d1d952095e9244de521f9ac",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 38,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "39": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character has cum in their mouth.",
+        "id": 39,
+        "implementation": "Thread::GetCum",
+        "interactive_name": "%p.GetCum",
+        "name": "Get Cum",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a65c5921cf104ec2a39fb86bb04703cc59cf99eb832e57dcc90547aeecfbf15e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 39,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "4": {
+        "category": "Comparision - Bool",
+        "category_id": 6,
+        "declared_return_type": 2,
+        "description": "Logical and, including short-circut evaluation",
+        "id": 4,
+        "implementation": null,
+        "interactive_name": "(%p && %p)",
+        "name": "Logical And",
+        "parameter_types": [
+          2,
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "568bf38d1daa59c6bfeb59a03afe91a3bf41fd4518ae5c7ab45ec7a6df9d6dbd",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 4,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "40": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character is crying.",
+        "id": 40,
+        "implementation": "Thread::GetTears",
+        "interactive_name": "%p.GetTears",
+        "name": "Get Tears",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2a40afe376b3be744e908b7553fed98f585283cff257899048cd3c10b15dc184",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 40,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "41": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character has highlight in their eyes.",
+        "id": 41,
+        "implementation": "Thread::GetHighlight",
+        "interactive_name": "%p.GetHighlight",
+        "name": "Get Highlight",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "b225f395f1582ae0a6fb83c252cc7c0e0be53814baaf3f00aaffd98f6d43fac3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 41,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "42": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns true if the character has their glasses on.",
+        "id": 42,
+        "implementation": "Thread::GetGlasses",
+        "interactive_name": "%p.GetGlasses",
+        "name": "Get Glasses",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "38299da134a4d2b32d2c586eccf03c000b4eb6f079c6ba2c5bb9371a90c71e8e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 42,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "43": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Return whether a .pose exists.",
+        "id": 43,
+        "implementation": "Thread::PoseExists",
+        "interactive_name": "PoseExists(%p)",
+        "name": "Pose exists",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "e0181425f5cc1378589820e01fd6907de60757e3e8268d323e61e95cab25b720",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 43,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "44": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "If executed in a trigger with the After NPC Answers Event, this is the current answer that the NPC will act upon, modified by any previously executed Triggers.",
+        "id": 44,
+        "implementation": "Thread::GetNpcResponseEffectiveAnswerSuccess",
+        "interactive_name": "EffectiveResponseSuccess",
+        "name": "Npc Effective Response Success",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "4ce97da2ac7a5ad348dadddf00f5f4e953c6e392a06126b765859718cb8a1eb1",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 44,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "45": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 2,
+        "description": "Returns whether the card has some H preference.",
+        "id": 45,
+        "implementation": "Thread::GetCardPreference",
+        "interactive_name": "%p.HPreference(%p)",
+        "name": "Get H Preference",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "0dc063e22f8002a36cc2b1b9413b77fb8d208b24808a032cbb7f5752a47930fe",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 45,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "46": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Gets the bool from the given class storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 46,
+        "implementation": "Thread::GetClassStorageBool",
+        "interactive_name": "GetBool(key: %p, default: %p)",
+        "name": "Get Class Storage Bool",
+        "parameter_types": [
+          4,
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "0c4fb6e2bd6cf0f77f814415a48afcb73f1b490a8de853a40726cca3aefe8433",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 46,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "47": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if SKIP_CLASS, SKIP_CLASS_H, SKIP_CLASS_SURPRISE_H, GO_HOME_TOGETHER, GO_KARAOKE_TOGETHER, GO_PLAY_TOGETHER, GO_EAT_TOGETHER",
+        "id": 47,
+        "implementation": "Thread::IsSkipAction",
+        "interactive_name": "%p.isSkip",
+        "name": "Check Skip Action",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "96a45925a8b98cb17335feda1e7832847431a5cb1c745c5352704bf7b8684c5d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 47,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "48": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if the location ID is one of the private rooms.",
+        "id": 48,
+        "implementation": "Thread::IsPrivateRoom",
+        "interactive_name": "%p.isPrivateRoom",
+        "name": "Check Private Room",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "8c9d6796bc9fe2f8afeeca23fd60251b077f5d2ca61eecd9fea8f6b2a186142b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 48,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "49": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if the characters arranged to have a date on Sunday.",
+        "id": 49,
+        "implementation": "Thread::HasDateWith",
+        "interactive_name": "%p.HasDateWith(%p)",
+        "name": "Has Date With",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "381e32a5246685c03abca8281ddb5abd0705e6010aeae303065d1898abfe14e7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 49,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "5": {
+        "category": "Comparision - Bool",
+        "category_id": 6,
+        "declared_return_type": 2,
+        "description": "Logical or, including short-circut evaluation",
+        "id": 5,
+        "implementation": null,
+        "interactive_name": "(%p || %p)",
+        "name": "Logical Or",
+        "parameter_types": [
+          2,
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "69fab61f2fce42ffdb2b61a2df8259b29264e27e85c1dd52c6245000a002a496",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 5,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "50": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Returns true if the first character promised a lewd reward to the second character.",
+        "id": 50,
+        "implementation": "Thread::PromisedLewdRewardTo",
+        "interactive_name": "%p.LewdPromise(%p)",
+        "name": "Promised a Lewd Reward To",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "6aeb02cb562b7387dcae80df4e796a4296b7e0f02fda8a5a63c45247c5082568",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 50,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "51": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "In Delayed Execution Event returns whether this is a required event.",
+        "id": 51,
+        "implementation": "Thread::GetDelayedEventRequired",
+        "interactive_name": "DelayedEventRequired",
+        "name": "Get Delayed Event Required",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "ba98f0fbdaf193d2e53ed5ea67fde68bc5d297c1af3385c1baa5cd28b2f84121",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 51,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "52": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 2,
+        "description": "Call supplemental lua bool function.",
+        "id": 52,
+        "implementation": "Thread::CallLuaBoolFunction",
+        "interactive_name": "LUA(%p)",
+        "name": "Call LUA Function",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "b9467a5d0f4d5067f02e2a5178390ae236458b0349cda71e398df33e3ee560ea",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 52,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "53": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "Returns whether CondomOverride is toggled on or off.",
+        "id": 53,
+        "implementation": "Thread::GetCondomOverride",
+        "interactive_name": "CondomOverride",
+        "name": "Get Condom-Override",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "7cde25c0314be0f237febe4e1549fc4fc20021f0059b426e43f71dfc51bb213a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 53,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "54": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "Returns whether the global condom setting is set to have them on or off.",
+        "id": 54,
+        "implementation": "Thread::GetCondomValue",
+        "interactive_name": "CondomValue",
+        "name": "Get Condom-Value",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "3bc413ea88dcf7863824b42fcf9904ce6211300158271e8684018e4fa3d6acc5",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 54,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "6": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "Greater-Than",
+        "id": 6,
+        "implementation": "Thread::GreaterThanIntegers",
+        "interactive_name": "(%p > %p)",
+        "name": "Greater Than",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "fde3896343b83554af6fdb2ac7a56ed7b333a35db89888e3ca9616f1bd43208a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 6,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "7": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "Greater-Than or equal",
+        "id": 7,
+        "implementation": "Thread::GreaterEqualsIntegers",
+        "interactive_name": "(%p >= %p)",
+        "name": "Greater Than or Equal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "63fa4ff4e5d63663c4bc6f11169f140da49a6fbc66c7e4293944c7836787a584",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 7,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "8": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "Equal",
+        "id": 8,
+        "implementation": "Thread::EqualsIntegers",
+        "interactive_name": "(%p == %p)",
+        "name": "Equal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "ad7677664772d6ff76ebdf1bf1cc63ac4ab66345d4550ba86d16f3d65c54b392",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 8,
+        "return_type": 2,
+        "return_type_name": "bool"
+      },
+      "9": {
+        "category": "Comparision - Int",
+        "category_id": 4,
+        "declared_return_type": 2,
+        "description": "less than or equal",
+        "id": 9,
+        "implementation": "Thread::LessEqualsIntegers",
+        "interactive_name": "(%p <= %p)",
+        "name": "Less Than or Equal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "e310a3ec6dfe23bb014f01d3d23bcada6d9246e327130ef916b2a939b4c40ed8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 9,
+        "return_type": 2,
+        "return_type_name": "bool"
+      }
+    },
+    "float": {
+      "1": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 3,
+        "description": "An arbitrary constant to input",
+        "id": 1,
+        "implementation": null,
+        "interactive_name": "Constant",
+        "name": "Constant",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "4a6fdf7f4d2691da25886235395f33fe38d7c33e9bbd0d13b604c89003e3eb76",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 1,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "10": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 3,
+        "description": "Gets the float from the given cards storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 10,
+        "implementation": "Thread::GetCardStorageFloat",
+        "interactive_name": "%p.GetFloat(key: %p, default: %p)",
+        "name": "Get Card Storage Float",
+        "parameter_types": [
+          1,
+          4,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "20498feb1e0f7c53baae0c5243de93d23f876da8f15604d379e17e8788ef1004",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 10,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "11": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Converts a String to a Float.",
+        "id": 11,
+        "implementation": "Thread::String2Float",
+        "interactive_name": "Float(%p)",
+        "name": "String to Float",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "ab81b80bae1a10bcdc7a7eed4d140cc73a628c92f981d89f5c867ed5ab64da25",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 11,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "12": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 3,
+        "description": "The multiplier used when calculating interaction chances depending on actors' sex orientations and genders. Returns either 1.0, 0.5 or 0.0",
+        "id": 12,
+        "implementation": "Thread::GetCardOrientationMultiplier",
+        "interactive_name": "%p.OrientationMultiplier(towards: %p)",
+        "name": "Sex Orientation Multiplier",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a0781a575aa111bbcbd3ff8a59487eaa3cffdf100552486c0533efe13bda9c39",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 12,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "13": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 3,
+        "description": "Gets the float from the given class storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 13,
+        "implementation": "Thread::GetClassStorageFloat",
+        "interactive_name": "GetFloat(key: %p, default: %p)",
+        "name": "Get Class Storage Float",
+        "parameter_types": [
+          4,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "0ec4db99e4a4a026c876018b0acdfb7d43fe24bfd1aa6ba5647d8102222910fc",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 13,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "14": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 3,
+        "description": "Returns 0 when characters can't get like points towards each other, 0.5 when their like gain is halved, and 1 when they get full amount of like points from interactions.",
+        "id": 14,
+        "implementation": "Thread::GetCardLikeOrientationMultiplier",
+        "interactive_name": "%p.LikeOrientationMultiplier(towards: %p)",
+        "name": "Like Orientation Multiplier",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4a97d0df8a4617d762487e9511401ee18f82ddd37e111e1431de507fcb430172",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 14,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "15": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 3,
+        "description": "Call supplemental lua float function.",
+        "id": 15,
+        "implementation": "Thread::CallLuaFloatFunction",
+        "interactive_name": "LUA(%p)",
+        "name": "Call LUA Function",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "1ba680501af729ab9dc13fe008e2eb705fd9c8762ff6903002cabdc95e0e996c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 15,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "2": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 3,
+        "description": "A Variable",
+        "id": 2,
+        "implementation": null,
+        "interactive_name": "Variable",
+        "name": "Variable",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "749b5d85330feffe3badbc55d8d2d2adf3ea001a6cd25aa916af6689a85efa26",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 2,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "3": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 3,
+        "description": "A known constant with a name",
+        "id": 3,
+        "implementation": null,
+        "interactive_name": "Enumeration",
+        "name": "Enumeration",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "e55dc60c5665cf0ac9561456b572315fce5aa4ca35ac8c76ccce1418f6830fad",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 3,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "4": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Generates a random float between the two arguments (including both)",
+        "id": 4,
+        "implementation": "Thread::GetRandomFloat",
+        "interactive_name": "RandomFloat(min: %p, max: %p)",
+        "name": "Random Float",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "fae0c0d4f400d5d7fd458e2edf0a73a698300aca3607d4cd09fc7c55fd6db558",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 4,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "5": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Adds two floats",
+        "id": 5,
+        "implementation": "Thread::AddFloats",
+        "interactive_name": "(%p + %p)",
+        "name": "+",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "250b12b590743c1c8e222afded390879e49e157c896e23f0e1def669fcd2391d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 5,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "6": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Substracts two floats",
+        "id": 6,
+        "implementation": "Thread::SubstractFloats",
+        "interactive_name": "(%p - %p)",
+        "name": "-",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "7684fa5563916222b952b048cb00b542691af9cab2ee7605b548763d304cbbd4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 6,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "7": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Divide two floats",
+        "id": 7,
+        "implementation": "Thread::DivideFloats",
+        "interactive_name": "(%p / %p)",
+        "name": "/",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "0cf1cb232ba7c7afe0d90c1f6e0d58ce4ca35e834fca3822ea89795037b12c49",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 7,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "8": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Multiply two floats",
+        "id": 8,
+        "implementation": "Thread::MultiplyFloats",
+        "interactive_name": "(%p * %p)",
+        "name": "*",
+        "parameter_types": [
+          3,
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "21bb99027a09138d37068f2356e743d789287c1d6524f28dded3e5cdbabc2d3b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 8,
+        "return_type": 3,
+        "return_type_name": "float"
+      },
+      "9": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 3,
+        "description": "Converts an Int to Float",
+        "id": 9,
+        "implementation": "Thread::Int2Float",
+        "interactive_name": "Float(%p)",
+        "name": "Int to Float",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "33d18c7ad6143267ad463310310143372008b73ec80af3a8ea26a1c00a4e73cc",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 9,
+        "return_type": 3,
+        "return_type_name": "float"
+      }
+    },
+    "int": {
+      "1": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "An arbitrary constant to input",
+        "id": 1,
+        "implementation": null,
+        "interactive_name": "Constant",
+        "name": "Constant",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "e2d201bacbcfc6ac06c5767cbd403efac3828452fd55e343e9f66478ee811f98",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 1,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "10": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "The card to whom this trigger belongs to",
+        "id": 10,
+        "implementation": "Thread::GetThisCard",
+        "interactive_name": "ThisCard",
+        "name": "This Card",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "c137b94acb271c7d7ca11ad86dcaea61be457d7ee4cbec597962b8d2bf1af214",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 10,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "100": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 2,
+        "description": "If executed in a trigger with the Npc Answers Event, this is the original Answer the NPC made",
+        "id": 100,
+        "implementation": "Thread::GetNpcResponseOriginalAnswer",
+        "interactive_name": "OriginalResponse",
+        "name": "Npc Original Response",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "161f9f0d2c287de658c987a742dbe18ec6a2f0334d3fe494a260f1ae5ad05be7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 100,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "101": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "If executed in a trigger with the Npc Answers Event, this is the current Answer, modified by this or previously executed Triggers. using the Set Npc Response Answer Action",
+        "id": 101,
+        "implementation": "Thread::GetNpcResponseCurrentAnswer",
+        "interactive_name": "CurrentResponse",
+        "name": "Npc Current Response",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "3d88f593a1be627950bde80d1f9bab9e6063fbb09fba79b670ec15255b9d590f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 101,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "102": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Returns which key was pressed.",
+        "id": 102,
+        "implementation": "Thread::GetKeyPressVal",
+        "interactive_name": "KeyPress",
+        "name": "Key pressed",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "72df363661b8112038b244427ea055c8833b9e8c2cbd844a71a4d61fbe9b79d7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 102,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "103": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Returns the seat of the card that is the current target of the specified card.",
+        "id": 103,
+        "implementation": "Thread::GetTarget",
+        "interactive_name": "%p.GetTarget",
+        "name": "Get Target",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2d973e5e7a04fc1f07b0283c6d4340419e7327e773f069e4130d34024bf1f27c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 103,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "104": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the conversation that some character is currently in.",
+        "id": 104,
+        "implementation": "Thread::GetCurrentConvo",
+        "interactive_name": "%p.CurrConvo",
+        "name": "Current Conversation",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cdf4b1936cab86535eb93fbb60f4e877944c91c671fc79c9df389e26d07a4369",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 104,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "105": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "The index of the current H position of PC.",
+        "id": 105,
+        "implementation": "Thread::GetHPosition",
+        "interactive_name": "HPosition",
+        "name": "H Position",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "1243f75963ce579dbfcfb4be59f6c7f14b2a515dbd84b79042b8df55be643315",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 105,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "106": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the height of the character. 0=short, 1=normal, 2=tall",
+        "id": 106,
+        "implementation": "Thread::GetHeight",
+        "interactive_name": "%p.Height",
+        "name": "Get Height",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "3d3c72495d2d72d7a08b55d70c361a67afaac91b74a961902cd8ca6eb05f016f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 106,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "107": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Get the active actor in h.",
+        "id": 107,
+        "implementation": "Thread::GetActiveInH",
+        "interactive_name": "Active",
+        "name": "Active actor",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "c6d917469d18bbd1052b5e227ee6df4b586ef0c308fd42ad8c6bb4dad18ab986",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 107,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "108": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Get the passive actor in h.",
+        "id": 108,
+        "implementation": "Thread::GetPassiveInH",
+        "interactive_name": "Passive",
+        "name": "Passive actor",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a1a2762c11af4889f9097cea28b3b2a059ec1100fbd882c55245902f146da2ba",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 108,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "109": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Returns the answer that PC is going to act upon. Use only in After PC Response event. 0 is \"Yes\", 1 is \"No\", 2 is \"Huh?\", -1 is undefined.",
+        "id": 109,
+        "implementation": "Thread::GetEffectivePcResponse",
+        "interactive_name": "PCEffectiveResponse",
+        "name": "PC Effective Response",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d322f7bd03345822c47042ba654a55a3b719d663bb4c67a1637f2aad1009d847",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 109,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "11": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In a NPC Answered event, the character the NPC answered to.",
+        "id": 11,
+        "implementation": "Thread::GetNpcResponseTarget",
+        "interactive_name": "AnswerTarget",
+        "name": "Npc Answer - Target",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a09a90d38a8fe617748f05b188acbe4dbcc601de8c7a9fea8b2208db5b46bc1c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 11,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "110": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "If executed in a trigger with the After NPC Answers Event, this is the current interaction percent, modified by any triggers of any priority.using the Set Npc Response Percent Action",
+        "id": 110,
+        "implementation": "Thread::GetNpcResponseEffectivePercent",
+        "interactive_name": "EffectiveResponsePercent",
+        "name": "Npc Effective Response Chance",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "e0ee47c4d94d14db4939aaabe9b20cbd7dc800ba8b4196ecd9685f6586b3dc51",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 110,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "111": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the figure of the character. 0=thin, 1=normal, 2=chubby",
+        "id": 111,
+        "implementation": "Thread::GetCardFigure",
+        "interactive_name": "%p.Figure",
+        "name": "Get Figure",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "dffcff3b1e20e96b6fad9542a7d1bb61a061fdaba6fe1943e76e3c3f279c77e2",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 111,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "112": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the state of some opinion of the first character towards the second character.",
+        "id": 112,
+        "implementation": "Thread::GetCardOpinion",
+        "interactive_name": "%p.Opinion(id: %p, towards: %p)",
+        "name": "Get Opinion",
+        "parameter_types": [
+          1,
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "f188efc1a1bbe826ce01af4403d6e962b4f579d16e1904e7b9cc293c1aaa1f65",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 112,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "113": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get breast size of the character. 0=small, 1=normal, 2=large",
+        "id": 113,
+        "implementation": "Thread::GetCardBreastSize",
+        "interactive_name": "%p.Breast",
+        "name": "Get Breast Size",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "6a2388432fa8a9551f31b171bf81f32de5cb42ebb7de61c7384c73a24374966d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 113,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "114": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get strength of decals at certain body part of some character. Use only during h! For position 0 - chest, 1 - back, 2 - crotch / legs, 3 - butt, 4 - face. Decals have multiple possible strengths (0-3), 0 being no decals and 3 being strongest.",
+        "id": 114,
+        "implementation": "Thread::GetDecals",
+        "interactive_name": "%p.Decals(position: %p)",
+        "name": "Get Decals",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "0c4c75e2c208412fd363bdf7e28b21bff67a4551b4a45b8e4c6ea3a3437db33b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 114,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "115": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the ID of the room that the character is talking about.",
+        "id": 115,
+        "implementation": "Thread::GetActionAboutRoom",
+        "interactive_name": "%p.ActionAboutRoom",
+        "name": "Action About Room",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1e44b3d36a5a0ddf80eaf7d324cb37925df6b3a329f87e7a5a2d0d6e87996b3b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 115,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "116": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The fighting stance of this character.",
+        "id": 116,
+        "implementation": "Thread::GetCardFightingStyle",
+        "interactive_name": "%p.FightStance",
+        "name": "Fighting Stance",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1bb58f03bed9b7f40fe0a126cb9bc101f9e4d077be52a4adc3137e4deddd18ad",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 116,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "117": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Get the dominant actor in h.",
+        "id": 117,
+        "implementation": "Thread::GetDominantInH",
+        "interactive_name": "Dominant",
+        "name": "Dominant actor",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "cd119ebabd84c028d56e3dfe9483e3e1cefbd29952bc8c2d76bb3d6ac7586a45",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 117,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "118": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Get the submissive actor in h.",
+        "id": 118,
+        "implementation": "Thread::GetSubmissiveInH",
+        "interactive_name": "Submissive",
+        "name": "Submissive actor",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "bbffe53aac183e76c75e15fd259992cf24a620642a9d28309077ea7fd942d5ff",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 118,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "119": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Gets the current amount of stamina.",
+        "id": 119,
+        "implementation": "Thread::GetStamina",
+        "interactive_name": "%p.GetStamina",
+        "name": "Get Stamina",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "92a97cbb4e3837802187a45bae03b04474b5ee88c39aabd4d0010c6175f28c13",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 119,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "12": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "The Type of Question the NPC answered in a NPC Answered event.",
+        "id": 12,
+        "implementation": "Thread::GetNpcResponseConversation",
+        "interactive_name": "ConversationId",
+        "name": "Npc Answer - Conversation ID",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "343d742430549e306fc4a3d1df64510426e456ae5941d70b4dc77e1a59fcd4fa",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 12,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "120": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the number of seconds that have passed in the current period.",
+        "id": 120,
+        "implementation": "Thread::GetPeriodTimer",
+        "interactive_name": "PeriodTimer",
+        "name": "Get Period Timer",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d0202c95bdded419e6ac3c8e2dbd7fddeb3ef3d6184b023a484902657ffa5049",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 120,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "121": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Gets the integer from the given class storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 121,
+        "implementation": "Thread::GetClassStorageInt",
+        "interactive_name": "GetInt(key: %p, default: %p)",
+        "name": "Get Class Storage Int",
+        "parameter_types": [
+          4,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "fa575200428e6dd2ce70a9c754afdc5351b4ebe183af661ce543d91c7f0dd679",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 121,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "122": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Returns the seat of the card that is the current target of the player character.",
+        "id": 122,
+        "implementation": "Thread::GetPcTarget",
+        "interactive_name": "PCTarget",
+        "name": "Get PC Target",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "931d5dec11244e67b83a9ef02b012037b7bc4a5de28edb2a48a885dfdb921894",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 122,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "123": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified virtue modifier.",
+        "id": 123,
+        "implementation": "Thread::GetCardVirtueMod",
+        "interactive_name": "%p.VirtueMod(%p)",
+        "name": "Virtue Modifier",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "8393b0d6104b4a0bafd8fa9592d5c8b725a4162a242fc48e1ed84d7f1a565910",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 123,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "124": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The real unlocked virtue of the character.",
+        "id": 124,
+        "implementation": "Thread::GetCardEffectiveVirtue",
+        "interactive_name": "%p.RealVirtue",
+        "name": "Real Virtue",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "6710876bf8994b44c5b2bbe9a89f33054cf95387dcbca957dcad5412a893594a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 124,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "125": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified sociability modifier.",
+        "id": 125,
+        "implementation": "Thread::GetCardSociabilityMod",
+        "interactive_name": "%p.SociabilityMod(%p)",
+        "name": "Sociability Modifier",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "735f1316a199b9f988d3f44635414366d0e6de2f18163228fa53d0437c82519d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 125,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "126": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The real unlocked socibility of the character.",
+        "id": 126,
+        "implementation": "Thread::GetCardEffectiveSociability",
+        "interactive_name": "%p.RealSociability",
+        "name": "Real Sociability",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4701067bc919cb95e36f6ca37815dfd786b5a017b9a0b7e83d833c0228628d9b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 126,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "127": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified intelligence value modifier.",
+        "id": 127,
+        "implementation": "Thread::GetCardIntelligenceMod",
+        "interactive_name": "%p.INTMod(%p)",
+        "name": "Intelligence Modifier",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "d5fe9a63b4e25a347e8460b77a0273617652fa813aef5f34df4eba5908c870f1",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 127,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "128": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The real unlocked intelligenve value of the character.",
+        "id": 128,
+        "implementation": "Thread::GetCardEffectiveIntelligenceValue",
+        "interactive_name": "%p.RealINTValue",
+        "name": "Real Intelligence Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "af29d154bfd7094d6e58bb53037e257bd70df117b8b403af8947dcd4af13836c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 128,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "129": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified strength value modifier.",
+        "id": 129,
+        "implementation": "Thread::GetCardStrengthMod",
+        "interactive_name": "%p.STRMod(%p)",
+        "name": "Strength Modifier",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "1ca30d823ea35bad212a8e54d3eeb0c8b844192d61ec0277e32d2223e99912a9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 129,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "13": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Room that the Npc Walks to in a Npc Walks to Room event.",
+        "id": 13,
+        "implementation": "Thread::GetNpcRoomTarget",
+        "interactive_name": "NPCRoomTarget",
+        "name": "Npc Room Target",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a6b23a186d0862639edad70b076ec5ef610ab1ffb3e01d8e2f2c00dd97f5cbbc",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 13,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "130": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The real unlocked strength value of the character.",
+        "id": 130,
+        "implementation": "Thread::GetCardEffectiveStrengthValue",
+        "interactive_name": "%p.RealSTRValue",
+        "name": "Real Strength Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "969fdb7b3c43d9504d865d13054c67b5bb7cdfa7772c3a012d5e11f378e462d7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 130,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "131": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified club value modifier.",
+        "id": 131,
+        "implementation": "Thread::GetCardClubMod",
+        "interactive_name": "%p.ClubMod(%p)",
+        "name": "Club Modifier",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "231910fd22d23bc7c6b15e1eec87188ccfd10b7a013c7e539cb991a2b63607a3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 131,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "132": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The real unlocked club value of the character.",
+        "id": 132,
+        "implementation": "Thread::GetCardEffectiveClubValue",
+        "interactive_name": "%p.RealClubValue",
+        "name": "Real Club Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "27e52292406aa044e659cc8437d555d8b96f1055a3a8026896945d546df91b3e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 132,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "133": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the m_locationTarget of the character. Believed to be room that PC is targeting when he clicks around, but unavailable from NPC answers event.",
+        "id": 133,
+        "implementation": "Thread::GetMLocationTarget",
+        "interactive_name": "%p.LocationTarget",
+        "name": "Get LocationTarget",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "772a5540424348df90f045866e3168efdc05ce696326ce10f9b4e4abf13e335d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 133,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "134": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Use only in After NPC Response event. This expression will ONLY return the strong response modifier that any triggers set. It will be -1 if no triggers had done so.",
+        "id": 134,
+        "implementation": "Thread::GetNpcResponseStrongAnswerSuccess",
+        "interactive_name": "StrongResponseModifier",
+        "name": "Npc Strong Response Modifier",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "15ac0b239187267c27ef8a05a595c4cbd04c6459fc736b0364da47e81dfacc99",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 134,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "135": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Use only in After NPC Response event. This expression will ONLY return the absolute response modifier that any triggers set. It will be -1 if no triggers had done so.",
+        "id": 135,
+        "implementation": "Thread::GetNpcResponseAbsoluteAnswerSuccess",
+        "interactive_name": "AbsoluteResponseModifier",
+        "name": "Npc Absolute Response Modifier",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "79b71f9ebdbc016ba1f6488073aec46ac23c7bc79628849fbc1079f2b4e790ef",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 135,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "136": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Use only in NPC/After NPC answer event. This expression will return the room that PC is walking to.",
+        "id": 136,
+        "implementation": "Thread::GetPCRoomTarget",
+        "interactive_name": "PCRoomTarget",
+        "name": "Get PC Room Target",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "4bfedd06c2a9344414836e541282dd55db5743c3517ec240812678880fbf8a50",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 136,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "137": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The value of the specified trait value modifier.",
+        "id": 137,
+        "implementation": "Thread::GetCardTraitMod",
+        "interactive_name": "%p.TraitMod(trait: %p, modName: %p)",
+        "name": "Trait Modifier",
+        "parameter_types": [
+          1,
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "c54201b27d1d9b1b5447c173e15c80d34b2065c0379f10d45b18d03df256a636",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 137,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "138": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The unbound trait value of the character.",
+        "id": 138,
+        "implementation": "Thread::GetCardUnboundTrait",
+        "interactive_name": "%p.UnboundTraitValue(trait: %p)",
+        "name": "Unbount Trait Value",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "701e9ff2540d7b3e4f25dcdc7146292f006c872df9eec56e2c9dd6c741877d19",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 138,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "139": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the ID (0-3) of the current outfit of the character. Use to figure out whether they are in uniform, sports, swim or club outfit.",
+        "id": 139,
+        "implementation": "Thread::GetCurrentClothes",
+        "interactive_name": "%p.CurrOutfit",
+        "name": "Get Current Outfit",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "d9284112f35e25e1918d85c5f187174b8fb4c3f549a07f2b265a968870b61c04",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 139,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "14": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "The Type of Action an Npc Wants to Perform in a no-target-action event, or the conversation, or the conversation within conversation end event.id in the targeted actions.",
+        "id": 14,
+        "implementation": "Thread::GetNpcActionId",
+        "interactive_name": "ActionId",
+        "name": "Npc Action",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "6edbc5cd0d6d7588ad3fdc278567c6cb3b2750cff2db024c9f3c9882210333b0",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 14,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "140": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the amount of days that this card has been a lover with the other for.",
+        "id": 140,
+        "implementation": "Thread::GetLoverDays",
+        "interactive_name": "%p.GetLoverDays(with: %p)",
+        "name": "Get lover days",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "ba4ccbfe3bf66c73c9cee0c4d5f3bac1ec1a230fbb726d71fba76520285abb66",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 140,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "141": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the grade this card got on sports exam, from 0 to 5, where 0 is F and 5 is A",
+        "id": 141,
+        "implementation": "Thread::GetCardSportsExamGrade",
+        "interactive_name": "%p.SportsExamGrade",
+        "name": "Get Sports Exam Grade",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cb373b38806b3d9dd47d551dda4b5c4d816d6a81aedda341f9de7ceba3360e0b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 141,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "142": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the grade this card got on academic exam, from 0 to 5, where 0 is F and 5 is A",
+        "id": 142,
+        "implementation": "Thread::GetCardAcademicExamGrade",
+        "interactive_name": "%p.AcademExamGrade",
+        "name": "Get Academic Exam Grade",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "8bca83dd80c5355a78e91daa993502c8538741e046c32ce63e8156ad071e3b2a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 142,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "143": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns the grade this card got on club tournament, from 0 to 5, where 0 is Eliminated 1st round and 5 is Champion",
+        "id": 143,
+        "implementation": "Thread::GetCardClubExamGrade",
+        "interactive_name": "%p.ClubExamGrade",
+        "name": "Get Club Exam Grade",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "bce9c944a312669064cb019d2aa363bf5632edaf381357347153e45fa9b19190",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 143,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "144": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns Sexual Partner Count of this character.",
+        "id": 144,
+        "implementation": "Thread::GetCardHPartnerCount",
+        "interactive_name": "%p.HPartnerCount",
+        "name": "Sexual Partner Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "60dadc89171837c5e3fc8ac418af06fcae8e6d53aa22c49558658a57376ede21",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 144,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "145": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Returns the type of a provided club id",
+        "id": 145,
+        "implementation": "Thread::GetClubType",
+        "interactive_name": "ClubType(%p)",
+        "name": "Club Type",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "34da427ac217483c7e9064d8ac4d76dc1cb313cc55e16009cc444fbd799f832b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 145,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "146": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the amount of love points that are about to be applied. Only works in relationship points changed event.",
+        "id": 146,
+        "implementation": "Thread::GetLove",
+        "interactive_name": "GetLove",
+        "name": "Get Love",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "3db569278316368b5ab053ffc7e1b5b09d5c2e7cc588aafee5be03f77eaf1525",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 146,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "147": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the amount of like points that are about to be applied. Only works in relationship points changed event.",
+        "id": 147,
+        "implementation": "Thread::GetLike",
+        "interactive_name": "GetLike",
+        "name": "Get Like",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "c55729eef27243af556b4d7c991477b7a66c9d253a556efbe565f861bf59bda6",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 147,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "148": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the amount of dislike points that are about to be applied. Only works in relationship points changed event.",
+        "id": 148,
+        "implementation": "Thread::GetDislike",
+        "interactive_name": "GetDislike",
+        "name": "Get Dislike",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "13bc7bd6993fd666c4b65e4b96c0480d13f98d4cd1fee1a938c3e419936922aa",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 148,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "149": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the amount of hate points that are about to be applied. Only works in relationship points changed event.",
+        "id": 149,
+        "implementation": "Thread::GetHate",
+        "interactive_name": "GetHate",
+        "name": "Get Hate",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "38c5e855464599083c24e60e3585c655fb6a6bd5f5325a72ec0dbd82bf461edb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 149,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "15": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In a Npc Talk With, or Npc Talk With About, or Conversation End event, this is the character the Npc talks with.",
+        "id": 15,
+        "implementation": "Thread::GetNpcTalkTarget",
+        "interactive_name": "TalkTarget",
+        "name": "Npc Talk Target",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a0eab8fa5be09956b670a82be874221fd2f527bff742dec76137d9ee210651a2",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 15,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "150": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "Returns the character that TriggerCard will have relationship points applied towards within Relationship Points Changed event.",
+        "id": 150,
+        "implementation": "Thread::RelationshipTowards",
+        "interactive_name": "RelationshipTowards",
+        "name": "Relationship Points Changed Towards",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a9d463a664d923cec00d7cb1be6976c8bb5ad14d97fbb7d3e5978bd94fca6805",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 150,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "151": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In Delayed Execution Event returns the period it was emitted from.",
+        "id": 151,
+        "implementation": "Thread::GetDelayedEventPeriod",
+        "interactive_name": "DelayedEventPeriod",
+        "name": "Get Delayed Event's Period",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a6b61a0d220cc002df9cbe726d1a1c5c48f6161229b32beb0fe8e97bebd54ca5",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 151,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "152": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Call supplemental lua int function.",
+        "id": 152,
+        "implementation": "Thread::CallLuaIntFunction",
+        "interactive_name": "LUA(%p)",
+        "name": "Call LUA Function",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "51153d1eff3901eb165a06b8bdcf51b9b6319d9e33fcec1f4876364321f79075",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 152,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "153": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns skirt state of some card. 0 - long, 1 - short, 2 - rolled up, 3 - no skirt",
+        "id": 153,
+        "implementation": "Thread::GetSkirtState",
+        "interactive_name": "%p.SkirtState",
+        "name": "Get Skirt State",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2cbb1f5cff1d7184336b5ea539a0c3a2cb96a8eac511b21f3a82136d6cf80173",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 153,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "16": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In a Npc Talk With About event, this is the character the Npc talks about.",
+        "id": 16,
+        "implementation": "Thread::GetNpcTalkAbout",
+        "interactive_name": "TalkAbout",
+        "name": "Npc Talk About",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a10866a99c5b1c7267dc84d00d81b043cdab248514269dd6b4cd83fcdea670f7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 16,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "17": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In a Period Ends Event, this is the new period starting.",
+        "id": 17,
+        "implementation": "Thread::GetStartingPeriod",
+        "interactive_name": "StartPeriod",
+        "name": "Period - Starting",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d1a172f06f6c1e3d605e7d6c739ea611337e8c18602ebbaceaacc72ec8478b43",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 17,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "18": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "In a Period Ends Event, this is the old period that ended.",
+        "id": 18,
+        "implementation": "Thread::GetEndingPeriod",
+        "interactive_name": "EndPeriod",
+        "name": "Period - Ending",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "719e9b070a55e933e6c02267a4ceb951c80d24697b2cff5ac3fb7a5c4da7dfc5",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 18,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "19": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The total sum of love points. This includes the love history, where each entry translates to 30 points, but which are limited to 30 history entrys (=900 points) across all 4 categories, as well as single points, that have not added up to 30 and were therefor not converted to love history yet.",
+        "id": 19,
+        "implementation": "Thread::GetCardLovePoints",
+        "interactive_name": "%p.LOVE(towards: %p)",
+        "name": "Love Points",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "eacb5c3c4e56bf62922ce2a0a20585fcc1b233833f244867ad05a62763e439c4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 19,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "2": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "A Variable",
+        "id": 2,
+        "implementation": null,
+        "interactive_name": "Variable",
+        "name": "Variable",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "aa341c3abb5fb465278cd925b53008f1fa39834c7854dc6d5267b797fc1ffc17",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 2,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "20": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The total sum of like points. This includes the like history, where each entry translates to 30 points, but which are limited to 30 history entrys (=900 points) across all 4 categories, as well as single points, that have not added up to 30 and were therefor not converted to like history yet.",
+        "id": 20,
+        "implementation": "Thread::GetCardLikePoints",
+        "interactive_name": "%p.LIKE(towards: %p)",
+        "name": "Like Points",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "bfba5a05410ff8903a50c100c7f8a3e6b18b50c1a63a87a3490e7307092940fa",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 20,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "21": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The total sum of dislike points. This includes the dislike history, where each entry translates to 30 points, but which are limited to 30 history entrys (=900 points) across all 4 categories, as well as single points, that have not added up to 30 and were therefor not converted to dislike history yet.",
+        "id": 21,
+        "implementation": "Thread::GetCardDislikePoints",
+        "interactive_name": "%p.DISLIKE(towards: %p)",
+        "name": "Dislike Points",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "229c81c9656f86e28f67da8857547243ab0b2ba96dfd25cef79fa7c5995ae6d4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 21,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "22": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The total sum of hate points. This includes the hate history, where each entry translates to 30 points, but which are limited to 30 history entrys (=900 points) across all 4 categories, as well as single points, that have not added up to 30 and were therefor not converted to hate history yet.",
+        "id": 22,
+        "implementation": "Thread::GetCardHatePoints",
+        "interactive_name": "%p.HATE(towards: %p)",
+        "name": "Hate Points",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "bdbaf99775e677627c56e8af93bca67f731a89741c748e0f595534967f3bb4b8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 22,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "23": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Converts a Float to an Int by cutting off the decimals.",
+        "id": 23,
+        "implementation": "Thread::Float2Int",
+        "interactive_name": "Int(%p)",
+        "name": "Float to Int",
+        "parameter_types": [
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "d1b831792f9496c7710db9577a012d9e6b924f2b52900d272551976ed497724f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 23,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "24": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Gets the integer from the given cards storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 24,
+        "implementation": "Thread::GetCardStorageInt",
+        "interactive_name": "%p.GetInt(key: %p, default: %p)",
+        "name": "Get Card Storage Int",
+        "parameter_types": [
+          1,
+          4,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4bcfdf4b93d010ebe80f6efd37affcbd6d7051900db5e8d056e62de442f19cb4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 24,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "25": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The virtue of this character. 0 = Lowest ... 4 = Highest",
+        "id": 25,
+        "implementation": "Thread::GetCardVirtue",
+        "interactive_name": "%p.Virtue",
+        "name": "Virtue",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "324a7b0d89cc5290a1f2ca9cdbf83955d60efc0e93d4fe97361b49b1e998c964",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 25,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "26": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The personalityId of this character.",
+        "id": 26,
+        "implementation": "Thread::GetCardPersonality",
+        "interactive_name": "%p.Personality",
+        "name": "Personality",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "7b31ecbc5dd5113c99e0e235c5a878beec8ddeea03dec5126321914ef04ce416",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 26,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "27": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The voice pitch of this character. 0 = Lowest ... 4 = Highest",
+        "id": 27,
+        "implementation": "Thread::GetCardVoicePitch",
+        "interactive_name": "%p.Pitch",
+        "name": "Voice Pitch",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "8bda58df4677ab6a685ad5088fd98f1b7755454045f51381cbb5e2bb843ffe9f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 27,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "28": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The clubId of this character.",
+        "id": 28,
+        "implementation": "Thread::GetCardClub",
+        "interactive_name": "%p.Club",
+        "name": "Club",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "04fd6ffc6fab6d25b8ccd78b0025d7ad122b618c662bbea084aa00e20601e730",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 28,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "29": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The club value of this character.",
+        "id": 29,
+        "implementation": "Thread::GetCardClubValue",
+        "interactive_name": "%p.ClubValue",
+        "name": "Club Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2368f70d39707baa6f80f56f7b7163f7791663eda4a4b0fa874164b76af2e728",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 29,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "3": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "A known constant with a name",
+        "id": 3,
+        "implementation": null,
+        "interactive_name": "Enumeration",
+        "name": "Enumeration",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d6e4ea38716f259e84070c7d89469cf19e940471cac40717c12ba0d7058f04af",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 3,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "30": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The club rank of this character.",
+        "id": 30,
+        "implementation": "Thread::GetCardClubRank",
+        "interactive_name": "%p.ClubRank",
+        "name": "Club Rank",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "ce6e3597a8aaf1db72b9157f7f2db3a7cc720dbfe26ee058b52a79ffae153c1a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 30,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "31": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The intelligence of this character.",
+        "id": 31,
+        "implementation": "Thread::GetCardIntelligence",
+        "interactive_name": "%p.INT",
+        "name": "Intelligence",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "fd820fff60cb3ad6723c7872859647c4cdc079472feb6cda27a1ffeba11023d4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 31,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "32": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The intelligence value of this character.",
+        "id": 32,
+        "implementation": "Thread::GetCardIntelligenceValue",
+        "interactive_name": "%p.INTValue",
+        "name": "Intelligence Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "15ccc6953c529d034deec60ddaa983c4bb486b191550a0061209dbad53361498",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 32,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "33": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The intelligence rank of this character.",
+        "id": 33,
+        "implementation": "Thread::GetCardIntelligenceRank",
+        "interactive_name": "%p.INTRank",
+        "name": "Intelligence Rank",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "e043a4350786f00ae1ba3a77df5302b6ee748e404c2274fb98af3e06c95bc9f3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 33,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "34": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The strength of this character.",
+        "id": 34,
+        "implementation": "Thread::GetCardStrength",
+        "interactive_name": "%p.STR",
+        "name": "Strength",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "94c1be1b37d0464a1163d2ead41ad1da9afcf64e84d804aa971a94fd258b2dd6",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 34,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "35": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The strength value of this character.",
+        "id": 35,
+        "implementation": "Thread::GetCardStrengthValue",
+        "interactive_name": "%p.STRValue",
+        "name": "Strength Value",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "9b0149ae55aaa5616ba0cac874fefd9ee5a542b4b994b7adc16ed825fa2fa20a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 35,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "36": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The strength rank of this character.",
+        "id": 36,
+        "implementation": "Thread::GetCardStrengthRank",
+        "interactive_name": "%p.STRRank",
+        "name": "Strength Rank",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "3375bada173d6a0824bffaee022f6a7ad7527556126a57a1f04258a16afcbd97",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 36,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "37": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The sociability of this character.",
+        "id": 37,
+        "implementation": "Thread::GetCardSociability",
+        "interactive_name": "%p.Sociability",
+        "name": "Sociability",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "5b9d7a9a37dbce74da3c02994f49fa191e720d301dc25db487f72eecaecd7973",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 37,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "38": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns Partner Count of this character.",
+        "id": 38,
+        "implementation": "Thread::GetCardPartnerCount",
+        "interactive_name": "%p.PartnerCount",
+        "name": "Partner Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "43eccb5b4c966846a3b7aaef55c36b5666c6b769faeb375b24b628ff9415d5c9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 38,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "39": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "If executed in a trigger with the Npc Answers Event, this is displayed success chance that the interaction had in percents.",
+        "id": 39,
+        "implementation": "Thread::GetNpcResponseOriginalPercent",
+        "interactive_name": "OriginalResponsePercent",
+        "name": "Npc Original Response Chance",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "cae31405a4bbbb16b3f28d72e63823b5c72617e71bf88debd27f2dbb45908ef9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 39,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "4": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Generates a random integer between the two arguments (including both)",
+        "id": 4,
+        "implementation": "Thread::GetRandomInt",
+        "interactive_name": "RandomInt(min: %p, max: %p)",
+        "name": "Random Int",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "48810de05b0fcc7f627a6a717be0d66ea64e27260983118b628a59fd39ebd001",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 4,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "40": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "If executed in a trigger with the Npc Answers Event, this is the current interaction percent, modified by this or previously executed triggers of normal priority. Will not work for strong or absolute responses.using the Set Npc Response Percent Action",
+        "id": 40,
+        "implementation": "Thread::GetNpcResponseCurrentPercent",
+        "interactive_name": "CurrentResponsePercent",
+        "name": "Npc Current Response Chance",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "d47d1b598b861d726d981a82759a32dfe9383548cb33db62f20a9df523c9db14",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 40,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "41": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "The sexual orientation of this character. 0 = Straight, 1 = Lean Straight , 2 = Bisexual , 3 = Lean Homo, 4 = Homo",
+        "id": 41,
+        "implementation": "Thread::GetCardOrientation",
+        "interactive_name": "%p.Orientation",
+        "name": "Sex Orientation",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "68ff4094314e064c95439fa309221769a5b63060b2f645022f1b56b3081bd5fc",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 41,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "42": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 1,
+        "description": "Retrieves the length of the given string",
+        "id": 42,
+        "implementation": "Thread::StrLength",
+        "interactive_name": "Length(%p)",
+        "name": "String Length",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "3d3ec48ad033c497f726bd198d4197091e2d7706ee57f1daaede9ac045195523",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 42,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "43": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 1,
+        "description": "Retrieves the first occurence of str string.",
+        "id": 43,
+        "implementation": "Thread::FirstIndexOf",
+        "interactive_name": "%p.FirstIndexOf(str: %p)",
+        "name": "First Index Of",
+        "parameter_types": [
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "607622ed6ae814c169b150d14497f987fd6a5c88e0ec6d6ba270fa8b5a1dfa42",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 43,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "44": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Converts a String to an Int. Returns 0 if string can't be converted.",
+        "id": 44,
+        "implementation": "Thread::String2Int",
+        "interactive_name": "Int(%p)",
+        "name": "String to Int",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "3a862ad02e5accfbfeb300f18978ed2ed28e1266da76a111d736c5b829871278",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 44,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "45": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 1,
+        "description": "Retrieves the first occurence of str string starting from from: index.",
+        "id": 45,
+        "implementation": "Thread::FirstIndexOfFrom",
+        "interactive_name": "%p.FirstIndexOf(str: %p, from: %p)",
+        "name": "First Index Of Starting At",
+        "parameter_types": [
+          4,
+          4,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "0052245e605577d1ea9961546e282c760e5f77f6ac12d642d7fbfc62ac1296fe",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 45,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "46": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Character's gender. 0 means Male, 1 means Female. No tumblr here.",
+        "id": 46,
+        "implementation": "Thread::GetCardGender",
+        "interactive_name": "%p.Gender",
+        "name": "Gender",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "ab3a8022ee04471160e2835ff8b68468d3d7009f016e486340abeebd505ec436",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 46,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "47": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "The current day in a game calendar (0 to 41).",
+        "id": 47,
+        "implementation": "Thread::GetDaysPassed",
+        "interactive_name": "DaysPassed",
+        "name": "Days Passed",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "e29e0560172db03767d3712e8f6e4082cac4c9bac919881d0419fe31be5c99fb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 47,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "48": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "0=Sunday, 1=Monday... 6=Saturday.",
+        "id": 48,
+        "implementation": "Thread::GetCurrentDay",
+        "interactive_name": "CurrentDay",
+        "name": "Current Day",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "75719b3e18099802c7dd68f884f73f1961836470d715db7a5f8fa3dbb7c3f891",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 48,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "49": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "10 = sleep, 1 = day, 2 = nothing to talk, 3 = first lesson,4 = first break, 5 = sports, 6 = second break, 7 = club, 8 = end, 9 = home again",
+        "id": 49,
+        "implementation": "Thread::GetCurrentPeriod",
+        "interactive_name": "CurrentPeriod",
+        "name": "Current Period",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "51f146c95785ab480cf6d64298b0610b137293b305fdd2c3255bb08972f7d8b6",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 49,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "5": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Adds two integers",
+        "id": 5,
+        "implementation": "Thread::AddIntegers",
+        "interactive_name": "(%p + %p)",
+        "name": "+",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "18909e323bbb90f4ac67c2ceec8d5b714cb4f1e0c9282324b2af1c9dc2d175a9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 5,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "50": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Pregnancy risk of %p character at %p day. 2 = dangerous, 1 = safe, 0 = normal",
+        "id": 50,
+        "implementation": "Thread::GetPregnancyRisk",
+        "interactive_name": "%p.PregnancyRisk(day: %p)",
+        "name": "Pregnancy Risk",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "5aee8f69deb3f0dadccaa369491ada0aa92c47713d2675be859ac86d649e3fcb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 50,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "51": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Currently used Style.",
+        "id": 51,
+        "implementation": "Thread::GetCurrentSyle",
+        "interactive_name": "%p.Style",
+        "name": "Current Style",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "cafd3eba8fce8da568a1e61bbf33e4f28e332f543366e9529ab28ec64541685e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 51,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "52": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Current conversation state.",
+        "id": 52,
+        "implementation": "Thread::GetConversationState",
+        "interactive_name": "ConversationState",
+        "name": "State",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "7a93a3dba556e5982b73023172ea125ba548314f9dfb38f9f5fe433292df7b33",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 52,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "53": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Conversation actor's seat. Actors are listed from left to right starting at 0.",
+        "id": 53,
+        "implementation": "Thread::GetConversationActor",
+        "interactive_name": "Actor(%p) ",
+        "name": "Actor",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "dbf0c21927a167c62ee6872cbd1bcb4e193007b8d2fbde50c913b5f2498d7515",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 53,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "54": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Returns NPC response in a conversation. 0 is \"Yes\", 1 is \"No\", 2 is \"Huh?\", -1 is undefined.",
+        "id": 54,
+        "implementation": "Thread::GetConversationNpcResponse",
+        "interactive_name": "NPC Response",
+        "name": "NPC Response",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "7985a5558b58e31b8278ccda1265be2669724039d725e893dc3be651e2ec23d1",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 54,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "55": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Currently controlled character's seat.",
+        "id": 55,
+        "implementation": "Thread::GetPC",
+        "interactive_name": "PC",
+        "name": "Player Character",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "90bc26dfe71af9ca92ddeb2cefa5b654dc4d3ee6a9e492e77c2b432ade4458e4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 55,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "56": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Find a character with the provided full name(last name first name). Returns -1 if no such character is found",
+        "id": 56,
+        "implementation": "Thread::FindSeat",
+        "interactive_name": "Seat(%p)",
+        "name": "Find Seat",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "fe2e02bdf8ca070026c7a6aa0a25e133670a9a82f644ce46f94a681810aed2d9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 56,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "57": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character was rejected.",
+        "id": 57,
+        "implementation": "Thread::GetCardRejectCount",
+        "interactive_name": "%p.Rejects",
+        "name": "Reject Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "45fec41fff2412811cdf09da2c53bca3e3c7f0f0c3626f3108c5dc122ea6a477",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 57,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "58": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character won when competing over someone.",
+        "id": 58,
+        "implementation": "Thread::GetCardWinCount",
+        "interactive_name": "%p.Wins",
+        "name": "Win Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4e85477c8b0ac5d59da7a4e9f3fb1d71763769e67dd7d8da4c8c51d1f7b70c8d",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 58,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "59": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character won in a fight.",
+        "id": 59,
+        "implementation": "Thread::GetCardVictoryCount",
+        "interactive_name": "%p.Victories",
+        "name": "Victory Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "efee5efafc13dc7ccb07cf82e5e8cfe202fc812a69535249f2f2fd8cd9158c22",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 59,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "6": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Substracts two integers",
+        "id": 6,
+        "implementation": "Thread::SubstractIntegers",
+        "interactive_name": "(%p - %p)",
+        "name": "-",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "d0f961cfe5290b0839cfdd7054aacc4bd097b3600494c555575d4d5016a05e74",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 6,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "60": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character skipped a class.",
+        "id": 60,
+        "implementation": "Thread::GetCardSkipCount",
+        "interactive_name": "%p.Skips",
+        "name": "Skip Count",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4cb577f36b35c61a90d1d189c1aad58a317f1533876cf3f5349aba1ac77fb3fd",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 60,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "61": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Returns PC's original response in a conversation. 0 is \"Yes\", 1 is \"No\", 2 is \"Huh?\", -1 is undefined.",
+        "id": 61,
+        "implementation": "Thread::GetConversationPcResponse",
+        "interactive_name": "PC Original Response",
+        "name": "PC Original Response",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "066599c02a05e8f96d4e0b7fb7f19cdf92766e2be9a8f2d9eb307116b5ff9f35",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 61,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "62": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Returns conversationID of the PC conversation.",
+        "id": 62,
+        "implementation": "Thread::GetConversationAction",
+        "interactive_name": "PC ConversationId",
+        "name": "Conversation ID",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "e9cb43cb7b1a8410ce80967bf7cb44e271790ad247635ad3417c3f70202d3e66",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 62,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "63": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 1,
+        "description": "Returns EventId.",
+        "id": 63,
+        "implementation": "Thread::GetEventID",
+        "interactive_name": "Event",
+        "name": "Event ID",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "3cc03eec6603428ee5cda805fe98ae9b339eb6d97831de7694e128886889d236",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 63,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "64": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Find Style index by name.",
+        "id": 64,
+        "implementation": "Thread::GetStyle",
+        "interactive_name": "%p.Style(%p)",
+        "name": "Find Style",
+        "parameter_types": [
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "7496fd60597736fa61f984d438b094496a7900cf7c13803940f68177ce8b11ce",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 64,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "65": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get mood strength for the chosen mood.",
+        "id": 65,
+        "implementation": "Thread::GetMoodStrength",
+        "interactive_name": "%p.Mood(%p)",
+        "name": "Get Mood Strength",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "8e1f8da118cbcc846f531f6ac8310624fe1408a8e28fff8156d38b7efa7d05ad",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 65,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "66": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the most prevalent mood.",
+        "id": 66,
+        "implementation": "Thread::GetStrongestMood",
+        "interactive_name": "%p.Mood",
+        "name": "Get Strongest Mood",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4569add14b318cf2b8809baff5baa551afb8671b3ecd9ed208b30924c203b690",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 66,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "67": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get compatibility with the selected character",
+        "id": 67,
+        "implementation": "Thread::GetSexCompatibility",
+        "interactive_name": "%p.Compatibility(%p)",
+        "name": "Get H compatibility",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "bf7af2b863eac707b1982db3f98e700a3f6cae7525d83004237959a68ab819b4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 67,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "68": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get NPC status of the character. Returns -1=invalid, 0=still, 1=settle in location, 2=move to location, 3=walk to character, 4=follow, 7=talk, 8=minna",
+        "id": 68,
+        "implementation": "Thread::GetNpcStatus",
+        "interactive_name": "%p.NpcStatus",
+        "name": "Get NPC Status",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "41bc1874bfac3192de603360ef679850d6d50f746c7de9f4db20477d0783fbd7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 68,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "69": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "After the npc made a positive or negative answer, this id will be what he answers with.",
+        "id": 69,
+        "implementation": "Thread::GetConversationAnswerId",
+        "interactive_name": "AnswerId",
+        "name": "Answer Action",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "edfb11368b7ebe0fac499437c8bee68cd8ab9fa0776497ee94e4c05302c5ae40",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 69,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "7": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Divide two integers",
+        "id": 7,
+        "implementation": "Thread::DivideIntegers",
+        "interactive_name": "(%p / %p)",
+        "name": "/",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "d3da3a20796851e65f2dbc0e4338ed255a26c0c01cc3f50380017e3e1b8407a8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 7,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "70": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "\u00af\\_(\u00b4*-*`)_/\u00af",
+        "id": 70,
+        "implementation": "Thread::GetConversationCurrentlyAnswering",
+        "interactive_name": "IsAnswering",
+        "name": "Is Answering",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "addc83b807766f744f717407b699905ead8cf3a4ba98ca11fbdc8eb05654a2ae",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 70,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "71": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their vagina by the other character.",
+        "id": 71,
+        "implementation": "Thread::GetCardCumStatInVagina",
+        "interactive_name": "%p.VaginalCums(with: %p)",
+        "name": "Cum Stat - Vaginal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4816079e5bf1e2c1b00aa30a3030ad7f0418fae272e693c6ec72889bdc0990a0",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 71,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "72": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their rectum by the other character.",
+        "id": 72,
+        "implementation": "Thread::GetCardCumStatInAnal",
+        "interactive_name": "%p.AnalCums(with: %p)",
+        "name": "Cum Stat - Anal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "bcbba9ed9751fc76bb676ef6ae454449d2ccbc4c79b46fb5527c56e07880e67b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 72,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "73": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their mouth by the other character.",
+        "id": 73,
+        "implementation": "Thread::GetCardCumStatInMouth",
+        "interactive_name": "%p.OralCums(with: %p)",
+        "name": "Cum Stat - Oral",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "c4ba2bb89b708639e91a179b3e18f464cb02bcc71b6026dfaf79dfd1df6322ec",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 73,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "74": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their vagina.",
+        "id": 74,
+        "implementation": "Thread::GetCardCumStatInVaginaTotal",
+        "interactive_name": "%p.VaginalCumsTotal",
+        "name": "Cum Stat - Total Vaginal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2c4d484d72346d16366d4747175f684406568ee8f12c83c042e4e24f792c7562",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 74,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "75": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their rectum.",
+        "id": 75,
+        "implementation": "Thread::GetCardCumStatInAnalTotal",
+        "interactive_name": "%p.AnalCumsTotal",
+        "name": "Cum Stat - Total Anal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4564cbfff5b48e7baee4875ea5ad352544e9c6106774ed075dca9a884d6a8aa8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 75,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "76": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside their mouth.",
+        "id": 76,
+        "implementation": "Thread::GetCardCumStatInMouthTotal",
+        "interactive_name": "%p.OralCumsTotal",
+        "name": "Cum Stat - Total Oral",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "d6668cad0e8eee7f4e3b7d7c58e468d3b0d880e164a7cbf96dcd8bf7e6e8e32b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 76,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "77": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside by the other character.",
+        "id": 77,
+        "implementation": "Thread::GetCardCumStatTotalCum",
+        "interactive_name": "%p.AllCums(with: %p)",
+        "name": "Cum Stat - All",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1c9d7ef84f3f3ef9be57e0a25a36b32219e85a113b3a9612e7c31e9ac641b1f4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 77,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "78": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside.",
+        "id": 78,
+        "implementation": "Thread::GetCardCumStatTotalCumTotal",
+        "interactive_name": "%p.AllCumsTotal",
+        "name": "Cum Stat - Total All",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "908d4a50d3fdd66a5079eb6a866d6d79f283d4726d1ab309628ae0e6f3a9b9d8",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 78,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "79": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character climaxed while having sex with the other character.",
+        "id": 79,
+        "implementation": "Thread::GetCardCumStatClimaxCount",
+        "interactive_name": "%p.SingleClimax(with: %p)",
+        "name": "Climax Stat - Single",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "37f92983bf3baf4a74e7dafb9f3e5635986a016f8c3c8da5cbbc052ff2854256",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 79,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "8": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 1,
+        "description": "Multiply two integers",
+        "id": 8,
+        "implementation": "Thread::MultiplyIntegers",
+        "interactive_name": "(%p * %p)",
+        "name": "*",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a05440a687d8d36ac25764115b2f146d254ca44ede7da6927d040c9016ca8dce",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 8,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "80": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character climaxed while having sex.",
+        "id": 80,
+        "implementation": "Thread::GetCardCumStatClimaxCountTotal",
+        "interactive_name": "%p.SingleClimaxTotal",
+        "name": "Climax Stat - Total Single",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "fffb432c41e3f24530ea76597ca0b53a42fcc9e764297e87286b33f86d10a3f5",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 80,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "81": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character climaxed together with the other character.",
+        "id": 81,
+        "implementation": "Thread::GetCardCumStatClimaxCount",
+        "interactive_name": "%p.SimClimax(with: %p)",
+        "name": "Climax Stat - Simultaneous",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "8e7220e56ed98c6c7b54cc48ac27ba0f5a737775009ed0a473f7e03057f98095",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 81,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "82": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character climaxed together with everyone.",
+        "id": 82,
+        "implementation": "Thread::GetCardCumStatClimaxCountTotal",
+        "interactive_name": "%p.SimClimaxTotal",
+        "name": "Climax Stat - Total Simultaneous",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "894af87b98b4821725892e0251e537725485907bd9998e40291064d8bf21a6cb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 82,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "83": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character used condoms with the other character.",
+        "id": 83,
+        "implementation": "Thread::GetCardCumStatCondomsUsed",
+        "interactive_name": "%p.CondomsUsed(with: %p)",
+        "name": "H Stat - Condoms Used",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "b5f1e609ff6a620a6193ba2e0a1686baf39e903ba63f7e8b550ac072d5c39f76",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 83,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "84": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character used condoms.",
+        "id": 84,
+        "implementation": "Thread::GetCardCumStatCondomsUsedTotal",
+        "interactive_name": "%p.CondomsUsedTotal",
+        "name": "H Stat - Total Condoms Used",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "ab3036d0fb96870489eef17d1a7b5eb1bbf0d4fd86758b1272c0735f3bba8f92",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 84,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "85": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had vaginal sex with the other character.",
+        "id": 85,
+        "implementation": "Thread::GetCardVaginalSex",
+        "interactive_name": "%p.VaginalH(with: %p)",
+        "name": "H Stat - Vaginal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "66c1e3384d2eaa26869ebe82345e03e5632c4adfba5465454909700cb049e985",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 85,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "86": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had vaginal sex.",
+        "id": 86,
+        "implementation": "Thread::GetCardVaginalSexTotal",
+        "interactive_name": "%p.VaginalHTotal",
+        "name": "H Stat - Total Vaginal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1a77a1fa0c125c67540e6640af32a4179a7e8c7d5449fe0677e517af65d2cd66",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 86,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "87": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had anal sex with the other character.",
+        "id": 87,
+        "implementation": "Thread::GetCardAnalSex",
+        "interactive_name": "%p.AnalH(with: %p)",
+        "name": "H Stat - Anal",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "b8c409c2413fde1fc671f3b4da4a4bcd36322ec93a716390e32e770dd818be48",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 87,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "88": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had anal sex.",
+        "id": 88,
+        "implementation": "Thread::GetCardAnalSexTotal",
+        "interactive_name": "%p.AnalHTotal",
+        "name": "H Stat - Total Anal",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "39cd4a544e3a53fdfb05f8f9bc02b26d7bd573d92bc0a95362c1382893416643",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 88,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "89": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had sex with the other character.",
+        "id": 89,
+        "implementation": "Thread::GetCardAllSex",
+        "interactive_name": "%p.AllH(with: %p)",
+        "name": "H Stat - All",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "75ef2f192ce7b096da2b0ce3bc3e9626d53324dc81a7f49c12bf73a28e7e7eb0",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 89,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "9": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "The card that triggered the event that caused the trigger to run. Used by many events.",
+        "id": 9,
+        "implementation": "Thread::GetTriggeringCard",
+        "interactive_name": "TriggerCard",
+        "name": "Triggering Card",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "c07d5cf41ba69607a4bff311c1fd1a58edfa8ec03782677b1418ac5930382217",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 9,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "90": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character had sex.",
+        "id": 90,
+        "implementation": "Thread::GetCardAllSexTotal",
+        "interactive_name": "%p.AllHTotal",
+        "name": "H Stat - Total All",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "484b1ec0a6cb933b8ffafaccded20c0041ec9370472c6b8f9c08c3daab531f73",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 90,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "91": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside on their risky days by the other character.",
+        "id": 91,
+        "implementation": "Thread::GetCardCumStatRiskyCums",
+        "interactive_name": "%p.RiskyCums(with: %p)",
+        "name": "Cum Stat - Risky",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "d02381e6bf3a5de4c5495fb63d31236f3850409fc43e8650c10199518943885a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 91,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "92": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns how many times this character got cummed inside on their risky days.",
+        "id": 92,
+        "implementation": "Thread::GetCardCumStatRiskyCumsTotal",
+        "interactive_name": "%p.RiskyCumsTotal",
+        "name": "Cum Stat - Total Risky",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "facdd052ed2efcf4c6138e22afb07136f9f519372dd4b2fe2e68fe84cffbbc73",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 92,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "93": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns whether the character has the red circle around them or not. 1 is yes, 0 is no.",
+        "id": 93,
+        "implementation": "Thread::GetCardLocked",
+        "interactive_name": "%p.LockState",
+        "name": "Locked state",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "4fdda212b3e104241cd13fb30982ad91e81c12ae20075027bcdffa627501f516",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 93,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "94": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns whether the character is fapping or not. 1 is yes, -1 is no.",
+        "id": 94,
+        "implementation": "Thread::GetMasturbating",
+        "interactive_name": "%p.FapState",
+        "name": "FapState",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "6dba0836cdeebad371609a4e3ff33e34c3e093fc8914aa122955359483f0cdb4",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 94,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "95": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Returns whether other character attempted to take virginity of the card passed as the first argument. 1 - yes, 0 - no.",
+        "id": 95,
+        "implementation": "Thread::GetCherryStatus",
+        "interactive_name": "%p.GetCherryState(with: %p)",
+        "name": "Cherry Status",
+        "parameter_types": [
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "a504acf87dbde5cd71698e7b7f422cd6eb0a2640ddc5218d78d63f80459fac9c",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 95,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "96": {
+        "category": "Conversation",
+        "category_id": 9,
+        "declared_return_type": 1,
+        "description": "Current conversation line.",
+        "id": 96,
+        "implementation": "Thread::GetConversationLine",
+        "interactive_name": "ConversationLine",
+        "name": "Line",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "4f27d2c9eba8cba32b9b1e7081927aff67cb574266ab2241e28955ec4908cc65",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 96,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "97": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Current room the character is in.",
+        "id": 97,
+        "implementation": "Thread::GetNpcCurrentRoom",
+        "interactive_name": "%p.CurrentRoom",
+        "name": "Current Room",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "f6de0f24e584bb868309b5ba72ec3a4f29f4cbc6afc99c2a6d2fb85af1d56d25",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 97,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "98": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 1,
+        "description": "Get the seat of the NPC that PC is talking about.",
+        "id": 98,
+        "implementation": "Thread::PCTalkAbout",
+        "interactive_name": "PCTalkAbout",
+        "name": "Get PC TalkAbout",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "2da19b8a4b36108d0e0e60605ebc2ce33d827d80258b5dcc36f8ef7c79588746",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 98,
+        "return_type": 1,
+        "return_type_name": "int"
+      },
+      "99": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 1,
+        "description": "This expression is invalid and is only a placeholder for the future.",
+        "id": 99,
+        "implementation": "Thread::GetEventPreviousRoom",
+        "interactive_name": "INVALID",
+        "name": "INVALID",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "ae980d8de3f890ad49ec3ac31166663736c772eb0690295d4e4287a3c6de1afd",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 99,
+        "return_type": 1,
+        "return_type_name": "int"
+      }
+    },
+    "invalid": {
+      "1": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 0,
+        "description": "An arbitrary constant to input",
+        "id": 1,
+        "implementation": null,
+        "interactive_name": "Constant",
+        "name": "Constant",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "fa39d5fbf0142906c6cf445b600e74136265d206d4d0b01be9034e86d4eeffc7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 1,
+        "return_type": 0,
+        "return_type_name": "invalid"
+      },
+      "2": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 0,
+        "description": "A Variable",
+        "id": 2,
+        "implementation": null,
+        "interactive_name": "Variable",
+        "name": "Variable",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "7ac3a1bf68c37335be7454d65f34851e7b48d88a0d31c4cc974c868d84f5de71",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 2,
+        "return_type": 0,
+        "return_type_name": "invalid"
+      },
+      "3": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 0,
+        "description": "A known constant with a name",
+        "id": 3,
+        "implementation": null,
+        "interactive_name": "Enumeration",
+        "name": "Enumeration",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "f8d447c33e70fe94364d8d99ce0a85719743edf20105986b9b9679af5b4fe4ca",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 3,
+        "return_type": 0,
+        "return_type_name": "invalid"
+      }
+    },
+    "string": {
+      "1": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "An arbitrary constant to input",
+        "id": 1,
+        "implementation": null,
+        "interactive_name": "Constant",
+        "name": "Constant",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "cfbbbcf29aab0aaf3962c793694a96858bf73ce41ba163648da03ba5c8d8e116",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 1,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "10": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 4,
+        "description": "Converts a Float to String",
+        "id": 10,
+        "implementation": "Thread::FloatToString",
+        "interactive_name": "String(%p)",
+        "name": "Float to String",
+        "parameter_types": [
+          3
+        ],
+        "provenance": {
+          "registration_sha256": "b6dcda73a84d43e41032c0ee8267b54ebda74aa8940fafc63f4bf77e63da572e",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 10,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "11": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 4,
+        "description": "Converts a Bool to String",
+        "id": 11,
+        "implementation": "Thread::BoolToString",
+        "interactive_name": "String(%p)",
+        "name": "Bool to String",
+        "parameter_types": [
+          2
+        ],
+        "provenance": {
+          "registration_sha256": "a2124085a46d674b21c1d47353ce6c975c445c8697d18f7973ab983ecd844ef9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 11,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "12": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "This character's description",
+        "id": 12,
+        "implementation": "Thread::GetCardDescription",
+        "interactive_name": "%p.Description",
+        "name": "Description",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "eed7d1430810490f22b8c802be9e1c6143f11770758204bda529be6a79203ca7",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 12,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "13": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 4,
+        "description": "Replace substring starting from the from: and ending with to:",
+        "id": 13,
+        "implementation": "Thread::StringReplace",
+        "interactive_name": "%p.Replace(from: %p, to: %p, str: %p)",
+        "name": "Replace substring",
+        "parameter_types": [
+          1,
+          1,
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "26a9b72c2e3e247c747d2a9fce312c21853b75cc761669d90c4dacea263f7758",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 13,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "14": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the full name of the last sex partner as it appears on the character sheet.",
+        "id": 14,
+        "implementation": "Thread::GetCardLastHPartner",
+        "interactive_name": "%p.LastSex",
+        "name": "Last Sex Partner",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "2728a9665d4a05a7c52031b0c09fcc5379142666e1d7a7a59caa3914faae7fb5",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 14,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "15": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the full name of the first sex partner as it appears on the character sheet.",
+        "id": 15,
+        "implementation": "Thread::GetCardFirstHPartner",
+        "interactive_name": "%p.FirstSex",
+        "name": "First Sex Partner",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "50564251c3fb11c7d4fecb08250fc67b208380b852dd3cb4e7170ec6371e2681",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 15,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "16": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the full name of the first anal partner as it appears on the character sheet.",
+        "id": 16,
+        "implementation": "Thread::GetCardFirstAnalPartner",
+        "interactive_name": "%p.FirstAnal",
+        "name": "First Anal Partner",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "402365f2b7e8938af456429cdc11301b259d68c35af47419be63d9bd643ca93a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 16,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "17": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the Lover's item",
+        "id": 17,
+        "implementation": "Thread::GetCardLoversItem",
+        "interactive_name": "%p.LoverItem",
+        "name": "Item - Lover's",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "f2d92ad5d7c2e99f5312c33d7326b7d4c6eba7e400994be3feb23eac38a845c9",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 17,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "18": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the Friend's item",
+        "id": 18,
+        "implementation": "Thread::GetCardFriendItem",
+        "interactive_name": "%p.FriendItem",
+        "name": "Item - Friend's",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "752f915e243eeae94af659b50952df33785b335eae49f4ec452241eac35fa0ad",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 18,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "19": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Returns the Sexual item",
+        "id": 19,
+        "implementation": "Thread::GetCardSexualItem",
+        "interactive_name": "%p.SexualItem",
+        "name": "Item - Sexual",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "5becb53748031a59b90298bee57c1e0f66b6e4c52710f4fff5f5a1f0f56361a6",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 19,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "2": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "A Variable",
+        "id": 2,
+        "implementation": null,
+        "interactive_name": "Variable",
+        "name": "Variable",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "296751b8968c554f9ecad969e05ab9d828c90971cdadf03be929b30f54b7aa12",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 2,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "20": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Full name of the character in \"LastName FirstName\" format.",
+        "id": 20,
+        "implementation": "Thread::GetCardFullName",
+        "interactive_name": "%p.FullName",
+        "name": "Full Name",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "77f1c036177525419c2c1338cf3b3b81e4e72707e77bb9eb6796178a5dfaa2e2",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 20,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "21": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "Add parameter to the LUA Procedure string.",
+        "id": 21,
+        "implementation": "Thread::AddLuaProcParam",
+        "interactive_name": "%p << %p",
+        "name": "LUA Add Parameter",
+        "parameter_types": [
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "cd0aeaf4bc1d006e022e2633f3c55a5138072d7acc725b41958ba626e102199a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 21,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "22": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "Gets the string from the given class storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 22,
+        "implementation": "Thread::GetClassStorageString",
+        "interactive_name": "GetStr(key: %p, default: %p)",
+        "name": "Get Class Storage String",
+        "parameter_types": [
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "61f3d4ad5136071b85cf943e5e9dd899cca25d36d3095c4b51b096679c29e379",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 22,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "23": {
+        "category": "Event Response",
+        "category_id": 1,
+        "declared_return_type": 4,
+        "description": "Gets the name of the delayed event.Returns empty string if it's an invalid event.",
+        "id": 23,
+        "implementation": "Thread::GetDelayedEventLabel",
+        "interactive_name": "DelayedEventLabel",
+        "name": "Get Delayed Event Label",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "2a79a9cf48dfea8c2793ffc5a6f491d53e1b70e108e1b779bdb40462c144260f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 23,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "24": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 4,
+        "description": "Retrieves a substring of a comma separated string.E.g. \"one,two,three\".GetCSV(idx: 1, separator: \",\") would return  \"two\" .",
+        "id": 24,
+        "implementation": "Thread::GetCSVByIndex",
+        "interactive_name": "%p.GetCSV(idx: %p, separator: %p)",
+        "name": "Get comma separated value by index",
+        "parameter_types": [
+          4,
+          1,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "58c8dd0980ed49fdf9fa68740bf5572954fe1f29729351472c4d5161b0bb628b",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 24,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "25": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "Call supplemental lua string function.",
+        "id": 25,
+        "implementation": "Thread::CallLuaStringFunction",
+        "interactive_name": "LUA(%p)",
+        "name": "Call LUA Function",
+        "parameter_types": [
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "5398b391831fbd3f66ab3f6200e51f15e55a5d065b0af5fef28237cbfea00fd3",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 25,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "3": {
+        "category": "General",
+        "category_id": 0,
+        "declared_return_type": 4,
+        "description": "A known constant with a name",
+        "id": 3,
+        "implementation": null,
+        "interactive_name": "Enumeration",
+        "name": "Enumeration",
+        "parameter_types": [],
+        "provenance": {
+          "registration_sha256": "a47fa9fe621b5cdb4186a5744239ed9a09217acc742f1e2ad245d7bc8bdce924",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 3,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "4": {
+        "category": "Strings",
+        "category_id": 10,
+        "declared_return_type": 4,
+        "description": "A substring that starts at the first parameter (inclusive) and has a specific length",
+        "id": 4,
+        "implementation": "Thread::SubString",
+        "interactive_name": "%p.Substring(startIdx: %p, length: %p)",
+        "name": "Substring",
+        "parameter_types": [
+          4,
+          1,
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "691d4b01c4dd79b6c14ea58e3f371ab970b1938414822ef27cd5ea08806e4cbb",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 4,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "5": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Last name of this character. Family name. The top name in the maker.",
+        "id": 5,
+        "implementation": "Thread::GetCardLastName",
+        "interactive_name": "%p.LastName",
+        "name": "Last Name",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "1f05c491f806814899ffa486327d4233eac3f057f0fa3ec839e4077f2356415f",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 5,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "6": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "First name of this character. Given name. The bottom name in the maker.",
+        "id": 6,
+        "implementation": "Thread::GetCardFirstName",
+        "interactive_name": "%p.FirstName",
+        "name": "First Name",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "399552f47ab34d2012f0a6fef7d5cf81a9b259e4e17e3477ed92cc23cb0ab540",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 6,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "7": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Gets the string from the given cards storage entry. If the entry doesnt exist or holds a value of a different type, it returns the default value instead",
+        "id": 7,
+        "implementation": "Thread::GetCardStorageString",
+        "interactive_name": "%p.GetStr(key: %p, default: %p)",
+        "name": "Get Card Storage String",
+        "parameter_types": [
+          1,
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "08ee8c0c15a196ab2a0091181ad46e7c462ce67452de138aa1696cd70f3cda1a",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 7,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "8": {
+        "category": "Character Property",
+        "category_id": 3,
+        "declared_return_type": 4,
+        "description": "Concatenate two strings",
+        "id": 8,
+        "implementation": "Thread::StringConcat",
+        "interactive_name": "(%p + %p)",
+        "name": "+",
+        "parameter_types": [
+          4,
+          4
+        ],
+        "provenance": {
+          "registration_sha256": "22044c680efc7dc07ba729a24eaff84708baf49292ca2e8ecddb48b1c9726726",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 8,
+        "return_type": 4,
+        "return_type_name": "string"
+      },
+      "9": {
+        "category": "Math",
+        "category_id": 2,
+        "declared_return_type": 4,
+        "description": "Converts an Int to String",
+        "id": 9,
+        "implementation": "Thread::IntToString",
+        "interactive_name": "String(%p)",
+        "name": "Int to String",
+        "parameter_types": [
+          1
+        ],
+        "provenance": {
+          "registration_sha256": "af6b09f06c956e38e321bf3c11f2c2c560369d7d50e64fc16ee6a9cda43e1eff",
+          "source_file": "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp"
+        },
+        "registry_index": 9,
+        "return_type": 4,
+        "return_type_name": "string"
+      }
+    }
+  },
+  "generator_version": "4",
+  "schema": "aa2modulus.expressions.v3",
+  "source_revision": "312c658b256f41771a5488fbf79a677d7b4551a8"
+}

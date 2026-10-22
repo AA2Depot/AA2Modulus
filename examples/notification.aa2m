@@ -1,0 +1,8 @@
+module "Notification Example" {
+  description "Show a notification when a card is added to class";
+
+  trigger "On Card Added" {
+    on CARD_ADDED;
+    Notification(ThisCard.FullName + " has been added to class");
+  }
+}

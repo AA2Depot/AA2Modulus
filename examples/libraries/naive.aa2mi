@@ -1,0 +1,14 @@
+import "debug.aa2mi";
+
+trigger "Init" {
+  slot "name" string;
+  on CARD_ADDED;
+  if TriggeringCard == ThisCard {
+    ThisCard.SetBool(name, ThisCard.GetBool(name, true));
+  }
+}
+
+// Unused definitions are validated but never become output triggers.
+trigger "Unused" {
+  debug("This template is available for a future instantiation");
+}

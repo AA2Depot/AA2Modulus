@@ -1,0 +1,995 @@
+# aa2modulus language policy: the hand-picked parts of the source language
+# (names, operators, defaults). Native facts such as signatures come from the
+# generated registry in ../metadata/registry/; every entry here is checked
+# against it on load. Details: docs/metadata.md.
+#
+# Target keys:
+#   actions, events                  108
+#   expressions, named constants     "int:24"  (type:id; int, bool, float, string, invalid)
+#
+# Naming:
+#   card-first targets are members   coach.SetVirtue(3), coach.Virtue  (see [members])
+#   everything else is Root.Name     Globals.CurrentDay, Text.Length(s)
+#   constants                        Constants.Day.MONDAY
+#   events keep native symbols       on CARD_ADDED;
+#   Roots start uppercase. Getters are nouns (Virtue), setters Set + noun
+#   (SetVirtue), booleans Has/Is (HasGlasses). Overload only by parameter type.
+
+# Source language version; raise it when the meaning of source changes.
+# This is the only copy: never repeat the number in code, tests or docs.
+language_version = 1
+
+# Built-in names source cannot shadow; a quoted variable("ThisCard") is still
+# allowed. Each must name a zero-argument expression.
+protected_names = ["ThisCard", "TriggeringCard"]
+
+# Native-hazard codes that `@allow(CODE)` may turn from an error into a warning.
+acknowledgeable = [
+  "REVIEWED_VALUE_TYPE_MISMATCH",               # event-dependent callback value read with the wrong type
+  "NATIVE_DEFECTIVE_EXPRESSION",                # [defects] target that cannot work natively
+  "EXPRESSION_METADATA_RETURN_TYPE_MISMATCH",   # INT/100: native declaration disagrees with its scope
+]
+
+# ---------------------------------------------------------------------------
+# Operators: token = native expressions, one per operand type.
+# Precedence and associativity are fixed by the grammar.
+[operators]
+"||" = ["bool:5"]                           # Logical Or (native short-circuit)
+"&&" = ["bool:4"]                           # Logical And (native short-circuit)
+"==" = ["bool:8", "bool:12", "bool:20"]
+"!=" = ["bool:13", "bool:23"]
+"<"  = ["bool:10", "bool:22"]
+"<=" = ["bool:9", "bool:21"]
+">"  = ["bool:6", "bool:18"]
+">=" = ["bool:7", "bool:19"]
+"+"  = ["int:5", "float:5", "string:8"]     # string + string concatenates
+"-"  = ["int:6", "float:6"]
+"*"  = ["int:8", "float:8"]
+"/"  = ["int:7", "float:7"]
+"!"  = ["bool:11"]                          # prefix Not
+
+# ---------------------------------------------------------------------------
+# Defaults for trailing action arguments: <slot> = value (type must match).
+# Notification("hi") means Notification("hi", false).
+[action_defaults.108]  # Notification
+1 = false
+
+# ---------------------------------------------------------------------------
+# Preferred names: the source name of each target. Comments show the native name.
+[preferred_names.actions]
+# Unqualified core
+5 = "JumpIf"                                         # Conditional Jump
+11 = "StopThread"                                    # End Execution
+63 = "WriteLog"                                      # Write Log
+108 = "Notification"                                 # Notification
+17 = "StopThreadIf"                                  # Conditional End Execution
+# Context
+18 = "Context.SetNpcNormalResponseSuccess"           # Set Npc Normal Response Success
+19 = "Context.SetNpcNormalResponseChance"            # Set Npc Normal Response Percent
+94 = "Context.SetNpcStrongResponseSuccess"           # Set Npc Strong Response Success
+95 = "Context.SetNpcStrongResponseChance"            # Set Npc Strong Response Percent
+97 = "Context.SetNpcAbsoluteResponseSuccess"         # Set Npc Absolute Response Success
+96 = "Context.SetNpcAbsoluteResponseChance"          # Set Npc Absolute Response Percent
+89 = "Context.SetNpcCurrentResponse"                 # Set Npc Current Response Answer
+136 = "Context.SetAppliedPoints"                     # Set Applied Relationship Data
+# Conversation
+80 = "Conversation.SetPcNormalResponse"              # Set Normal PC Response
+92 = "Conversation.SetPcStrongResponse"              # Set Strong PC Response
+93 = "Conversation.SetPcAbsoluteResponse"            # Set Absolute PC Response
+123 = "Conversation.SetGustOfWind"                   # Set Gust of Wind
+# H
+51 = "H.Start"                                       # Start H scene
+105 = "H.SwapDominant"                               # Swap Dominant
+121 = "H.SetPosition"                                # Change h position
+76 = "H.SetConsensual"                               # Sex Consensual
+61 = "H.VoyeurCleanUp"                               # Voyeur Clean Up
+90 = "H.SetAi"                                       # Turn on H-AI
+102 = "H.SetAiExitLock"                              # H-AI Exit Lock
+141 = "H.SetCondomOverride"                          # Set Condom-Override state
+142 = "H.SetCondomValue"                             # Set Condom-Value state
+# Globals
+79 = "Globals.SetAutoPc"                             # Set Auto-PC state
+91 = "Globals.SetPcTarget"                           # Change PC Target
+107 = "Globals.SetPeriodTimer"                       # Set period timer
+119 = "Globals.RemoveCard"                           # Kick out
+120 = "Globals.AddCard"                              # Add card to class
+139 = "Globals.EmitOptionalEvent"                    # Emit Delayed Optional Event
+140 = "Globals.EmitRequiredEvent"                    # Emit Delayed Required Event
+# Class storage
+110 = "ClassStorage.SetInt"                          # Set Class Storage Integer
+111 = "ClassStorage.SetFloat"                        # Set Class Storage Float
+112 = "ClassStorage.SetString"                       # Set Class Storage String
+113 = "ClassStorage.SetBool"                         # Set Class Storage Bool
+# Lua
+109 = "Lua.CallProcedure"                            # Call LUA Procedure
+
+
+[preferred_names.expressions]
+# Unqualified core
+"int:10" = "ThisCard"                                # This Card
+"int:9" = "TriggeringCard"                           # Triggering Card
+"int:23" = "ToInt"                                   # Float to Int
+"int:44" = "ToInt"                                   # String to Int
+"float:9" = "ToFloat"                                # Int to Float
+"float:11" = "ToFloat"                               # String to Float
+"string:9" = "ToString"                              # Int to String
+"string:10" = "ToString"                             # Float to String
+"string:11" = "ToString"                             # Bool to String
+# Npc
+"bool:43" = "Npc.PoseExists"                         # Pose exists
+"bool:26" = "Npc.IsInterruptAction"                  # Check Interruption Action
+"bool:27" = "Npc.IsMinnaAction"                      # Check Minna Action
+"bool:28" = "Npc.IsForceAction"                      # Check Force Action
+"bool:29" = "Npc.IsSexAction"                        # Check Sex Action
+"bool:30" = "Npc.IsNoPromptAction"                   # Check NoPrompt Action
+"bool:31" = "Npc.IsGameOverAction"                   # Check Game Over Action
+"bool:32" = "Npc.IsNoTargetAction"                   # Check No Target Action
+"bool:47" = "Npc.IsSkipAction"                       # Check Skip Action
+# Context
+"int:11" = "Context.NpcAnswerTarget"                 # Npc Answer - Target
+"int:12" = "Context.NpcAnswerConversationId"         # Npc Answer - Conversation ID
+"int:13" = "Context.NpcRoomTarget"                   # Npc Room Target
+"int:14" = "Context.NpcActionId"                     # Npc Action
+"int:15" = "Context.NpcTalkTarget"                   # Npc Talk Target
+"int:16" = "Context.NpcTalkAbout"                    # Npc Talk About
+"int:17" = "Context.StartingPeriod"                  # Period - Starting
+"int:18" = "Context.EndingPeriod"                    # Period - Ending
+"int:39" = "Context.NpcOriginalResponseChance"       # Npc Original Response Chance
+"int:40" = "Context.NpcCurrentResponseChance"        # Npc Current Response Chance
+"int:110" = "Context.NpcEffectiveResponseChance"     # Npc Effective Response Chance
+"int:100" = "Context.NpcOriginalResponse"            # Npc Original Response
+"int:101" = "Context.NpcCurrentResponse"             # Npc Current Response
+"int:134" = "Context.NpcStrongResponseModifier"      # Npc Strong Response Modifier
+"int:135" = "Context.NpcAbsoluteResponseModifier"    # Npc Absolute Response Modifier
+"bool:14" = "Context.NpcOriginalResponseSuccess"     # Npc Original Response Success
+"bool:15" = "Context.NpcNormalResponseSuccess"       # Npc Normal Response Success
+"bool:44" = "Context.NpcEffectiveResponseSuccess"    # Npc Effective Response Success
+"int:136" = "Context.PcRoomTarget"                   # Get PC Room Target
+"int:146" = "Context.AppliedLove"                    # Get Love
+"int:147" = "Context.AppliedLike"                    # Get Like
+"int:148" = "Context.AppliedDislike"                 # Get Dislike
+"int:149" = "Context.AppliedHate"                    # Get Hate
+"int:150" = "Context.RelationshipTowards"            # Relationship Points Changed Towards
+"int:151" = "Context.DelayedEventPeriod"             # Get Delayed Event's Period
+"string:23" = "Context.DelayedEventLabel"            # Get Delayed Event Label
+"bool:51" = "Context.DelayedEventRequired"           # Get Delayed Event Required
+"int:63" = "Context.EventId"                         # Event ID
+"int:102" = "Context.KeyPress"                       # Key pressed
+# Conversation
+"int:52" = "Conversation.State"                      # State
+"int:54" = "Conversation.NpcResponse"                # NPC Response
+"int:61" = "Conversation.PcOriginalResponse"         # PC Original Response
+"int:109" = "Conversation.PcEffectiveResponse"       # PC Effective Response
+"int:62" = "Conversation.Id"                         # Conversation ID
+"int:69" = "Conversation.AnswerId"                   # Answer Action
+"int:70" = "Conversation.IsAnswering"                # Is Answering
+"int:96" = "Conversation.Line"                       # Line
+"int:98" = "Conversation.PcTalkAbout"                # Get PC TalkAbout
+"int:53" = "Conversation.Actor"                      # Actor
+# H
+"int:105" = "H.Position"                             # H Position
+"int:107" = "H.ActiveActor"                          # Active actor
+"int:108" = "H.PassiveActor"                         # Passive actor
+"int:117" = "H.DominantActor"                        # Dominant actor
+"int:118" = "H.SubmissiveActor"                      # Submissive actor
+"bool:53" = "H.CondomOverride"                       # Get Condom-Override
+"bool:54" = "H.CondomValue"                          # Get Condom-Value
+# Globals
+"int:47" = "Globals.DaysPassed"                      # Days Passed
+"int:48" = "Globals.CurrentDay"                      # Current Day
+"int:49" = "Globals.CurrentPeriod"                   # Current Period
+"int:55" = "Globals.PlayerCharacter"                 # Player Character
+"int:120" = "Globals.PeriodTimer"                    # Get Period Timer
+"bool:38" = "Globals.AutoPc"                         # Get Auto-PC
+"int:122" = "Globals.PcTarget"                       # Get PC Target
+"int:56" = "Globals.FindSeat"                        # Find Seat
+"int:145" = "Globals.ClubType"                       # Club Type
+"bool:16" = "Globals.IsSeatFilled"                   # Is Seat Filled
+"bool:48" = "Globals.IsPrivateRoom"                  # Check Private Room
+# Class storage
+"int:121" = "ClassStorage.GetInt"                    # Get Class Storage Int
+"float:13" = "ClassStorage.GetFloat"                 # Get Class Storage Float
+"string:22" = "ClassStorage.GetString"               # Get Class Storage String
+"bool:46" = "ClassStorage.GetBool"                   # Get Class Storage Bool
+# Lua
+"bool:52" = "Lua.CallBool"                           # Call LUA Function
+"float:15" = "Lua.CallFloat"                         # Call LUA Function
+"int:152" = "Lua.CallInt"                            # Call LUA Function
+"string:25" = "Lua.CallString"                       # Call LUA Function
+"string:21" = "Lua.AddParameter"                     # LUA Add Parameter
+# Math
+"int:4" = "Math.RandomInt"                           # Random Int
+"float:4" = "Math.RandomFloat"                       # Random Float
+"bool:33" = "Math.Roll"                              # Roll Float
+"bool:34" = "Math.Roll"                              # Roll Int
+# Text
+"int:42" = "Text.Length"                             # String Length
+"int:43" = "Text.FirstIndexOf"                       # First Index Of
+"int:45" = "Text.FirstIndexOf"                       # First Index Of Starting At
+"string:4" = "Text.Substring"                        # Substring
+"string:13" = "Text.Replace"                         # Replace substring
+"string:24" = "Text.CsvItem"                         # Get comma separated value by index
+
+[preferred_names.named_constants]
+# Relationship (native category: Relationship)
+"int:1" = "Constants.Relationship.LOVE"
+"int:2" = "Constants.Relationship.LIKE"
+"int:3" = "Constants.Relationship.DISLIKE"
+"int:4" = "Constants.Relationship.HATE"
+# Conversation (native category: Conversation)
+"int:5" = "Constants.Conversation.ENCOURAGE"
+"int:6" = "Constants.Conversation.CALM"
+"int:7" = "Constants.Conversation.PRAISE"
+"int:8" = "Constants.Conversation.GRUMBLE"
+"int:9" = "Constants.Conversation.APOLOGIZE"
+"int:10" = "Constants.Conversation.ENCOURAGE_STUDY"
+"int:11" = "Constants.Conversation.ENCOURAGE_EXERCISE"
+"int:12" = "Constants.Conversation.ENCOURAGE_CLUB"
+"int:13" = "Constants.Conversation.ENCOURAGE_GET_ALONG"
+"int:14" = "Constants.Conversation.REPRIMAND_LEWD"
+"int:15" = "Constants.Conversation.GOOD_RUMOR"
+"int:16" = "Constants.Conversation.GET_ALONG_WITH"
+"int:17" = "Constants.Conversation.I_WANNA_GET_ALONG_WITH"
+"int:18" = "Constants.Conversation.BAD_RUMOR"
+"int:19" = "Constants.Conversation.DO_YOU_LIKE"
+"int:20" = "Constants.Conversation.TALK_LIFE"
+"int:21" = "Constants.Conversation.TALK_HOBBIES"
+"int:22" = "Constants.Conversation.TALK_FOOD"
+"int:23" = "Constants.Conversation.TALK_LOVE"
+"int:24" = "Constants.Conversation.TALK_LEWD"
+"int:25" = "Constants.Conversation.STUDY_TOGETHER"
+"int:26" = "Constants.Conversation.EXERCISE_TOGETHER"
+"int:27" = "Constants.Conversation.CLUB_TOGETHER"
+"int:28" = "Constants.Conversation.MASSAGE"
+"int:29" = "Constants.Conversation.GOTO_CLASS"
+"int:30" = "Constants.Conversation.LUNCH_TOGETHER"
+"int:31" = "Constants.Conversation.TEA_TOGETHER"
+"int:32" = "Constants.Conversation.GO_HOME_TOGETHER"
+"int:33" = "Constants.Conversation.GO_PLAY_TOGETHER"
+"int:34" = "Constants.Conversation.GO_EAT_TOGETHER"
+"int:35" = "Constants.Conversation.GO_KARAOKE_TOGETHER"
+"int:36" = "Constants.Conversation.STUDY_HOME"
+"int:37" = "Constants.Conversation.STUDY_HOME_H"
+"int:38" = "Constants.Conversation.INSULT"
+"int:39" = "Constants.Conversation.FIGHT"
+"int:40" = "Constants.Conversation.FORCE_IGNORE"
+"int:41" = "Constants.Conversation.FORCE_SHOW_THAT"
+"int:42" = "Constants.Conversation.FORCE_PUT_THIS_ON"
+"int:43" = "Constants.Conversation.FORCE_H"
+"int:44" = "Constants.Conversation.MAKE_JOIN_CLUB"
+"int:45" = "Constants.Conversation.ASK_DATE"
+"int:46" = "Constants.Conversation.CONFESS"
+"int:47" = "Constants.Conversation.ASK_COUPLE"
+"int:48" = "Constants.Conversation.ASK_BREAKUP"
+"int:49" = "Constants.Conversation.HEADPAT"
+"int:50" = "Constants.Conversation.HUG"
+"int:51" = "Constants.Conversation.KISS"
+"int:52" = "Constants.Conversation.TOUCH"
+"int:53" = "Constants.Conversation.NORMAL_H"
+"int:54" = "Constants.Conversation.FOLLOW_ME"
+"int:55" = "Constants.Conversation.GO_AWAY"
+"int:56" = "Constants.Conversation.COME_TO"
+"int:57" = "Constants.Conversation.NEVERMIND"
+"int:58" = "Constants.Conversation.MINNA_STUDY"
+"int:59" = "Constants.Conversation.MINNA_SPORTS"
+"int:60" = "Constants.Conversation.MINNA_CLUB"
+"int:61" = "Constants.Conversation.MINNA_LUNCH"
+"int:62" = "Constants.Conversation.MINNA_REST"
+"int:63" = "Constants.Conversation.MINNA_EAT"
+"int:64" = "Constants.Conversation.MINNA_KARAOKE"
+"int:65" = "Constants.Conversation.MINNA_BE_FRIENDLY"
+"int:66" = "Constants.Conversation.MINNA_COME"
+"int:67" = "Constants.Conversation.INTERRUPT_COMPETE"
+"int:68" = "Constants.Conversation.INTERRUPT_WHAT_ARE_YOU_DOING"
+"int:69" = "Constants.Conversation.INTERRUPT_STOP_QUARREL"
+"int:70" = "Constants.Conversation.H_END"
+"int:71" = "Constants.Conversation.H_NOTE"
+"int:72" = "Constants.Conversation.TRY_3P"
+"int:73" = "Constants.Conversation.REQUEST_MASSAGE"
+"int:74" = "Constants.Conversation.REQUEST_KISS"
+"int:75" = "Constants.Conversation.REQUEST_HUG"
+"int:76" = "Constants.Conversation.SKIP_CLASS"
+"int:77" = "Constants.Conversation.SKIP_CLASS_H"
+"int:78" = "Constants.Conversation.SKIP_CLASS_SURPRISE_H"
+"int:79" = "Constants.Conversation.DID_YOU_HAVE_H"
+"int:80" = "Constants.Conversation.SHOW_UNDERWEAR"
+"int:81" = "Constants.Conversation.DID_YOU_HAVE_H_WITH"
+"int:82" = "Constants.Conversation.EXCHANGE_ITEMS"
+"int:83" = "Constants.Conversation.LEWD_PROMISE"
+"int:84" = "Constants.Conversation.LEWD_REWARD"
+"int:85" = "Constants.Conversation.TOGETHER_FOREVER"
+"int:86" = "Constants.Conversation.MURDER"
+"int:87" = "Constants.Conversation.SLAP"
+"int:88" = "Constants.Conversation.GOOD_MORNING_KISS"
+"int:89" = "Constants.Conversation.GOOD_BYE_KISS"
+"int:90" = "Constants.Conversation.NO_PROMPT_KISS"
+"int:91" = "Constants.Conversation.FORCE_BREAKUP"
+"int:92" = "Constants.Conversation.REVEAL_PREGNANCY"
+"int:93" = "Constants.Conversation.I_WILL_CHEAT"
+"int:94" = "Constants.Conversation.EXPLOITABLE_LINE"
+"int:95" = "Constants.Conversation.STOP_FOLLOWING"
+"int:96" = "Constants.Conversation.MURDER_NOTICE"
+"int:97" = "Constants.Conversation.SOMEONE_LIKES_YOU"
+"int:98" = "Constants.Conversation.SOMEONE_GOT_CONFESSED_TO"
+"int:99" = "Constants.Conversation.DID_YOU_DATE_SOMEONE"
+"int:100" = "Constants.Conversation.I_SAW_SOMEONE_HAVE_H"
+"int:101" = "Constants.Conversation.GUST_OF_WIND"
+"int:102" = "Constants.Conversation.DO_NOT_GET_INVOLVED"
+"int:103" = "Constants.Conversation.SHAMELESS"
+"int:104" = "Constants.Conversation.NO_PROMPT_H"
+"int:105" = "Constants.Conversation.AFTER_DATE_H"
+"int:106" = "Constants.Conversation.FOLLOW_ME_H"
+"int:107" = "Constants.Conversation.DATE_GREETING"
+"int:108" = "Constants.Conversation.CHANGE_CLOTHES"
+"int:109" = "Constants.Conversation.STALK"
+"int:110" = "Constants.Conversation.STALK_FROM_AFAR"
+"int:111" = "Constants.Conversation.DO_STUDY"
+"int:112" = "Constants.Conversation.DO_EXERCISE"
+"int:113" = "Constants.Conversation.DO_CLUB"
+"int:114" = "Constants.Conversation.BREAK_CHAT"
+"int:115" = "Constants.Conversation.BREAK_H"
+"int:116" = "Constants.Conversation.TEST_3P"
+"int:117" = "Constants.Conversation.MINNA_H"
+"int:351" = "Constants.Conversation.MINNA_PLAY"
+# Trait (native category: Trait)
+"int:118" = "Constants.Trait.EASYGOING"
+"int:119" = "Constants.Trait.AFFABLE"
+"int:120" = "Constants.Trait.BAD_WITH_GUYS"
+"int:121" = "Constants.Trait.BAD_WITH_GIRLS"
+"int:122" = "Constants.Trait.CHARMING"
+"int:123" = "Constants.Trait.TSUNDERE"
+"int:124" = "Constants.Trait.CHIVALROUS"
+"int:125" = "Constants.Trait.TRENDY"
+"int:126" = "Constants.Trait.OBEDIENT"
+"int:127" = "Constants.Trait.POSITIVE"
+"int:128" = "Constants.Trait.SHY"
+"int:129" = "Constants.Trait.JEALOUS"
+"int:130" = "Constants.Trait.MELANCHOLY"
+"int:131" = "Constants.Trait.PERVERTED"
+"int:132" = "Constants.Trait.SERIOUS"
+"int:133" = "Constants.Trait.CALM"
+"int:134" = "Constants.Trait.IMPULSIVE"
+"int:135" = "Constants.Trait.ABSENTMINDED"
+"int:136" = "Constants.Trait.VIOLENT"
+"int:137" = "Constants.Trait.PASSIVE"
+"int:138" = "Constants.Trait.MEDDLESOME"
+"int:139" = "Constants.Trait.CLASS_PREZ"
+"int:140" = "Constants.Trait.CHATTY"
+"int:141" = "Constants.Trait.ALWAYS_HUNGRY"
+"int:142" = "Constants.Trait.ROMANTIC"
+"int:143" = "Constants.Trait.SINGLEMINDED"
+"int:144" = "Constants.Trait.INDECISIVE"
+"int:145" = "Constants.Trait.COMPETITIVE"
+"int:146" = "Constants.Trait.SCHEMING"
+"int:147" = "Constants.Trait.DILIGENT"
+"int:148" = "Constants.Trait.WILD"
+"int:149" = "Constants.Trait.MASOCHIST"
+"int:150" = "Constants.Trait.SWEATY"
+"int:151" = "Constants.Trait.EVIL"
+"int:152" = "Constants.Trait.DEAF"
+"int:153" = "Constants.Trait.EXPLOITABLE"
+"int:154" = "Constants.Trait.ASEXUAL"
+"int:155" = "Constants.Trait.LUCKY"
+"int:156" = "Constants.Trait.RAINBOW"
+# Day (native category: Time (Day))
+"int:167" = "Constants.Day.MONDAY"
+"int:168" = "Constants.Day.TUESDAY"
+"int:169" = "Constants.Day.WEDNESDAY"
+"int:170" = "Constants.Day.THURSDAY"
+"int:171" = "Constants.Day.FRIDAY"
+"int:172" = "Constants.Day.SATURDAY"
+"int:173" = "Constants.Day.SUNDAY"
+# Period (native category: Time (Period))
+"int:157" = "Constants.Period.MORNING_ROOM"
+"int:158" = "Constants.Period.MORNING_SCHOOL"
+"int:159" = "Constants.Period.FIRST_LESSON"
+"int:160" = "Constants.Period.FIRST_BREAK"
+"int:161" = "Constants.Period.SPORTS"
+"int:162" = "Constants.Period.SECOND_BREAK"
+"int:163" = "Constants.Period.CLUB"
+"int:164" = "Constants.Period.EVENING_SCHOOL"
+"int:165" = "Constants.Period.EVENING_ROOM"
+"int:166" = "Constants.Period.SLEEP"
+"int:352" = "Constants.Period.HOMEROOM"
+# PregnancyRisk (native category: Character (Pregnancy Risk))
+"int:174" = "Constants.PregnancyRisk.NORMAL"
+"int:175" = "Constants.PregnancyRisk.SAFE"
+"int:176" = "Constants.PregnancyRisk.DANGEROUS"
+# EventType (native category: Event Type)
+"int:177" = "Constants.EventType.INVALID_EVENT"
+"int:178" = "Constants.EventType.CLOTHES_CHANGED"
+"int:179" = "Constants.EventType.CARD_INITIALIZED"
+"int:180" = "Constants.EventType.CARD_DESTROYED"
+"int:181" = "Constants.EventType.HI_POLY_INIT"
+"int:182" = "Constants.EventType.HI_POLY_END"
+"int:183" = "Constants.EventType.CARD_ADDED"
+"int:184" = "Constants.EventType.PERIOD_ENDS"
+"int:185" = "Constants.EventType.NPC_RESPONSE"
+"int:186" = "Constants.EventType.NPC_WALK_TO_ROOM"
+"int:187" = "Constants.EventType.NPC_WANT_ACTION_NOTARGET"
+"int:188" = "Constants.EventType.NPC_WANT_TALK_WITH"
+"int:189" = "Constants.EventType.NPC_WANT_TALK_WITH_ABOUT"
+"int:190" = "Constants.EventType.PC_CONVERSATION_STATE_UPDATED"
+"int:298" = "Constants.EventType.PC_RESPONSE"
+"int:299" = "Constants.EventType.PC_CONVERSATION_LINE_UPDATED"
+"int:300" = "Constants.EventType.ROOM_CHANGE"
+"int:301" = "Constants.EventType.KEY_PRESS"
+"int:302" = "Constants.EventType.HPOSITION_CHANGE"
+"int:303" = "Constants.EventType.PC_AFTER_RESPONSE"
+"int:304" = "Constants.EventType.NPC_AFTER_RESPONSE"
+"int:305" = "Constants.EventType.HI_POLY_DESPAWN"
+"int:306" = "Constants.EventType.HI_POLY_DESPAWN_DUPLICATE"
+"int:307" = "Constants.EventType.H_END"
+"int:308" = "Constants.EventType.H_START"
+# Mood (native category: Mood)
+"int:191" = "Constants.Mood.ENERGETIC"
+"int:192" = "Constants.Mood.EMBARRASSED"
+"int:193" = "Constants.Mood.JEALOUS"
+"int:194" = "Constants.Mood.ANGRY"
+"int:195" = "Constants.Mood.SAD"
+"int:196" = "Constants.Mood.RELAXED"
+"int:197" = "Constants.Mood.AROUSED"
+"int:198" = "Constants.Mood.SERIOUS"
+"int:199" = "Constants.Mood.NORMAL"
+# Preference (native category: Preferences)
+"int:200" = "Constants.Preference.KISSING"
+"int:201" = "Constants.Preference.BREAST_CARESS"
+"int:202" = "Constants.Preference.VAGINA_CARESS"
+"int:203" = "Constants.Preference.PENIS_CARESS"
+"int:204" = "Constants.Preference.CUNNILINGUS"
+"int:205" = "Constants.Preference.FELLATION"
+"int:206" = "Constants.Preference.DOGGY_STYLE"
+"int:207" = "Constants.Preference.FEMDOM"
+"int:208" = "Constants.Preference.ANAL"
+"int:209" = "Constants.Preference.NO_CONDOM"
+"int:210" = "Constants.Preference.SWALLOW"
+"int:211" = "Constants.Preference.CREAMPIES"
+"int:212" = "Constants.Preference.BUKKAKE"
+# Opinion (native category: Opinions)
+"int:213" = "Constants.Opinion.TOGETHER_FOREVER"
+"int:214" = "Constants.Opinion.ILL_GET_YOU"
+"int:215" = "Constants.Opinion.UNFORGIVABLE"
+"int:216" = "Constants.Opinion.CHEATER"
+"int:217" = "Constants.Opinion.I_HATE_THAT_I"
+"int:218" = "Constants.Opinion.THE_LOWEST_TRASH"
+"int:219" = "Constants.Opinion.GONE_TOO_FAR"
+"int:220" = "Constants.Opinion.WHAT_SHALL_I_DO_NEXT"
+"int:221" = "Constants.Opinion.HAVENT_SPOKEN_TO"
+"int:222" = "Constants.Opinion.DONT_KNOW"
+"int:223" = "Constants.Opinion.WHO"
+"int:224" = "Constants.Opinion.NO_INTEREST"
+"int:225" = "Constants.Opinion.IM_CURIOUS"
+"int:226" = "Constants.Opinion.WANNA_GET_BACK_TOGETHER"
+"int:227" = "Constants.Opinion.FORMER_GF_BF"
+"int:228" = "Constants.Opinion.LETS_GET_MARRIED"
+"int:229" = "Constants.Opinion.MAI_WAIFU"
+"int:230" = "Constants.Opinion.LOVER_FOR_NOW"
+"int:231" = "Constants.Opinion.I_WANT_TO_BREAK_UP"
+"int:232" = "Constants.Opinion.OVERFLOWING_LOVE"
+"int:233" = "Constants.Opinion.ANGEL"
+"int:234" = "Constants.Opinion.LIKE_BUT_CANT_SAY_IT"
+"int:235" = "Constants.Opinion.ONE_SIDED_LOVE"
+"int:236" = "Constants.Opinion.NO_DOUBT_ITS_LOVE"
+"int:237" = "Constants.Opinion.I_THINK_I_LIKE_THEM"
+"int:238" = "Constants.Opinion.SHAMELESS"
+"int:239" = "Constants.Opinion.HATE_BUT_LOVE"
+"int:240" = "Constants.Opinion.BEST_FRIEND"
+"int:241" = "Constants.Opinion.GOOD_BUDDIES"
+"int:242" = "Constants.Opinion.HOLE_BROTHER_ROD_SISTER"
+"int:243" = "Constants.Opinion.FRIEND"
+"int:244" = "Constants.Opinion.SEX_FRIEND"
+"int:245" = "Constants.Opinion.CLOSER_THAN_FRIENDS"
+"int:246" = "Constants.Opinion.NORMIES_GO_DIE"
+"int:247" = "Constants.Opinion.LOVE_RIVAL"
+"int:248" = "Constants.Opinion.CLASSMATE"
+"int:249" = "Constants.Opinion.PIECE_OF_SHIT"
+"int:250" = "Constants.Opinion.FATED_ENEMIES"
+"int:251" = "Constants.Opinion.YOU_SHOULD_DIE"
+"int:252" = "Constants.Opinion.THOUSAND_DEATHS_NOT_ENOUGH"
+"int:253" = "Constants.Opinion.LOVE_BUT_HATE"
+"int:254" = "Constants.Opinion.PHYSICALLY_IMPOSSIBLE"
+"int:255" = "Constants.Opinion.DONT_WANT_TO_GET_INVOLVED"
+"int:256" = "Constants.Opinion.NOT_GOOD_WITH_THESE_TYPES"
+"int:257" = "Constants.Opinion.HOMEROOM_TEACHER"
+"int:258" = "Constants.Opinion.INCOMPETENT_TEACHER"
+"int:259" = "Constants.Opinion.IDEAL_TEACHER"
+"int:260" = "Constants.Opinion.TEACHER_IVE_LONGED_FOR"
+"int:261" = "Constants.Opinion.NORMAL_STUDENT"
+"int:262" = "Constants.Opinion.PROBLEM_STUDENT"
+"int:263" = "Constants.Opinion.FAVORITE_STUDENT"
+"int:264" = "Constants.Opinion.SPECIAL_STUDENT"
+"int:265" = "Constants.Opinion.FORBIDDEN_RELATIONSHIP"
+"int:266" = "Constants.Opinion.SECRET_RELATIONSHIP"
+"int:267" = "Constants.Opinion.MAKES_MY_HEART_THROB"
+"int:268" = "Constants.Opinion.REALLY_PISSES_ME_OFF"
+"int:269" = "Constants.Opinion.EMOTICON"
+"int:270" = "Constants.Opinion.REALLY_WANNA_FUCK"
+"int:271" = "Constants.Opinion.SLUT"
+"int:272" = "Constants.Opinion.LEWD_PROMISE"
+"int:273" = "Constants.Opinion.GOOD_CHEMISTRY"
+"int:274" = "Constants.Opinion.DEATH_FLAG_FOR_LOVER_CHEATING"
+"int:275" = "Constants.Opinion.INACTIVE_ABOVE_600_LOVE"
+"int:276" = "Constants.Opinion.LOVER_CHEATED_WITH_SEAT"
+"int:277" = "Constants.Opinion.OPINION_65"
+"int:278" = "Constants.Opinion.WITNESSED_TARGET_PUBLIC_H"
+"int:279" = "Constants.Opinion.WITNESSED_TARGET_PARTNER_PUBLIC_H"
+"int:280" = "Constants.Opinion.INSULTED_BY_TARGET"
+"int:281" = "Constants.Opinion.LOST_FIGHT_TO_TARGET"
+"int:282" = "Constants.Opinion.OPINION_70"
+"int:283" = "Constants.Opinion.OPINION_71"
+"int:284" = "Constants.Opinion.OPINION_72"
+"int:285" = "Constants.Opinion.OPINION_73"
+"int:286" = "Constants.Opinion.OPINION_74"
+"int:287" = "Constants.Opinion.SLAPPED_BY_TARGET"
+"int:288" = "Constants.Opinion.NOT_FRESH_CLASS"
+"int:289" = "Constants.Opinion.OPINION_77"
+"int:290" = "Constants.Opinion.OPINION_78"
+"int:291" = "Constants.Opinion.OPINION_79"
+"int:292" = "Constants.Opinion.OPINION_80"
+"int:293" = "Constants.Opinion.OPINION_81"
+"int:294" = "Constants.Opinion.OPINION_82"
+"int:295" = "Constants.Opinion.OPINION_83"
+"int:296" = "Constants.Opinion.OPINION_84"
+"int:297" = "Constants.Opinion.OPINION_85"
+# Room (native category: Room)
+"int:309" = "Constants.Room.OUTSIDE_CLASSROOM"
+"int:310" = "Constants.Room.ROOFTOP_ACCESS"
+"int:311" = "Constants.Room.OLD_BUILDING_FIRST_FLOOR"
+"int:312" = "Constants.Room.OLD_BUILDING_SECOND_FLOOR"
+"int:313" = "Constants.Room.OLD_BUILDING_THIRD_FLOOR"
+"int:314" = "Constants.Room.TEACHERS_LOUNGE"
+"int:315" = "Constants.Room.INFIRMARY"
+"int:316" = "Constants.Room.LIBRARY"
+"int:317" = "Constants.Room.CLASSROOM"
+"int:318" = "Constants.Room.BOYS_TOILETS"
+"int:319" = "Constants.Room.GIRLS_TOILETS"
+"int:320" = "Constants.Room.ROOFTOP"
+"int:321" = "Constants.Room.OUTSIDE_COUNSEL"
+"int:322" = "Constants.Room.OUTSIDE_CAFETERIA"
+"int:323" = "Constants.Room.COURTYARD"
+"int:324" = "Constants.Room.SECOND_FLOOR_HALLWAY"
+"int:325" = "Constants.Room.THIRD_FLOOR_PASSAGE"
+"int:326" = "Constants.Room.SWIMMING_POOL"
+"int:327" = "Constants.Room.TRACK"
+"int:328" = "Constants.Room.BASEBALL_FIELD"
+"int:329" = "Constants.Room.DOJO"
+"int:330" = "Constants.Room.GYMNASIUM"
+"int:331" = "Constants.Room.ARTS_ROOM"
+"int:332" = "Constants.Room.MULTIPURPOSE_ROOM"
+"int:333" = "Constants.Room.JAPANESE_ROOM"
+"int:334" = "Constants.Room.BEHIND_DOJO"
+"int:335" = "Constants.Room.OUTSIDE_DOJO"
+"int:336" = "Constants.Room.CAFETERIA"
+"int:337" = "Constants.Room.OUTSIDE_STATION"
+"int:338" = "Constants.Room.KARAOKE"
+"int:339" = "Constants.Room.BOYS_NIGHT_ROOM"
+"int:340" = "Constants.Room.GIRLS_NIGHT_ROOM"
+"int:341" = "Constants.Room.BOYS_ROOM"
+"int:342" = "Constants.Room.GIRLS_ROOM"
+"int:343" = "Constants.Room.BOYS_SHOWER_STALL"
+"int:344" = "Constants.Room.GIRLS_SHOWER_STALL"
+"int:345" = "Constants.Room.BOYS_TOILET_STALL"
+"int:346" = "Constants.Room.GIRLS_TOILET_STALL"
+"int:347" = "Constants.Room.COUNSELING_ROOM"
+"int:348" = "Constants.Room.GYM_STOREROOM"
+"int:349" = "Constants.Room.LOVE_HOTEL"
+"int:350" = "Constants.Room.MACHINE_ROOM"
+
+# ---------------------------------------------------------------------------
+# Readable: expressions declared with the wrong native type that the formatter
+# may still write by name. Loading fails once the declaration is fixed.
+[readable]
+expressions = ["int:100"]  # declared bool natively
+
+# ---------------------------------------------------------------------------
+# Defects: targets that do not work in AAUnlimited; every use reports
+# NATIVE_DEFECTIVE_EXPRESSION. `declared` = registry parameter types; loading
+# fails when the registry changes, so the entry gets reviewed. Evidence:
+# docs/native-format.md N12.
+[defects.expressions]
+"string:13" = { declared = ["int", "int", "int", "string"], reason = "its first parameter is declared int, but Thread::StringReplace reads it as a string, so trigger initialization rejects a string argument and an int argument is read as a string pointer" }
+
+# ---------------------------------------------------------------------------
+# Event values: expressions that return event data only in some events.
+# <type> = [event IDs] giving that value type; `otherwise` = value in all other
+# events. `callback` must match the registry, so a change forces a review.
+# Evidence: docs/native-format.md N6, N7, N11.
+[event_values.expressions]
+# Conversation.IsAnswering: int in events 13, 15; bool in 14, 19
+"int:70" = { callback = "Thread::GetConversationCurrentlyAnswering", int = [13, 15], bool = [14, 19], otherwise = 0 }
+# Context.NpcOriginalResponse / NpcCurrentResponse: int in NPC_RESPONSE (8)
+"int:100" = { callback = "Thread::GetNpcResponseOriginalAnswer", int = [8], otherwise = false }
+"int:101" = { callback = "Thread::GetNpcResponseCurrentAnswer", int = [8], otherwise = false }
+
+# ---------------------------------------------------------------------------
+# Result roles: what an expression returns. "card" makes the result a card.
+# 15, 16 and 150 return 0 (a valid seat) outside their events; still card.
+[result_roles.expressions]
+"int:9" = "card"    # TriggeringCard
+"int:10" = "card"   # ThisCard
+"int:11" = "card"   # Context.NpcAnswerTarget
+"int:53" = "card"   # Conversation.Actor
+"int:55" = "card"   # Globals.PlayerCharacter
+"int:56" = "card"   # Globals.FindSeat
+"int:98" = "card"   # Conversation.PcTalkAbout
+"int:103" = "card"  # Target
+"int:107" = "card"  # H.ActiveActor
+"int:108" = "card"  # H.PassiveActor
+"int:117" = "card"  # H.DominantActor
+"int:118" = "card"  # H.SubmissiveActor
+"int:122" = "card"  # Globals.PcTarget
+"int:15" = "card"   # Context.NpcTalkTarget
+"int:16" = "card"   # Context.NpcTalkAbout
+"int:150" = "card"  # Context.RelationshipTowards
+
+# ---------------------------------------------------------------------------
+# Parameter names for non-member targets, one per native slot. Shown in editor
+# help only. Must not be keywords such as default, from, to.
+[parameter_names.actions]
+2 = ["condition"]                           # IfValue
+3 = ["condition"]                           # ElseIfValue
+5 = ["count", "condition"]                  # JumpIf: actions to skip, may be negative
+7 = ["condition"]                           # BreakIf
+8 = ["condition"]                           # ContinueIf
+17 = ["condition"]                          # StopThreadIf
+18 = ["success"]                            # Context.SetNpcNormalResponseSuccess
+19 = ["percent"]                            # Context.SetNpcNormalResponseChance
+51 = ["pc", "partner"]                      # H.Start
+63 = ["message"]                            # WriteLog
+76 = ["mode"]                               # H.SetConsensual: 0, 4, 8 or 10
+79 = ["enabled"]                            # Globals.SetAutoPc
+80 = ["response"]                           # Conversation.SetPcNormalResponse
+89 = ["response"]                           # Context.SetNpcCurrentResponse
+90 = ["enabled"]                            # H.SetAi
+91 = ["target"]                             # Globals.SetPcTarget
+92 = ["response"]                           # Conversation.SetPcStrongResponse
+93 = ["response"]                           # Conversation.SetPcAbsoluteResponse
+94 = ["success"]                            # Context.SetNpcStrongResponseSuccess
+95 = ["percent"]                            # Context.SetNpcStrongResponseChance
+96 = ["percent"]                            # Context.SetNpcAbsoluteResponseChance
+97 = ["success"]                            # Context.SetNpcAbsoluteResponseSuccess
+102 = ["locked"]                            # H.SetAiExitLock
+107 = ["seconds"]                           # Globals.SetPeriodTimer
+108 = ["text", "isImportant"]              # Notification
+109 = ["procedure"]                         # Lua.CallProcedure
+110 = ["key", "value"]                      # ClassStorage.SetInt
+111 = ["key", "value"]                      # ClassStorage.SetFloat
+112 = ["key", "value"]                      # ClassStorage.SetString
+113 = ["key", "value"]                      # ClassStorage.SetBool
+119 = ["seat"]                              # Globals.RemoveCard
+120 = ["seat", "gender", "fileName"]        # Globals.AddCard: gender 1 female, 0 male
+121 = ["position"]                          # H.SetPosition
+123 = ["enabled"]                           # Conversation.SetGustOfWind
+136 = ["love", "like", "dislike", "hate"]   # Context.SetAppliedPoints
+139 = ["delay", "label"]                    # Globals.EmitOptionalEvent
+140 = ["delay", "label"]                    # Globals.EmitRequiredEvent
+141 = ["enabled"]                           # H.SetCondomOverride
+142 = ["enabled"]                           # H.SetCondomValue
+
+[parameter_names.expressions]
+"bool:4" = ["left", "right"]                # LogicalAnd
+"bool:5" = ["left", "right"]                # LogicalOr
+"bool:6" = ["left", "right"]                # GreaterThan (int)
+"bool:7" = ["left", "right"]                # GreaterThanOrEqual (int)
+"bool:8" = ["left", "right"]                # Equal (int)
+"bool:9" = ["left", "right"]                # LessThanOrEqual (int)
+"bool:10" = ["left", "right"]               # LessThan (int)
+"bool:11" = ["value"]                       # Not
+"bool:12" = ["left", "right"]               # StringEqual
+"bool:13" = ["left", "right"]               # NotEqual (int)
+"bool:16" = ["seat"]                        # Globals.IsSeatFilled
+"bool:18" = ["left", "right"]               # GreaterThan (float)
+"bool:19" = ["left", "right"]               # GreaterThanOrEqual (float)
+"bool:20" = ["left", "right"]               # Equal (float)
+"bool:21" = ["left", "right"]               # LessThanOrEqual (float)
+"bool:22" = ["left", "right"]               # LessThan (float)
+"bool:23" = ["left", "right"]               # NotEqual (float)
+"bool:26" = ["action"]                      # Npc.IsInterruptAction
+"bool:27" = ["action"]                      # Npc.IsMinnaAction
+"bool:28" = ["action"]                      # Npc.IsForceAction
+"bool:29" = ["action"]                      # Npc.IsSexAction
+"bool:30" = ["action"]                      # Npc.IsNoPromptAction
+"bool:31" = ["action"]                      # Npc.IsGameOverAction
+"bool:32" = ["action"]                      # Npc.IsNoTargetAction
+"bool:33" = ["chance"]                      # Math.Roll (float): succeeds when [0, 1] roll <= chance
+"bool:34" = ["chance"]                      # Math.Roll (int): succeeds when [1, 100] roll <= chance
+"bool:43" = ["fileName"]                    # Npc.PoseExists
+"bool:46" = ["key", "fallback"]             # ClassStorage.GetBool
+"bool:47" = ["action"]                      # Npc.IsSkipAction
+"bool:48" = ["room"]                        # Globals.IsPrivateRoom
+"bool:52" = ["procedure"]                   # Lua.CallBool
+"float:4" = ["min", "max"]                  # Math.RandomFloat
+"float:5" = ["left", "right"]               # Add
+"float:6" = ["left", "right"]               # Subtract
+"float:7" = ["left", "right"]               # Divide
+"float:8" = ["left", "right"]               # Multiply
+"float:9" = ["value"]                       # ToFloat (int)
+"float:11" = ["value"]                      # ToFloat (string)
+"float:13" = ["key", "fallback"]            # ClassStorage.GetFloat
+"float:15" = ["procedure"]                  # Lua.CallFloat
+"int:4" = ["min", "max"]                    # Math.RandomInt
+"int:5" = ["left", "right"]                 # Add
+"int:6" = ["left", "right"]                 # Subtract
+"int:7" = ["left", "right"]                 # Divide
+"int:8" = ["left", "right"]                 # Multiply
+"int:23" = ["value"]                        # ToInt (float)
+"int:42" = ["text"]                         # Text.Length
+"int:43" = ["text", "search"]               # Text.FirstIndexOf
+"int:44" = ["value"]                        # ToInt (string)
+"int:45" = ["text", "search", "start"]      # Text.FirstIndexOf (from an index)
+"int:53" = ["index"]                        # Conversation.Actor: left to right from 0
+"int:56" = ["fullName"]                     # Globals.FindSeat: last name first
+"int:121" = ["key", "fallback"]             # ClassStorage.GetInt
+"int:145" = ["club"]                        # Globals.ClubType
+"int:152" = ["procedure"]                   # Lua.CallInt
+"string:4" = ["text", "start", "length"]    # Text.Substring
+"string:8" = ["left", "right"]              # Add (concatenation)
+"string:9" = ["value"]                      # ToString (int)
+"string:10" = ["value"]                     # ToString (float)
+"string:11" = ["value"]                     # ToString (bool)
+"string:13" = ["text", "start", "length", "replacement"]  # Text.Replace; see [defects]
+"string:21" = ["procedure", "parameter"]    # Lua.AddParameter
+"string:22" = ["key", "fallback"]           # ClassStorage.GetString
+"string:24" = ["text", "index", "separator"]  # Text.CsvItem
+"string:25" = ["procedure"]                 # Lua.CallString
+
+# ---------------------------------------------------------------------------
+# Parameter roles for non-member targets, by parameter name. "card" makes the
+# parameter a card: an int variable there needs Card(...).
+[parameter_roles.actions]
+51 = { pc = "card", partner = "card" }      # H.Start
+91 = { target = "card" }                    # Globals.SetPcTarget
+119 = { seat = "card" }                     # Globals.RemoveCard
+120 = { seat = "card" }                     # Globals.AddCard
+
+[parameter_roles.expressions]
+"bool:16" = { seat = "card" }               # Globals.IsSeatFilled
+
+# ---------------------------------------------------------------------------
+# Descriptions: replace a target's native description in editor help.
+[descriptions.expressions]
+"string:13" = "Does not work in AAUnlimited: the first parameter is declared int but read as a string, so every use is a NATIVE_DEFECTIVE_EXPRESSION error. Natively it would replace length characters of text starting at start with replacement."
+
+# ---------------------------------------------------------------------------
+# Literals: constants whose native ID points at another row, so they compile
+# to their plain value. row = native row name (add category = "..." if
+# ambiguous); value must match the row.
+[literals]
+# Room: IDs 298-308 select Event Type rows
+"Constants.Room.SCHOOL_GATES" = { row = "School gates", value = 0 }
+"Constants.Room.BACK_STREET" = { row = "Back street", value = 1 }
+"Constants.Room.OUTSIDE_GYMNASIUM" = { row = "Outside gymnasium", value = 2 }
+"Constants.Room.SCHOOL_ROUTE" = { row = "School route", value = 3 }
+"Constants.Room.BOYS_CHANGING_ROOM" = { row = "Boys' changing room", value = 4 }
+"Constants.Room.GIRLS_CHANGING_ROOM" = { row = "Girls' changing room", value = 5 }
+"Constants.Room.BOYS_SHOWER" = { row = "Boys' shower", value = 6 }
+"Constants.Room.GIRLS_SHOWER" = { row = "Girls' shower", value = 7 }
+"Constants.Room.LOCKERS" = { row = "Lockers", value = 8 }
+"Constants.Room.OUTSIDE_TEACHERS_LOUNGE" = { row = "Outside teachers lounge", value = 9 }
+"Constants.Room.OUTSIDE_TOILETS" = { row = "Outside toilets", value = 10 }
+# Period: ID 352 selects HOMEROOM
+"Constants.Period.EXAM" = { row = "EXAM", value = 11 }
+
+# ---------------------------------------------------------------------------
+# Members: card-first targets, written as receiver.Name(arguments).
+#   13 = "AddLike(towards: card, amount: points)"   ->  coach.AddLike(other, 5)
+#   "int:25" = "Virtue"                              ->  coach.Virtue
+# The receiver is a card and fills native slot 0; arguments fill slots 1..n in
+# order. Each argument is `name: role` (role card = a card value). A member
+# replaces the target's preferred name.
+[members.actions]
+12 = "AddLove(towards: card, amount: points)"        # Add Love Points
+13 = "AddLike(towards: card, amount: points)"        # Add Like Points
+14 = "AddDislike(towards: card, amount: points)"     # Add Dislike Points
+15 = "AddHate(towards: card, amount: points)"        # Add Hate Points
+16 = "AddPoints(towards: card, pointType: kind, amount: points)"  # Add Points; pointType 0-3: LOVE, LIKE, DISLIKE, HATE
+62 = "SetPoints(towards: card, love: points, like: points, dislike: points, hate: points, spare: points)"  # Set Points
+32 = "SetVirtue(value: value)"                       # Set Virtue
+34 = "SetPersonality(value: value)"                  # Set Personality
+35 = "SetVoicePitch(value: value)"                   # Set Voice Pitch
+36 = "SetClub(value: value)"                         # Set Club
+37 = "SetClubValue(value: value)"                    # Set Club Value
+38 = "SetClubRank(value: value)"                     # Set Club Rank
+39 = "SetIntelligence(value: value)"                 # Set Intelligence
+40 = "SetIntelligenceValue(value: value)"            # Set Intelligence Value
+41 = "SetIntelligenceRank(value: value)"             # Set Intelligence Rank
+42 = "SetStrength(value: value)"                     # Set Strength
+43 = "SetStrengthValue(value: value)"                # Set Strength Value
+44 = "SetStrengthRank(value: value)"                 # Set Strength Rank
+45 = "SetSociability(value: value)"                  # Set Sociability
+48 = "SetOrientation(value: value)"                  # Set Sex Orientation
+104 = "SetFightStance(value: value)"                 # Set Fighting Stance
+106 = "SetStamina(value: value)"                     # Set Stamina
+33 = "SetTrait(trait: trait, enabled: flag)"         # Set Trait
+10 = "SetStyle(style: value)"                        # Switch Style
+81 = "SetClothingState(value: value)"                # Set Clothing State
+143 = "SetSkirtState(value: value)"                  # Set Skirt State
+98 = "SetHPreference(preference: preference, enabled: flag)"  # Set H Preference
+99 = "SetOpinion(opinion: id, towards: card, value: value)"  # Set Opinion
+100 = "SetDecals(position: position, value: value)"  # Set Decals
+144 = "SetPregnancyRisk(day: day, value: value)"     # Set Pregnancy Risk
+114 = "AddVirtueModifier(name: name, value: value)"  # Add Stat Modifier: Virtue
+115 = "AddSociabilityModifier(name: name, value: value)"  # Add Stat Modifier: Sociability
+116 = "AddStrengthModifier(name: name, value: value)"  # Add Stat Modifier: Strength
+117 = "AddIntelligenceModifier(name: name, value: value)"  # Add Stat Modifier: Intelligence
+118 = "AddClubModifier(name: name, value: value)"    # Add Stat Modifier: Club
+122 = "AddTraitModifier(trait: trait, name: name, value: value)"  # Add Trait Modifier
+46 = "SetFirstName(name: name)"                      # Set First Name
+47 = "SetLastName(name: name)"                       # Set Last Name
+49 = "SetDescriptionText(text: text)"                # Set Description
+56 = "SetLoverItem(name: name)"                      # Set Item - Lover's
+57 = "SetFriendItem(name: name)"                     # Set Item - Friend's
+58 = "SetSexualItem(name: name)"                     # Set Item - Sexual
+124 = "SetFirstHPartner(name: name)"                 # Set First H Partner
+125 = "SetFirstAnalPartner(name: name)"              # Set First Anal Partner
+126 = "SetLastHPartner(name: name)"                  # Set Latest H Partner
+127 = "SetPartnerCount(value: count)"                # Set Partner Count
+128 = "SetHPartnerCount(value: count)"               # Set H Partner Count
+129 = "SetVictoryCount(value: count)"                # Set Victory Count
+130 = "SetClassesSkipped(value: count)"              # Set Classes Skipped
+131 = "SetWinningCount(value: count)"                # Set Winning Count
+132 = "SetRejectCount(value: count)"                 # Set Reject Count
+133 = "SetAcademicGrade(value: grade)"               # Set Academic Exam Grade
+134 = "SetSportsGrade(value: grade)"                 # Set Sports Exam Grade
+135 = "SetClubGrade(value: grade)"                   # Set Club Exam Grade
+75 = "SetLover(target: card, value: flag)"           # Set Lover
+59 = "SetCompatibility(other: card, value: value)"   # Set H Compatibility
+82 = "SetCherryStatus(target: card, value: value)"   # Set Cherry Status
+137 = "ArrangeDate(other: card)"                     # Arrange Date; receiver arranges a date with other
+138 = "PromiseLewdReward(other: card)"               # Promise Lewd Reward
+54 = "AddMood(mood: mood, strength: amount)"         # Add Mood
+55 = "ReplaceMood(mood: mood, withMood: mood, strength: amount)"  # Replace Mood
+52 = "SetVaginalExperience(value: flag)"             # Set Sex Experience: Vaginal
+53 = "SetAnalExperience(value: flag)"                # Set Sex Experience: Anal
+83 = "SetCumInMouth(value: flag)"                    # Set Cum
+84 = "SetTears(value: flag)"                         # Set Tears
+85 = "SetHighlight(value: flag)"                     # Set Highlight
+86 = "SetGlasses(value: flag)"                       # Set Glasses
+64 = "SetVaginalCums(target: card, amount: count)"   # Cum Stat - Vaginal
+65 = "SetAnalCums(target: card, amount: count)"      # Cum Stat - Anal
+66 = "SetOralCums(target: card, amount: count)"      # Cum Stat - Oral
+67 = "SetAllCums(target: card, amount: count)"       # Cum Stat - All
+74 = "SetRiskyCums(target: card, amount: count)"     # Cum Stat - Risky
+68 = "SetSingleClimax(target: card, amount: count)"  # Climax Stat - Single
+69 = "SetSimClimax(target: card, amount: count)"     # Climax Stat - Simultaneous
+70 = "SetCondomsUsed(target: card, amount: count)"   # H Stat - Condoms Used
+71 = "SetVaginalH(target: card, amount: count)"      # H Stat - Vaginal
+72 = "SetAnalH(target: card, amount: count)"         # H Stat - Anal
+73 = "SetAllH(target: card, amount: count)"          # H Stat - All
+24 = "SetInt(key: key, value: value)"                # Set Card Storage Integer
+25 = "SetFloat(key: key, value: value)"              # Set Card Storage Float
+26 = "SetString(key: key, value: value)"             # Set Card Storage String
+27 = "SetBool(key: key, value: value)"               # Set Card Storage Bool
+28 = "RemoveInt(key: key)"                           # Remove Card Storage Integer
+29 = "RemoveFloat(key: key)"                         # Remove Card Storage Float
+30 = "RemoveString(key: key)"                        # Remove Card Storage String
+31 = "RemoveBool(key: key)"                          # Remove Card Storage Bool
+20 = "MoveToRoom(room: room)"                        # Make Npc Move to Room
+21 = "DoAction(action: action)"                      # Make Npc do Action with no Target
+22 = "DoActionTo(action: action, target: card)"      # Make Npc Talk to Character
+23 = "DoActionAbout(action: action, target: card, about: card)"  # Make Npc Talk to Character about someone
+60 = "SetStatus(value: value)"                       # Set NPC status
+77 = "SetLockState(value: value)"                    # Lock character
+78 = "SetFapState(value: value)"                     # Set Fap State
+87 = "SetPose(name: name)"                           # Set Pose
+88 = "CancelAction"                                  # Cancel NPC's action
+101 = "SetActionAboutRoom(room: room)"               # Action About Room
+103 = "SetRoomTarget(room: room)"                    # Set Room Target
+50 = "SetPlayerCharacter"                            # Change Player Character
+
+[members.expressions]
+"int:19" = "Love(towards: card)"                     # Love Points
+"int:20" = "Like(towards: card)"                     # Like Points
+"int:21" = "Dislike(towards: card)"                  # Dislike Points
+"int:22" = "Hate(towards: card)"                     # Hate Points
+"int:25" = "Virtue"                                  # Virtue
+"int:26" = "Personality"                             # Personality
+"int:27" = "VoicePitch"                              # Voice Pitch
+"int:28" = "Club"                                    # Club
+"int:29" = "ClubValue"                               # Club Value
+"int:30" = "ClubRank"                                # Club Rank
+"int:31" = "Intelligence"                            # Intelligence
+"int:32" = "IntelligenceValue"                       # Intelligence Value
+"int:33" = "IntelligenceRank"                        # Intelligence Rank
+"int:34" = "Strength"                                # Strength
+"int:35" = "StrengthValue"                           # Strength Value
+"int:36" = "StrengthRank"                            # Strength Rank
+"int:37" = "Sociability"                             # Sociability
+"int:41" = "Orientation"                             # Sex Orientation
+"int:46" = "Gender"                                  # Gender
+"int:51" = "Style"                                   # Current Style
+"int:106" = "Height"                                 # Get Height
+"int:111" = "Figure"                                 # Get Figure
+"int:113" = "BreastSize"                             # Get Breast Size
+"int:116" = "FightStance"                            # Fighting Stance
+"int:119" = "Stamina"                                # Get Stamina
+"int:124" = "RealVirtue"                             # Real Virtue
+"int:126" = "RealSociability"                        # Real Sociability
+"int:128" = "RealIntelligenceValue"                  # Real Intelligence Value
+"int:130" = "RealStrengthValue"                      # Real Strength Value
+"int:132" = "RealClubValue"                          # Real Club Value
+"int:139" = "CurrentOutfit"                          # Get Current Outfit
+"int:153" = "SkirtState"                             # Get Skirt State
+"int:97" = "CurrentRoom"                             # Current Room
+"int:104" = "CurrentConversation"                    # Current Conversation
+"int:64" = "FindStyle(name: name)"                   # Find Style
+"bool:25" = "HasTrait(trait: trait)"                 # Trait
+"bool:45" = "HasHPreference(preference: preference)"  # Get H Preference
+"int:112" = "Opinion(opinion: id, towards: card)"    # Get Opinion
+"int:114" = "Decals(position: position)"             # Get Decals
+"int:50" = "PregnancyRisk(day: day)"                 # Pregnancy Risk
+"float:12" = "OrientationMultiplier(towards: card)"  # Sex Orientation Multiplier
+"float:14" = "LikeOrientationMultiplier(towards: card)"  # Like Orientation Multiplier
+"int:123" = "VirtueModifier(name: name)"             # Virtue Modifier
+"int:125" = "SociabilityModifier(name: name)"        # Sociability Modifier
+"int:127" = "IntelligenceModifier(name: name)"       # Intelligence Modifier
+"int:129" = "StrengthModifier(name: name)"           # Strength Modifier
+"int:131" = "ClubModifier(name: name)"               # Club Modifier
+"int:137" = "TraitModifier(trait: trait, name: name)"  # Trait Modifier
+"int:138" = "UnboundTraitValue(trait: trait)"        # Unbount Trait Value
+"string:6" = "FirstName"                             # First Name
+"string:5" = "LastName"                              # Last Name
+"string:20" = "FullName"                             # Full Name
+"string:12" = "DescriptionText"                      # Description
+"string:17" = "LoverItem"                            # Item - Lover's
+"string:18" = "FriendItem"                           # Item - Friend's
+"string:19" = "SexualItem"                           # Item - Sexual
+"string:15" = "FirstHPartner"                        # First Sex Partner
+"string:16" = "FirstAnalPartner"                     # First Anal Partner
+"string:14" = "LastHPartner"                         # Last Sex Partner
+"int:38" = "PartnerCount"                            # Partner Count
+"int:144" = "HPartnerCount"                          # Sexual Partner Count
+"int:57" = "RejectCount"                             # Reject Count
+"int:58" = "WinningCount"                            # Win Count
+"int:59" = "VictoryCount"                            # Victory Count
+"int:60" = "ClassesSkipped"                          # Skip Count
+"int:141" = "SportsGrade"                            # Get Sports Exam Grade
+"int:142" = "AcademicGrade"                          # Get Academic Exam Grade
+"int:143" = "ClubGrade"                              # Get Club Exam Grade
+"bool:17" = "HasLover(other: card)"                  # Is Lover; setter is SetLover
+"bool:37" = "HasLovers"                              # Has Lovers
+"int:140" = "LoverDays(other: card)"                 # Get lover days
+"int:67" = "Compatibility(other: card)"              # Get H compatibility
+"int:95" = "CherryStatus(other: card)"               # Cherry Status; receiver's virginity was targeted by other
+"bool:49" = "HasDateWith(other: card)"               # Has Date With
+"bool:50" = "HasLewdPromise(other: card)"            # Promised a Lewd Reward To
+"int:65" = "MoodStrength(mood: mood)"                # Get Mood Strength
+"int:66" = "StrongestMood"                           # Get Strongest Mood
+"bool:35" = "HasVaginalExperience"                   # Sex Experience: Vaginal
+"bool:36" = "HasAnalExperience"                      # Sex Experience: Anal
+"bool:39" = "HasCumInMouth"                          # Get Cum
+"bool:40" = "HasTears"                               # Get Tears
+"bool:41" = "HasHighlight"                           # Get Highlight
+"bool:42" = "HasGlasses"                             # Get Glasses
+"int:71" = "VaginalCums(other: card)"                # Cum Stat - Vaginal
+"int:74" = "TotalVaginalCums"                        # Cum Stat - Total Vaginal
+"int:72" = "AnalCums(other: card)"                   # Cum Stat - Anal
+"int:75" = "TotalAnalCums"                           # Cum Stat - Total Anal
+"int:73" = "OralCums(other: card)"                   # Cum Stat - Oral
+"int:76" = "TotalOralCums"                           # Cum Stat - Total Oral
+"int:77" = "AllCums(other: card)"                    # Cum Stat - All
+"int:78" = "TotalAllCums"                            # Cum Stat - Total All
+"int:91" = "RiskyCums(other: card)"                  # Cum Stat - Risky
+"int:92" = "TotalRiskyCums"                          # Cum Stat - Total Risky
+"int:79" = "SingleClimax(other: card)"               # Climax Stat - Single
+"int:80" = "TotalSingleClimax"                       # Climax Stat - Total Single
+"int:81" = "SimClimax(other: card)"                  # Climax Stat - Simultaneous
+"int:82" = "TotalSimClimax"                          # Climax Stat - Total Simultaneous
+"int:83" = "CondomsUsed(other: card)"                # H Stat - Condoms Used
+"int:84" = "TotalCondomsUsed"                        # H Stat - Total Condoms Used
+"int:85" = "VaginalH(other: card)"                   # H Stat - Vaginal
+"int:86" = "TotalVaginalH"                           # H Stat - Total Vaginal
+"int:87" = "AnalH(other: card)"                      # H Stat - Anal
+"int:88" = "TotalAnalH"                              # H Stat - Total Anal
+"int:89" = "AllH(other: card)"                       # H Stat - All
+"int:90" = "TotalAllH"                               # H Stat - Total All
+"int:24" = "GetInt(key: key, fallback: fallback)"    # Get Card Storage Int
+"float:10" = "GetFloat(key: key, fallback: fallback)"  # Get Card Storage Float
+"string:7" = "GetString(key: key, fallback: fallback)"  # Get Card Storage String
+"bool:24" = "GetBool(key: key, fallback: fallback)"  # Get Card Storage Bool
+"int:103" = "Target"                                 # Get Target; the card the receiver targets
+"int:133" = "LocationTarget"                         # Get LocationTarget
+"int:68" = "Status"                                  # Get NPC Status
+"int:93" = "LockState"                               # Locked state
+"int:94" = "FapState"                                # FapState
+"int:115" = "ActionAboutRoom"                        # Action About Room

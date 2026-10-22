@@ -1,0 +1,17 @@
+{
+  "[aa2m]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[aa2mi]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "search.exclude": {
+    "dist/**": true
+  },
+  "python.analysis.exclude": [
+    "dist"
+  ]
+}

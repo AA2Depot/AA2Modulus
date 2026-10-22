@@ -1,0 +1,81 @@
+[project]
+name = "aa2modulus"
+version = "0.1.0"
+description = "Cross-platform AAUnlimited module reader, compiler, decompiler, and DSL tooling"
+requires-python = ">=3.13"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+dependencies = ["lark>=1.2,<2", "pygls==2.1.1", "lsprotocol==2025.0.0"]
+
+[project.urls]
+Source = "https://github.com/AA2Depot/AA2Modulus"
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".*", "__pycache__"]
+addopts = ["-ra", "--strict-markers"]
+markers = [
+    "source: authoring, imports, macros, templates, diagnostics, and source limits",
+    "binary: native compatibility, codec, recovery, and validation scenarios",
+    "metadata: shipped spellings, policy effects, and resource-loading diagnostics",
+    "cli: commands, streams, exit codes, and CLI input limits",
+    "lsp: language-server protocol, authoring, and document workspace behavior",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["aa2modulus"]
+# CLI and language-server tests run the toolchain in child processes.
+patch = ["subprocess"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "C4", "PIE", "RET", "PTH", "D100", "D104", "D209"]
+# The diagnostic breadcrumb separator.
+allowed-confusables = ["›"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts put the repository root on sys.path before importing aa2modulus.
+"tools/*.py" = ["E402"]
+# Ruff sees NoReturn only for same-module functions; binding ends branches with the
+# imported `raise_error`. Strict mypy still reports any missing return.
+"aa2modulus/semantics/binding/*.py" = ["RET503"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["aa2modulus", "tools"]
+strict = true
+ignore_missing_imports = true
+# lark ships no annotations on InteractiveParser (accepts, copy, feed_eof).
+untyped_calls_exclude = ["lark"]
+
+[dependency-groups]
+build = ["pyinstaller==6.22.3"]
+dev = [
+    "hypothesis>=6.120",
+    "mypy>=1.14",
+    "pytest>=8.3",
+    "pytest-cov>=6",
+    "ruff>=0.16.8",
+]
+docs = [
+    "zensical>=0.0.71",
+]

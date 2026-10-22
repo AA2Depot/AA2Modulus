@@ -1,0 +1,33 @@
+{
+  "files": {
+    "actions.json": {
+      "entry_count": 144
+    },
+    "events.json": {
+      "entry_count": 27
+    },
+    "expressions.json": {
+      "entry_count": 250
+    },
+    "named_constants.json": {
+      "entry_count": 365
+    }
+  },
+  "generator_version": "4",
+  "schema": "aa2modulus.metadata-manifest.v3",
+  "source_revision": "312c658b256f41771a5488fbf79a677d7b4551a8",
+  "source_sha256": {
+    "AAUnlimited/External/ExternalClasses/CharacterData.h": "b1871f5c6e1e724f4af3279b472e8bf34308de5c4e118a6703929555b4a1ce13",
+    "AAUnlimited/External/ExternalClasses/ConversationStruct.h": "2a7fc29bb16a2597da5b4df951e90b0523de2f907dfefbf1101b22f72e89bcb7",
+    "AAUnlimited/External/ExternalClasses/TimeData.h": "1d43ad7a6f1523ebc75b8d0ec5d74fff9acc389bb8c2f1c4e9a8968749fbd0e4",
+    "AAUnlimited/Functions/Shared/Triggers/Actions.cpp": "dcdce8bb614852655a194d20a97c3866914f9d7ff5f594ece1178a0baf8e5923",
+    "AAUnlimited/Functions/Shared/Triggers/Actions.h": "76040ad83b29217292bd9a08a52c3411fd022833e2d47ccbdb55f606d4603c74",
+    "AAUnlimited/Functions/Shared/Triggers/Event.cpp": "7106c185c4ebed8a638e455cdb006e2f59c50414799d0093b0c4b28377c42f1d",
+    "AAUnlimited/Functions/Shared/Triggers/Event.h": "5823e21e8d249c110354c73842b9007fe755c175188b3f85d8e7b2a72528ab40",
+    "AAUnlimited/Functions/Shared/Triggers/Expressions.cpp": "47913417ff68258429a1c1ea2c2688c328e91b80877d2989ceab08dcab76b967",
+    "AAUnlimited/Functions/Shared/Triggers/Expressions.h": "47da5eba6c217c0bf17cd92bfdf1e04108408f6e2147151ff5173847181b43de",
+    "AAUnlimited/Functions/Shared/Triggers/NamedConstant.cpp": "276d7ee3b1956831245a5525dbde6649d8b20621543d7366b1a4dd3b57130066",
+    "AAUnlimited/Functions/Shared/Triggers/NamedConstant.h": "684c9db793ca4a409fc80ab1a34f57889698fb9f84c33024ea1650bf072ad432",
+    "AAUnlimited/Functions/Shared/Triggers/Value.h": "74c51eaf883c5e906f5c74f03de5322c54b0046ceff8980b331ee239b85a7ca8"
+  }
+}

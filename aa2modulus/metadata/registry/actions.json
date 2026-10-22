@@ -1,0 +1,2632 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "General"
+    },
+    {
+      "id": 1,
+      "name": "Card Modification"
+    },
+    {
+      "id": 2,
+      "name": "Flow Control"
+    },
+    {
+      "id": 3,
+      "name": "Character Modification"
+    },
+    {
+      "id": 4,
+      "name": "Event"
+    },
+    {
+      "id": 5,
+      "name": "Npc Action"
+    }
+  ],
+  "entries": {
+    "1": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Sets the value of a given variable to a new one",
+      "id": 1,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "%p = %p",
+      "name": "Set Variable",
+      "parameter_types": [
+        0,
+        0
+      ],
+      "provenance": {
+        "registration_sha256": "c84e6919a657d1b2a08064e4c3dbdc63122389effaec312cd6b34dc3ee6444ea",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 1
+    },
+    "10": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Switches current character style.",
+      "id": 10,
+      "implementation": "Thread::SwitchCardStyle",
+      "interactive_name": "%p.Style = %p",
+      "name": "Switch Style",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "5a7c4e74e99b8cbaec7fa81fba5db33ecc0e5a7d92d2e0e6a39ff1b3101888fd",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 10
+    },
+    "100": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds decals to a character to a certain part of their body. Use only on characters that are currently loaded in high poly. For position 0 - chest, 1 - back, 2 - crotch / legs, 3 - butt, 4 - face. Decals have multiple possible strengths (0-3), 0 being no decals and 3 being strongest.",
+      "id": 100,
+      "implementation": "Thread::SetDecals",
+      "interactive_name": "%p.Decals(position: %p) = %p",
+      "name": "Set Decals",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "527c36b94acd941857e7801681607587376503d5afd3b0ce3837b4094e071cbf",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 100
+    },
+    "101": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Set the room that the NPC will talk about in their action.",
+      "id": 101,
+      "implementation": "Thread::SetActionAboutRoom",
+      "interactive_name": "%p.ActionAboutRoom = %p",
+      "name": "Action About Room",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "c10902702d26f5c91cbe4a2a979ffeae1a069bfec49ddce5986a406c524ba7be",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 101
+    },
+    "102": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set whether PC is locked in h while h-ai is on.",
+      "id": 102,
+      "implementation": "Thread::Set_H_AI_LOCK",
+      "interactive_name": "H-AI Lock = %p",
+      "name": "H-AI Exit Lock",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "01d77ea2e194f19786c9a260b4544ab38429dd0e5dd7a72a0f4ee95d14ff44df",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 102
+    },
+    "103": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Set the room that the NPC will walk to. //Probably doesn't work.",
+      "id": 103,
+      "implementation": "Thread::SetRoomTarget",
+      "interactive_name": "%p.SetRoomTarget = %p",
+      "name": "Set Room Target",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "382ab7c6e4c8a7f63e4116af275fc47a5f8def91f9f0c82c8e75f1b224827f08",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 103
+    },
+    "104": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's fighting stance.",
+      "id": 104,
+      "implementation": "Thread::SetCardFightingStyle",
+      "interactive_name": "%p.FightStance = %p",
+      "name": "Set Fighting Stance",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "0557c659fba1391d6e5795738cdc23ba43c042ec507e545200b7cf271eb03467",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 104
+    },
+    "105": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Swap who is dominant and submissive in an H scene.",
+      "id": 105,
+      "implementation": "Thread::SwitchActiveInH",
+      "interactive_name": "SwapDominant",
+      "name": "Swap Dominant",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "6bfdedc5e8236d6ff5381ac58ce7fc1a6df8961dbf97b6c9751c4d3bdd6241c8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 105
+    },
+    "106": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set the current stamina of a character.",
+      "id": 106,
+      "implementation": "Thread::SetStamina",
+      "interactive_name": "%p.SetStamina = %p",
+      "name": "Set Stamina",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "5e247e32bded9ab522401058d0214008d1fc73ea543e38c136e82c6a3d8dc504",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 106
+    },
+    "107": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Set the amount of seconds that have passed in the current period.",
+      "id": 107,
+      "implementation": "Thread::SetPeriodTimer",
+      "interactive_name": "PeriodTimer = %p",
+      "name": "Set period timer",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "1e61469ac1e82b7f641a0525c8ab39780a1406a4fced4c54de6a3abf82b87c13",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 107
+    },
+    "108": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Display the notification on the screen.",
+      "id": 108,
+      "implementation": "Thread::Notification",
+      "interactive_name": "Notification(text: %p, isImportant: %p)",
+      "name": "Notification",
+      "parameter_types": [
+        4,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "9ace1d527c3c7ffd8cbeed12d2391a33ad8b39ffa504038b67cdeb5ac587e81c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 108
+    },
+    "109": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Call supplemental lua procedure.",
+      "id": 109,
+      "implementation": "Thread::CallLuaProcedure",
+      "interactive_name": "LUA(%p)",
+      "name": "Call LUA Procedure",
+      "parameter_types": [
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6110ee699f980b1263e0011c80d8f3f1609f55d47d9fd51718d076b435f21152",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 109
+    },
+    "11": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Ends execution of this thread. Similar to a return statement.",
+      "id": 11,
+      "implementation": "Thread::EndExecution",
+      "interactive_name": "End",
+      "name": "End Execution",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "dd7bea16b860203763a964ee70e4e29b1a5fa7b5e325b970e3ca19d7f0cffd6c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 11
+    },
+    "110": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Sets an entry in the class storage. The class storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 110,
+      "implementation": "Thread::SetClassStorageInt",
+      "interactive_name": "SetInt(%p) = %p",
+      "name": "Set Class Storage Integer",
+      "parameter_types": [
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "f93eeddf8e392a6bbd14f951557e60c8fc764cea6f3d1daf6e943f9a9884e994",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 110
+    },
+    "111": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Sets an entry in the class storage. The class storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 111,
+      "implementation": "Thread::SetClassStorageFloat",
+      "interactive_name": "SetFloat(%p) = %p",
+      "name": "Set Class Storage Float",
+      "parameter_types": [
+        4,
+        3
+      ],
+      "provenance": {
+        "registration_sha256": "6cd7dbf17187891bceac2264f0b9d2d3e8e14201353bb3f1828d387bfbfbaf3e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 111
+    },
+    "112": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Sets an entry in the class storage. The class storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 112,
+      "implementation": "Thread::SetClassStorageString",
+      "interactive_name": "SetString(%p) = %p",
+      "name": "Set Class Storage String",
+      "parameter_types": [
+        4,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6638c126beaacc242705c3372b132fb91d3397f9e1e044a2cc09f7f21dea75e1",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 112
+    },
+    "113": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Sets an entry in the class storage. The class storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 113,
+      "implementation": "Thread::SetClassStorageBool",
+      "interactive_name": "SetBool(%p) = %p",
+      "name": "Set Class Storage Bool",
+      "parameter_types": [
+        4,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "62e65a445be7c7832d4cf2c7c0412651d17d8fa0012872b954a4cf044a712e7c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 113
+    },
+    "114": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace a virtue modifier",
+      "id": 114,
+      "implementation": "Thread::AddVirtueMod",
+      "interactive_name": "%p.AddVirtueMod(%p) = %p",
+      "name": "Add Stat Modifier: Virtue",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "f55694dd72e1c673c35bda81654c8738dbdaedb0c7d0aecb154bc2cac62fe31b",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 114
+    },
+    "115": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace a sociability modifier",
+      "id": 115,
+      "implementation": "Thread::AddSociabilityMod",
+      "interactive_name": "%p.AddSociabilityMod(%p) = %p",
+      "name": "Add Stat Modifier: Sociability",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "2edb216b159397b8a246c3f56f559a2ded92b5659378df9c95ea32525c227ed1",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 115
+    },
+    "116": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace a strength value modifier",
+      "id": 116,
+      "implementation": "Thread::AddStrengthMod",
+      "interactive_name": "%p.AddStrengthMod(%p) = %p",
+      "name": "Add Stat Modifier: Strength",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "f762aa1af4571b8b0b05fee92a363e19be84c325de89b0c8973dad973b5cc78a",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 116
+    },
+    "117": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace an intelligence value modifier",
+      "id": 117,
+      "implementation": "Thread::AddIntelligenceMod",
+      "interactive_name": "%p.AddIntelligenceMod(%p) = %p",
+      "name": "Add Stat Modifier: Intelligence",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "ceb883e8f137bfedaa9b93b557e735680d698c9571f7f430bfc0ee955d0770d9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 117
+    },
+    "118": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace a club value modifier",
+      "id": 118,
+      "implementation": "Thread::AddClubMod",
+      "interactive_name": "%p.AddClubMod(%p) = %p",
+      "name": "Add Stat Modifier: Club",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "cdc7674fe94915b2abdeaa5e962a92e4541ef1d211876aac4c318524433829e8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 118
+    },
+    "119": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Kick the card with the specified seat out from the class.",
+      "id": 119,
+      "implementation": "Thread::KickOut",
+      "interactive_name": "KickOutCard = %p",
+      "name": "Kick out",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "7451e6287882031788e0a950d7d9afb0d76120cc01048c2180e0bbe1c7400ef3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 119
+    },
+    "12": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds a certain amount of love points. 30 love points become one love interaction. A character can have up to 30 interactions in total; after that, earlier interactions will be replaced.",
+      "id": 12,
+      "implementation": "Thread::AddCardLovePoints",
+      "interactive_name": "%p.AddLOVE(towards: %p, amount: %p)",
+      "name": "Add Love Points",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "422274c4a2a9d20614085700b1bab0f92446b068114127ca3ae94a153c5d0e25",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 12
+    },
+    "120": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Add a card to the specified seat, with the specified gender. Input is Seat, Gender (1 for female, 0 for male), Filename respectively.",
+      "id": 120,
+      "implementation": "Thread::AddToClass",
+      "interactive_name": "%p.AddCardToClass(%p) = %p",
+      "name": "Add card to class",
+      "parameter_types": [
+        1,
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6c0fca637e5f439566a21ddffabdec7fdb37ef84291f5edee2658b4ec91d992a",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 120
+    },
+    "121": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Changes the h position to the one you specify. Only works in H position chang event.",
+      "id": 121,
+      "implementation": "Thread::ChangeHPosition",
+      "interactive_name": "SexPosition = %p",
+      "name": "Change h position",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "4b8b6ec8d3dd88c2b0df0679110d52455809fee51b9afed7a9ecc88939373f91",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 121
+    },
+    "122": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Add or replace a trait modifier.",
+      "id": 122,
+      "implementation": "Thread::AddTraitMod",
+      "interactive_name": "%p.AddTraitMod(trait: %p, modName: %p) = %p",
+      "name": "Add Trait Modifier",
+      "parameter_types": [
+        1,
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "41838e8ddc61941c58b0c62608ee1274740259f2c83b1c829e36b1aa8cf0957d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 122
+    },
+    "123": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Causes the gust of wind event to happen. Use only in pc convo state updated or pc line updated events.",
+      "id": 123,
+      "implementation": "Thread::SetGustOfWind",
+      "interactive_name": "Gust = %p",
+      "name": "Set Gust of Wind",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "91bb84bf97a56a4af4366f0512bf2e69f2dff9ed2078e9e96d8e5c10855cee4a",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 123
+    },
+    "124": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's First H Partner.",
+      "id": 124,
+      "implementation": "Thread::SetCardFirstHPartner",
+      "interactive_name": "%p.HFirst = %p",
+      "name": "Set First H Partner",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "9dae66faa78ccf69f20bb674000725048e143256b770902fbd20c05208c45489",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 124
+    },
+    "125": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's First Anal Partner.",
+      "id": 125,
+      "implementation": "Thread::SetCardFirstAnalPartner",
+      "interactive_name": "%p.AnalFirst = %p",
+      "name": "Set First Anal Partner",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "4f27a60eb106387823ff06f3d712a7c00c0e4fb79f5fae625a6729c390b6f3fb",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 125
+    },
+    "126": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's Latest H Partner.",
+      "id": 126,
+      "implementation": "Thread::SetCardLatestHPartner",
+      "interactive_name": "%p.HLast = %p",
+      "name": "Set Latest H Partner",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "a867e996c8247233d17692bad076c93e51bc0055ca7c85d9ff2f6f0fc81ce4d8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 126
+    },
+    "127": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Partner Count of a character",
+      "id": 127,
+      "implementation": "Thread::SetCardPartnerCount",
+      "interactive_name": "%p.SetPartnerCount = %p",
+      "name": "Set Partner Count",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "d4c13607f0214ae1841cf09e6e4e8e3460bac34ce5da3e6c85eb917acccc650b",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 127
+    },
+    "128": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Sexual Partner Count of a character",
+      "id": 128,
+      "implementation": "Thread::SetCardHPartnerCount",
+      "interactive_name": "%p.SetHPartnerCount = %p",
+      "name": "Set H Partner Count",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "090fd12ea6354e3e0ac4e653dae926073916e09aa61493d323ba1dbf30eab094",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 128
+    },
+    "129": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Victory Count of a card (how many times it won a fight)",
+      "id": 129,
+      "implementation": "Thread::SetVictoryCount",
+      "interactive_name": "%p.SetVictoryCount = %p",
+      "name": "Set Victory Count",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "a9bec361d638cb6b27d8eb572c0457378b80dd59d07d247b240d658209794cc9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 129
+    },
+    "13": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds a certain amount of like points. 30 like points become one like interaction. A character can have up to 30 interactions in total; after that, earlier interactions will be replaced.",
+      "id": 13,
+      "implementation": "Thread::AddCardLikePoints",
+      "interactive_name": "%p.AddLIKE( towards: %p, points: %p)",
+      "name": "Add Like Points",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "162996b789b6cebecd7a728093550628ecc0698f7f9e35117ddaade51f2cfccc",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 13
+    },
+    "130": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Classes Skipped Count of a card",
+      "id": 130,
+      "implementation": "Thread::SetClassesSkipped",
+      "interactive_name": "%p.SetClassesSkipped = %p",
+      "name": "Set Classes Skipped",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "0822ef0e2e3c2d802fe6ab1173ceb15693652994dc702f39ea4e8e1bef856fa9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 130
+    },
+    "131": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Winning Over Someone Count of a card (how many times it won in an argument",
+      "id": 131,
+      "implementation": "Thread::SetWinningCount",
+      "interactive_name": "%p.SetWinningCount = %p",
+      "name": "Set Winning Count",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "48447f5ef49182c0916898cc4540655cb2266b08b8320cd89896e60d61552ce3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 131
+    },
+    "132": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Reject Count of a card",
+      "id": 132,
+      "implementation": "Thread::SetRejectCount",
+      "interactive_name": "%p.SetRejectCount = %p",
+      "name": "Set Reject Count",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "d13702daabf5d9b456015524acf479808be131ef08332765f04e50ce0788b08a",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 132
+    },
+    "133": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Academic Exam Grade of a card",
+      "id": 133,
+      "implementation": "Thread::SetAcademicGrade",
+      "interactive_name": "%p.SetAcademicGrade = %p",
+      "name": "Set Academic Exam Grade",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "9d7498d744b910d5d8ae0d894d512061c8f7c18e895a31df9db72ae3a3876c52",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 133
+    },
+    "134": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Sport Exam Grade of a card",
+      "id": 134,
+      "implementation": "Thread::SetSportGrade",
+      "interactive_name": "%p.SetSportsGrade = %p",
+      "name": "Set Sports Exam Grade",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "c5158488ad6ac80f18b54c134603ea4f3fe5adc06740760c5c22a4ae031697d8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 134
+    },
+    "135": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set Club Competition Grade of a card",
+      "id": 135,
+      "implementation": "Thread::SetClubGrade",
+      "interactive_name": "%p.SetClubGrade = %p",
+      "name": "Set Club Exam Grade",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "010040bdf3442fc058b5628c60d637aa0ce3fb8fea81387827d08f9059f1208c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 135
+    },
+    "136": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "In Relationship Points Changed event change the resulting relationship shift of the interaction",
+      "id": 136,
+      "implementation": "Thread::RelationshipPointChange",
+      "interactive_name": "ApplyRelationshipData(LOVE: %p, LIKE: %p, DISLIKE: %p, HATE: %p)",
+      "name": "Set Applied Relationship Data",
+      "parameter_types": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "be7c6f3b783ea2bcdec6f7268376a214c0dc77187e5759e90ea006a2e9ac71e3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 136
+    },
+    "137": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Makes the first character arrange a date with the other character.",
+      "id": 137,
+      "implementation": "Thread::ArrangeDate",
+      "interactive_name": "%p.ArrangeDateWith = %p",
+      "name": "Arrange Date",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "1831465a4cc904849c8771204031cd1e50d749e62f26e166dfeda5f45bce9c16",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 137
+    },
+    "138": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Makes the first character promise a lewd reward to the other character.",
+      "id": 138,
+      "implementation": "Thread::PromiseLewd",
+      "interactive_name": "%p.LewdPromise = %p",
+      "name": "Promise Lewd Reward",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "865d4a4f3d64622fc9781925a8c1adb2bd5e4ac76b10f97409aa36b58b59a30f",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 138
+    },
+    "139": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Emit a delayed event. Delay time is in milliseconds. On period change may spill into the next period",
+      "id": 139,
+      "implementation": "Thread::EmitDelayedOptionalEvent",
+      "interactive_name": "EmitOptional(delay: %p, label: %p)",
+      "name": "Emit Delayed Optional Event",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "b37213160abae977f3dbfb1bafda26fa2201f7da0b5290d9325b1db655b862cf",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 139
+    },
+    "14": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds a certain amount of dislike points. 30 dislike points become one dislike interaction. A character can have up to 30 interactions in total; after that, earlier interactions will be replaced.",
+      "id": 14,
+      "implementation": "Thread::AddCardDislikePoints",
+      "interactive_name": "%p.AddDISLIKE( towards: %p, points: %p)",
+      "name": "Add Dislike Points",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "fcfcecaf470cc1f571bffad26640ce1cc55ce7a73504b03254fcdcb6a558e0e7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 14
+    },
+    "140": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Emit a delayed event. Delay time is in milliseconds. On period change this event is executed sooner.",
+      "id": 140,
+      "implementation": "Thread::EmitDelayedRequiredEvent",
+      "interactive_name": "EmitRequired(delay: %p, label: %p)",
+      "name": "Emit Delayed Required Event",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "4669bb235f7d0a791c1ea8b9afb40643780612034d49c7312ca4678e07ef03d5",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 140
+    },
+    "141": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Toggle Condom-Override on or off.",
+      "id": 141,
+      "implementation": "Thread::CondomOverride",
+      "interactive_name": "CondomOverride = %p",
+      "name": "Set Condom-Override state",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "c058c8d13fe5bb1fa2965cd6bf0c65f9af6c237b5e1ca56ab85ae3ffc7b8538f",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 141
+    },
+    "142": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Toggles condoms on or off, provided CondomOverride is turned on.",
+      "id": 142,
+      "implementation": "Thread::CondomValue",
+      "interactive_name": "CondomValue = %p",
+      "name": "Set Condom-Value state",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "055e508ab7c4f040b9b02294e805e018abe3c32dcc3ffa674c7417cafa2375d7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 142
+    },
+    "143": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set the skirt state of some card. 0 - long, 1 - short, 2 - rolled up, 3 - no skirt",
+      "id": 143,
+      "implementation": "Thread::SetSkirtState",
+      "interactive_name": "%p.SkirtState = %p",
+      "name": "Set Skirt State",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "f834c8b20919736d4f31846edf2471a2a262e0a37477024f42eddc7f2cea6bb9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 143
+    },
+    "144": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set the pregnancy risk on the specified day of the 14 day cycle. 2 = dangerous, 1 = safe, 0 = normal",
+      "id": 144,
+      "implementation": "Thread::SetPregnancyRisk",
+      "interactive_name": "%p.PregnancyRisk(day: %p) = %p",
+      "name": "Set Pregnancy Risk",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "2d753752aaa6f166c757c73f2cda4a6d779f9584743360e0b87be74ce2dcd002",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 144
+    },
+    "15": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds a certain amount of hate points. 30 hate points become one hate interaction. A character can have up to 30 interactions in total; after that, earlier interactions will be replaced.",
+      "id": 15,
+      "implementation": "Thread::AddCardHatePoints",
+      "interactive_name": "%p.AddHATE( towards: %p, points: %p)",
+      "name": "Add Hate Points",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "bed0bfaa00f2bcb33cea48cea156bd3cdb3f1a31e07f872057b37e18a299a8bb",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 15
+    },
+    "16": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Adds a certain amount of points. Point type is between 0 or 3, or use one of the named constants. 30 hate points become one hate interaction. A character can have up to 30 interactions in total; after that, earlier interactions will be replaced.Example: { TriggerCard.AddPoints( towards: ThisCard, LOVE points: 30 ) }",
+      "id": 16,
+      "implementation": "Thread::AddCardPoints",
+      "interactive_name": "%p.AddPoints( towards: %p, %p points: %p)",
+      "name": "Add Points",
+      "parameter_types": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "d1daa3b66b98fdfef0a750e36825665fb67e584c7225994e4cc3409c49e71a85",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 16
+    },
+    "17": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "ends execution of this thread if the given condition evaluates to true.",
+      "id": 17,
+      "implementation": "Thread::ConditionalEndExecution",
+      "interactive_name": "End Thread If (%p)",
+      "name": "Conditional End Execution",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "40b11f517f80343233b5fb65203e84d72572e50e084c10cb5774c6fa230bcbb0",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 17
+    },
+    "18": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the answer the character will do. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 18,
+      "implementation": "Thread::SetNpcResponseSuccess",
+      "interactive_name": "NPCNormalResponseSuccess = %p",
+      "name": "Set Npc Normal Response Success",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "b61d27a5e5b1e97de634ac2f0ee611102ea11d90584ff1eaf073d7e11416887f",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 18
+    },
+    "19": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the success percentage showed. Note that changing this value does not influence the Nps Answer, as it has allready been made. This Action only modifies the Percentage displayed in the UI. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 19,
+      "implementation": "Thread::SetNpcResponsePercent",
+      "interactive_name": "NPCNormalResponsePercent = %p",
+      "name": "Set Npc Normal Response Percent",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "f47618f5ae7771fbb557c3b5ace9b49692d150d2cab4912c7d8742e68248512b",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 19
+    },
+    "2": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Executes Actions if Boolean Expression is true. Use with \"Else if\" and \"Else\" actions.",
+      "id": 2,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "If (%p) then",
+      "name": "If",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "28ae70fae4e8b762eea00f031bc01eb3e2b4f3db2f3c72fca82f49c7cab77fb5",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 2
+    },
+    "20": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "If the target character is controlled by the Computer, this Action makes them walk to the specified Room. If the Character is allready walking somewhere, it will do this instead. Keep in mind that executing this Action will throw an event next tick; watch out for endless loops",
+      "id": 20,
+      "implementation": "Thread::NpcMoveRoom",
+      "interactive_name": "%p.GoTo(%p)",
+      "name": "Make Npc Move to Room",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "39c8431d6928d0e7efe30366066f5270e913679149414735818c86058c0d7de3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 20
+    },
+    "21": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "If the target character is controlled by the Computer, this Action makes them do an Action that does not require another character to execute. If the Character is allready walking somewhere, it will do this instead. Keep in mind that executing this Action will throw an event next tick; watch out for endless loops",
+      "id": 21,
+      "implementation": "Thread::NpcActionNoTarget",
+      "interactive_name": "%p.Do(action: %p)",
+      "name": "Make Npc do Action with no Target",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "ee0aca38ad3686d1e552cf9323cb63fda6564ada3492fda29430a4af138741bf",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 21
+    },
+    "22": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "If the target character is controlled by the Computer, this Action makes them walk to and start the given conversation with the target. If the Character is allready walking somewhere, it will do this instead. Keep in mind that executing this Action will throw an event next tick; watch out for endless loops",
+      "id": 22,
+      "implementation": "Thread::NpcTalkTo",
+      "interactive_name": "%p.Do(action: %p, to: %p)",
+      "name": "Make Npc Talk to Character",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "7f2e01482ad95fa5ec006e92c80e57b97454d4e5b51a29c5689496f1a49c4517",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 22
+    },
+    "23": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "If the target character is controlled by the Computer, this Action makes them walk to and start the given conversation with the target about another character in class, such as asking for their opinion or spreading bad rumors. If the Character is allready walking somewhere, it will do this instead. Keep in mind that executing this Action will throw an event next tick; watch out for endless loops",
+      "id": 23,
+      "implementation": "Thread::NpcTalkToAbout",
+      "interactive_name": "%p.Do(action: %p, to: %p, about: %p)",
+      "name": "Make Npc Talk to Character about someone",
+      "parameter_types": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "aca00960c8a9c620435da36562cbb26d5416b943c1eac828165dfec7749418aa",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 23
+    },
+    "24": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Sets an entry in the cards storage. The card storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 24,
+      "implementation": "Thread::SetCardStorageInt",
+      "interactive_name": "%p.SetInt(%p) = %p",
+      "name": "Set Card Storage Integer",
+      "parameter_types": [
+        1,
+        4,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "edc0999c80d13b41244d2e4d1d2d8a797e217d531d467ed1cae6387f4439a8f3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 24
+    },
+    "25": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Sets an entry in the cards storage. The card storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 25,
+      "implementation": "Thread::SetCardStorageFloat",
+      "interactive_name": "%p.SetFloat(%p) = %p",
+      "name": "Set Card Storage Float",
+      "parameter_types": [
+        1,
+        4,
+        3
+      ],
+      "provenance": {
+        "registration_sha256": "01ffd56a43a0cb9a7af111cfde430f8745f8cd24ecd4661706fa442a8d104d58",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 25
+    },
+    "26": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Sets an entry in the cards storage. The card storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 26,
+      "implementation": "Thread::SetCardStorageString",
+      "interactive_name": "%p.SetString(%p) = %p",
+      "name": "Set Card Storage String",
+      "parameter_types": [
+        1,
+        4,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "b536346787dc34ab46ee4a5cfdb469cc8226f49c2ea8d0226329dd03fedfd9d6",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 26
+    },
+    "27": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Sets an entry in the cards storage. The card storage stores key-value pairs and is persistent between saves and loads. Note that the keys are shared between value types, so that for example a given key can not hold both an int and a string. When the key is allready in use, the function will silently fail.",
+      "id": 27,
+      "implementation": "Thread::SetCardStorageBool",
+      "interactive_name": "%p.SetBool(%p) = %p",
+      "name": "Set Card Storage Bool",
+      "parameter_types": [
+        1,
+        4,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "b527452fa68623ecb89a90f26f3b08c1c69f274c1c499a8b5de9584e6275ebf7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 27
+    },
+    "28": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Removes an entry from the cards storage. If the given entry exists, but does not contain an int, this function will fail.",
+      "id": 28,
+      "implementation": "Thread::RemoveCardStorageInt",
+      "interactive_name": "%p.DropInt(%p)",
+      "name": "Remove Card Storage Integer",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6a2e3d28196a2d52d1a12a8ee332cbd8ae2e5cd426ef5f86d83e26b8c4034ffa",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 28
+    },
+    "29": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Removes an entry from the cards storage. If the given entry exists, but does not contain a float, this function will fail.",
+      "id": 29,
+      "implementation": "Thread::RemoveCardStorageFloat",
+      "interactive_name": "%p.DropFloat(%p)",
+      "name": "Remove Card Storage Float",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "55356d65e62452a5dd9546d38d50c7e12d091c4abbb16e1c224d83f0642f5d53",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 29
+    },
+    "3": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Executes Actions if the previous If Action was not executed, and the Boolean Expression is true. Use with \"If\" and \"Else\" actions. If this action does not preceed a \"If\" action, it acts as an \"If\" action instead.",
+      "id": 3,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "Else If (%p) then",
+      "name": "Else If",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "fdcb289e936b7f07ff0ac68c42604086a953e313008e82f7b3799896b3a8142d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 3
+    },
+    "30": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Removes an entry from the cards storage. If the given entry exists, but does not contain a string, this function will fail.",
+      "id": 30,
+      "implementation": "Thread::RemoveCardStorageString",
+      "interactive_name": "%p.DropString(%p)",
+      "name": "Remove Card Storage String",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "8f4ab6b49e01112b2da2646f4e4ffe66e6127efc49a83e16be1a2573ecd56685",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 30
+    },
+    "31": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Removes an entry from the cards storage. If the given entry exists, but does not contain a bool, this function will fail.",
+      "id": 31,
+      "implementation": "Thread::RemoveCardStorageBool",
+      "interactive_name": "%p.DropBool(%p)",
+      "name": "Remove Card Storage Bool",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "18f66e3df98ebca62952d39c1185c79f1499ceedbf81e6d3b6e2ead5f18a41d2",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 31
+    },
+    "32": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set selected character's virtue. 0- lowest, 1 - low, 2 - normal, 3 - high, 4 - highest.",
+      "id": 32,
+      "implementation": "Thread::SetCardVirtue",
+      "interactive_name": "%p.Virtue = %p",
+      "name": "Set Virtue",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "acbfac767469bf4a003438285930d415ca3c84857a91e6a889fc9716a0e114a0",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 32
+    },
+    "33": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Enable or disable selected character's trait.",
+      "id": 33,
+      "implementation": "Thread::SetCardTrait",
+      "interactive_name": "%p.Trait(%p) = %p",
+      "name": "Set Trait",
+      "parameter_types": [
+        1,
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "612948b362bccbc6b4bd1f6e79019038ac68336f04314263d30cfb56f3a67ae6",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 33
+    },
+    "34": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's personality.",
+      "id": 34,
+      "implementation": "Thread::SetCardPersonality",
+      "interactive_name": "%p.Personality = %p",
+      "name": "Set Personality",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "8b66bc66d4325bba1f0f95c46904e21c01ae4b05f70279d05dcccc05ba2ecb45",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 34
+    },
+    "35": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's voice pitch.",
+      "id": 35,
+      "implementation": "Thread::SetCardVoicePitch",
+      "interactive_name": "%p.Pitch = %p",
+      "name": "Set Voice Pitch",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "a6754cabbaa182baa1573834f5b31c4ee2cf6213ef3026c22df6028ac5994197",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 35
+    },
+    "36": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's club.",
+      "id": 36,
+      "implementation": "Thread::SetCardClub",
+      "interactive_name": "%p.Club = %p",
+      "name": "Set Club",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "4ccaced370a86a9379ff3cfac9569a59e7a2cac85e9f0c1e144f92b33fc19456",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 36
+    },
+    "37": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's club value.",
+      "id": 37,
+      "implementation": "Thread::SetCardClubValue",
+      "interactive_name": "%p.ClubValue = %p",
+      "name": "Set Club Value",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "daf87244b6abd3a2acaca02f7f81dcca231616a7baa83b5c997aa1b0fb1ee6ea",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 37
+    },
+    "38": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's club rank.",
+      "id": 38,
+      "implementation": "Thread::SetCardClubRank",
+      "interactive_name": "%p.ClubRank = %p",
+      "name": "Set Club Rank",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "09e87a921f3fef753cba4bc778d230ead29feb332bd175413f5d2b7e997de0e9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 38
+    },
+    "39": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's intelligence.",
+      "id": 39,
+      "implementation": "Thread::SetCardIntelligence",
+      "interactive_name": "%p.Intelligence = %p",
+      "name": "Set Intelligence",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "3fd876d8f9911217cb3a673420262411be61cfe6336173bd7b2889883ccc8b2c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 39
+    },
+    "4": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Executes Actions if the preceeding \"If\" and \"Else If\" actions were all not Executed. Use with \"If\" and \"Else\" actions. If this action does not preceed a \"If\" or \"Else if\" action, it is always executed.",
+      "id": 4,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "Else",
+      "name": "Else",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "009bb6b489658e011a21786d0d2e0618b863b542cce29e79bd19d6bf7431decd",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 4
+    },
+    "40": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's intelligence value.",
+      "id": 40,
+      "implementation": "Thread::SetCardIntelligenceValue",
+      "interactive_name": "%p.IntelligenceValue = %p",
+      "name": "Set Intelligence Value",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "dcf729c94a02e230e388db52634d1a24001e8ef7a09b6c78a782c6f30cf63b10",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 40
+    },
+    "41": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's intelligence rank.",
+      "id": 41,
+      "implementation": "Thread::SetCardIntelligenceRank",
+      "interactive_name": "%p.IntelligenceRank = %p",
+      "name": "Set Intelligence Rank",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "eb02a49cb5f93f4de5747da33deb9954daf227d90c245ce33fafdfea6b250231",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 41
+    },
+    "42": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's strength.",
+      "id": 42,
+      "implementation": "Thread::SetCardStrength",
+      "interactive_name": "%p.Strength = %p",
+      "name": "Set Strength",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "9cf4093cfb05300ccd8af174cc625c62b97c8b54bf8481bb12334d09b09b8e57",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 42
+    },
+    "43": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's strength value.",
+      "id": 43,
+      "implementation": "Thread::SetCardStrengthValue",
+      "interactive_name": "%p.StrengthValue = %p",
+      "name": "Set Strength Value",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "3eaab298a12ca8fdc3aca14c4104a2626ce21201c3f4489241957893c2523fca",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 43
+    },
+    "44": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's strength rank.",
+      "id": 44,
+      "implementation": "Thread::SetCardStrengthRank",
+      "interactive_name": "%p.StrengthRank = %p",
+      "name": "Set Strength Rank",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "ef64ef26020d6c521c7800e1aac5a58f579501545c1dca6e042023ea8a14b250",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 44
+    },
+    "45": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's sociability.",
+      "id": 45,
+      "implementation": "Thread::SetCardSociability",
+      "interactive_name": "%p.Sociability = %p",
+      "name": "Set Sociability",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "82f627cd2e89a0c5787cbdfceae80d885a37cf45e87c54f92b2512fe71c454a8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 45
+    },
+    "46": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's First Name.",
+      "id": 46,
+      "implementation": "Thread::SetCardSecondName",
+      "interactive_name": "%p.FirstName = %p",
+      "name": "Set First Name",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6d13733adde904394c266f57cc2ae85e014b152fca0d723679657db072f1d536",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 46
+    },
+    "47": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's Last Name.",
+      "id": 47,
+      "implementation": "Thread::SetCardFirstName",
+      "interactive_name": "%p.LastName = %p",
+      "name": "Set Last Name",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "ac9778a43a0c39c085d1d9b3ac617fff651282489948c42c8a0c8f57ae08c373",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 47
+    },
+    "48": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's sexual orientation.",
+      "id": 48,
+      "implementation": "Thread::SetCardOrientation",
+      "interactive_name": "%p.Orientation = %p",
+      "name": "Set Sex Orientation",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "fb846013e62148ed1a49d78ebce8f8b071c0cdae66d7379436c460942f78b7d2",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 48
+    },
+    "49": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set character's description.",
+      "id": 49,
+      "implementation": "Thread::SetCardDescription",
+      "interactive_name": "%p.Description = %p",
+      "name": "Set Description",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "67ff5ee55e9aac4cdbefcea1ece50fa47bfecf2eae8748f309c0007efbd858ce",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 49
+    },
+    "5": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Skips additional actions if the given condition is true. May skip negative amounts to go back.",
+      "id": 5,
+      "implementation": "Thread::ConditionalJump",
+      "interactive_name": "Jump %p Actions if (%p)",
+      "name": "Conditional Jump",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "871dec5f7507d35f158c696197e4e5b593a8e22adf06afd53c6c23d7303e8d2d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 5
+    },
+    "50": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Change current Player Character.",
+      "id": 50,
+      "implementation": "Thread::SetPC",
+      "interactive_name": "%p.SetPC",
+      "name": "Change Player Character",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "7572eb03f63866b5ba7df3aa49c418df962c2ae3bc37e64131d02277f8b5fcf9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 50
+    },
+    "51": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Start H scene between 2 characters",
+      "id": 51,
+      "implementation": "Thread::StartHScene",
+      "interactive_name": "StartH(pc: %p, partner: %p)",
+      "name": "Start H scene",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "c9df2a0497511dd94d18c34b486fd1cb756d271eff01805d09f35c8be2c08d0a",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 51
+    },
+    "52": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set vaginal experience for the character",
+      "id": 52,
+      "implementation": "Thread::SetCardSexExperience",
+      "interactive_name": "%p.SexXP = %p",
+      "name": "Set Sex Experience: Vaginal",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "424b26c07778325ad6d529b0b01e4180671c750eb1b828e1e79ae455ec04b09b",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 52
+    },
+    "53": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set anal experience for the character",
+      "id": 53,
+      "implementation": "Thread::SetCardAnalSexExperience",
+      "interactive_name": "%p.AnalXP = %p",
+      "name": "Set Sex Experience: Anal",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "f1586471a7c084fac6f1ea6f574a6be7bbcb09937fa363d6d8fc1c240ead8c07",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 53
+    },
+    "54": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Add mood strength.",
+      "id": 54,
+      "implementation": "Thread::AddMood",
+      "interactive_name": "%p.AddMood(mood: %p, strength: %p)",
+      "name": "Add Mood",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "04c604dcfb29c608be15ed83e6d9a816737c166778794c8779327bc0b27998df",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 54
+    },
+    "55": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Replace mood 1 with mood 2 up to strength.",
+      "id": 55,
+      "implementation": "Thread::ReplaceMood",
+      "interactive_name": "%p.ReplaceMood(mood: %p, with mood: %p, strength: %p)",
+      "name": "Replace Mood",
+      "parameter_types": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "0bdf83616b89bd5e19fb6c20af00a48d1ceefaa05d962e86496e4ff64f079eb7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 55
+    },
+    "56": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Rename Lover's item.",
+      "id": 56,
+      "implementation": "Thread::SetCardLoversItem",
+      "interactive_name": "%p.LoverItem = %p",
+      "name": "Set Item - Lover's",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "1500554bf53315402a4e8287bd37171b587a37b5420882e86f4341a48620447d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 56
+    },
+    "57": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Rename Friend's item.",
+      "id": 57,
+      "implementation": "Thread::SetCardFriendItem",
+      "interactive_name": "%p.FriendItem = %p",
+      "name": "Set Item - Friend's",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "6b3201ec1c263b75b415a0e5e207b3b93505231751456347fa256850fe970678",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 57
+    },
+    "58": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Rename Sexual item.",
+      "id": 58,
+      "implementation": "Thread::SetCardSexualItem",
+      "interactive_name": "%p.SexualItem = %p",
+      "name": "Set Item - Sexual",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "78db7ed8c9fe6438d778e8c47090f1b3324a13ce74d7a25b68b175d534b9523c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 58
+    },
+    "59": {
+      "category": "Card Modification",
+      "category_id": 1,
+      "description": "Set card's H compatibility with the selected character. 0-999 values",
+      "id": 59,
+      "implementation": "Thread::SetCardSexCompatibility",
+      "interactive_name": "%p.Compatibility(%p) = %p",
+      "name": "Set H Compatibility",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "77beca5722c91f295b0988d5d983a5af34b81cd9e4385e1e8e4b2103ed7a4d98",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 59
+    },
+    "6": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Loops the subactions. Can be exited using break or repeated by using continue actions",
+      "id": 6,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "Loop",
+      "name": "Loop",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "12af7118ba722ea9e0a753bf98844724a828269ba7f03f6c748eb476afa42131",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 6
+    },
+    "60": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Set NPC status. 0=still, 1=settle in location, 2=move to location, 3=walk to character, 4=follow, 7=talk, 8=minna",
+      "id": 60,
+      "implementation": "Thread::SetNpcStatus",
+      "interactive_name": "%p.NpcStatus = %p",
+      "name": "Set NPC status",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "6dbf5f6e05d81e9770a2eb89ed52064d126288465f6b20f33afa27b52088ac71",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 60
+    },
+    "61": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Cleans up after voyeur sex",
+      "id": 61,
+      "implementation": "Thread::ResetVoyeur",
+      "interactive_name": "Voyeur Clean Up",
+      "name": "Voyeur Clean Up",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "ca2fd696a2832dba998a60bc82e7f6e156086612c42a91fc708e332892967c23",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 61
+    },
+    "62": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the full set of relationship points. The points are normalized, meaning you don't have to have them add up to 900 - the action will do it for you using the values as weights.\nIf you do have them add up to 900.0 they would be aplied as you provide them, minus the decimals.",
+      "id": 62,
+      "implementation": "Thread::SetCardPoints",
+      "interactive_name": "%p.SetPoints(towards: %p, LOVE: %p, LIKE: %p, DISLIKE: %p, HATE: %p, SPARE: %p)",
+      "name": "Set Points",
+      "parameter_types": [
+        1,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "provenance": {
+        "registration_sha256": "daca86ab40ae1c0ddd3e39e3ca6580aceb0595e70e6a9319912689ea2ccf5066",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 62
+    },
+    "63": {
+      "category": "General",
+      "category_id": 0,
+      "description": "Writes the string to the INFO log.",
+      "id": 63,
+      "implementation": "Thread::WriteLog",
+      "interactive_name": "Log(%p)",
+      "name": "Write Log",
+      "parameter_types": [
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "68eb891028e2d9a80f4f949e751d835cb8ffaab42558f3e8c5493270c3841b10",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 63
+    },
+    "64": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character got cummed inside their vagina by the target.",
+      "id": 64,
+      "implementation": "Thread::SetCardCumStatInVagina",
+      "interactive_name": "%p.SetVaginalCums(target: %p, amount: %p)",
+      "name": "Cum Stat - Vaginal",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "d179b5c7226b642e8b7804b7a1794062bdb3cf64c88075bf3c6cf274db49c1e5",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 64
+    },
+    "65": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character got cummed inside their rectum by the target.",
+      "id": 65,
+      "implementation": "Thread::SetCardCumStatInAnal",
+      "interactive_name": "%p.SetAnalCums(target: %p, amount: %p)",
+      "name": "Cum Stat - Anal",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "264681d3f60992f397b37b5276fdc89e37f1d4de3a309701f71f739c1eedca64",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 65
+    },
+    "66": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character got cummed inside their mouth by the target.",
+      "id": 66,
+      "implementation": "Thread::SetCardCumStatInMouth",
+      "interactive_name": "%p.SetOralCums(target: %p, amount: %p)",
+      "name": "Cum Stat - Oral",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "5a9c321286454a1b34072de35aa4d85f1e3140f0a66d4623cb930826666ffd66",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 66
+    },
+    "67": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character got cummed inside by the target.",
+      "id": 67,
+      "implementation": "Thread::SetCardCumStatTotalCum",
+      "interactive_name": "%p.SetTotalCums(target: %p, amount: %p)",
+      "name": "Cum Stat - All",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "0a5950e4ea145301ac2c4a8a70a659c013e6a5a1612c03897c00050aa787021f",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 67
+    },
+    "68": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character climaxed while having sex with the target.",
+      "id": 68,
+      "implementation": "Thread::SetCardCumStatClimaxCount",
+      "interactive_name": "%p.SetSingleClimax(target: %p, amount: %p)",
+      "name": "Climax Stat - Single",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "8f4f7f0c635a65339019f642ff0cb8f484d1eb7b9437345cf37458ddd550c4a1",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 68
+    },
+    "69": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character climaxed together with the target.",
+      "id": 69,
+      "implementation": "Thread::SetCardCumStatSimClimaxCount",
+      "interactive_name": "%p.SetSimClimax(target: %p, amount: %p)",
+      "name": "Climax Stat - Simultaneous",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "b22c4c8b57f89b7a4bce216f9d7d1013a577f7401e92ff57d5d7575b23644ae7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 69
+    },
+    "7": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Breaks out of the enclosing Loop action if the given condition is true. No effect if no loop is around.",
+      "id": 7,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "Break If (%p)",
+      "name": "Break If",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "a5536a012c5bd700e46bf98570575217813ae8eea4e4f7bd20a54a442d3027f9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 7
+    },
+    "70": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character used condoms with the target.",
+      "id": 70,
+      "implementation": "Thread::SetCardCumStatCondomsUsed",
+      "interactive_name": "%p.SetCondomsUsed(target: %p, amount: %p)",
+      "name": "H Stat - Condoms Used",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "22b8456605bd8cd3658ac423584031870fbf0fe413c8d9802f50a8ef1e0804e2",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 70
+    },
+    "71": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character had vaginal sex with the target.",
+      "id": 71,
+      "implementation": "Thread::SetCardVaginalSex",
+      "interactive_name": "%p.SetVaginalH(target: %p, amount: %p)",
+      "name": "H Stat - Vaginal",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "5162853e3bf7694f9d38d0f35edcad53c09a8f3d0f675e44cbb6a232304753ec",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 71
+    },
+    "72": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character had anal sex with the target.",
+      "id": 72,
+      "implementation": "Thread::SetCardAnalSex",
+      "interactive_name": "%p.SetAnalH(target: %p, amount: %p)",
+      "name": "H Stat - Anal",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "27d6804669f21ec6a854e4041e8cc0624e0655aae7b01bec0dca3b2ad53d45a3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 72
+    },
+    "73": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character had sex with the target.",
+      "id": 73,
+      "implementation": "Thread::SetCardAllSex",
+      "interactive_name": "%p.SetAllH(target: %p, amount: %p)",
+      "name": "H Stat - All",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "86b67edd326a7fe2aaca268e79e4d1afc7c79c8c9f3a021600575095801350b7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 73
+    },
+    "74": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Sets the amount of times this character got cummed inside on their risky days by the target.",
+      "id": 74,
+      "implementation": "Thread::SetCardCumStatRiskyCums",
+      "interactive_name": "%p.SetRiskyCums(target: %p, amount: %p)",
+      "name": "Cum Stat - Risky",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "0c4f09aac19352c7438701de2c7aef2544a404c2acff21ab9647feca0b8f1bf9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 74
+    },
+    "75": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set this card's lover flag for the target. NOTE: Lovers status can be one-sided.",
+      "id": 75,
+      "implementation": "Thread::SetLover",
+      "interactive_name": "%p.SetLover(target: %p) = %p",
+      "name": "Set Lover",
+      "parameter_types": [
+        1,
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "e28b18cbffcf9b888496152ab0385f2fcb829d91a35a284a4f92253b93d76e56",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 75
+    },
+    "76": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Set whether the sex will be consensual or not. 0 - consensual, 4 - Actor 0 will be raped, 8 - PC will be raped, 10 - both will be raped. ",
+      "id": 76,
+      "implementation": "Thread::IsConsensualH",
+      "interactive_name": "SexConsensual = %p",
+      "name": "Sex Consensual",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "272bfbab6b2457e46ce00915fa464edc55745693f1f9c2657bf87b10150249e1",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 76
+    },
+    "77": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Locks the character from interacting. Adds the red circle around them. 1 - set red circle, 0 - unset it.",
+      "id": 77,
+      "implementation": "Thread::SetCharacterLocked",
+      "interactive_name": "%p.LockState = %p",
+      "name": "Lock character",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "c578cc9f62f648a3d8660a154672dded89656c394acb6661818808ba4d2d3a9e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 77
+    },
+    "78": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Set masturbation state of the character. 1 - to fap, -1 - not to fap.",
+      "id": 78,
+      "implementation": "Thread::SetMasturbating",
+      "interactive_name": "%p.FapState = %p",
+      "name": "Set Fap State",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "99336d9c9267427ea2309fa155cbd36e8101ee71e20cca766407e21e51c5d992",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 78
+    },
+    "79": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Toggle AutoPC on or off.",
+      "id": 79,
+      "implementation": "Thread::AutoPC",
+      "interactive_name": "AutoPC = %p",
+      "name": "Set Auto-PC state",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "59f711354c7d314f0200ae91c03fea48a189158516264d7435a6ce15c4a41316",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 79
+    },
+    "8": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Goes back to the loop header of the enclosing Loop action if the given condition is true. No effect if no loop is around.",
+      "id": 8,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "Continue If (%p)",
+      "name": "Continue If",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "7f9f09f899f4f36476e9c4e471c9c8df748ac5c91dbaadb59e08f3dadc060f65",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 8
+    },
+    "80": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Sets the PC's response. Responses adhere to the following priority and override each other: Normal < Strong < Absolute. Use normal unless you know what you're doing. 0 is 'Yes', 1 is 'No', 2 is 'Huh ?', -1 is undefined",
+      "id": 80,
+      "implementation": "Thread::SetPCResponse",
+      "interactive_name": "PCNormalResponse = %p",
+      "name": "Set Normal PC Response",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "87f71edca6862532822eaabe3805dd549243af4c55f9a345d3a37ebcbcc99c36",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 80
+    },
+    "81": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set the clothing state of some card.",
+      "id": 81,
+      "implementation": "Thread::SetClothingState",
+      "interactive_name": "%p.ClothingState = %p",
+      "name": "Set Clothing State",
+      "parameter_types": [
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "03e726db22a512790f4540f6e5bee6dffa487bb4c5b57b47f279683b944441d8",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 81
+    },
+    "82": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Sets whether the character's virginity was attempted to be taken by the target. 0 - no, 1 - yes.",
+      "id": 82,
+      "implementation": "Thread::SetCherryStatus",
+      "interactive_name": "%p.SetCherryStatus(target: %p) = %p",
+      "name": "Set Cherry Status",
+      "parameter_types": [
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "ad3aa839b890f401752b57f6cb172ad71807b75e74c8c58fd4f16a79690f2b12",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 82
+    },
+    "83": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set whether the character has cum in mouth.",
+      "id": 83,
+      "implementation": "Thread::SetCum",
+      "interactive_name": "%p.SetCum = %p",
+      "name": "Set Cum",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "4d65e6447adb4be58951b59781c305e75a1d6cf73178e8acb328dcdd5aa3caff",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 83
+    },
+    "84": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set whether the character is crying.",
+      "id": 84,
+      "implementation": "Thread::SetTears",
+      "interactive_name": "%p.SetTears = %p",
+      "name": "Set Tears",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "76bf76d7be6c7e1019d480345895a558242e54231a30daad60f056bc9a87da21",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 84
+    },
+    "85": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set whether the character has highlight in their eyes.",
+      "id": 85,
+      "implementation": "Thread::SetHighlight",
+      "interactive_name": "%p.SetHighlight = %p",
+      "name": "Set Highlight",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "8f5feb3d5a1f5f99c98f2fd2c317ac57db80cd7ff2c34b697b7662b0277aabb6",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 85
+    },
+    "86": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set whether the character has their glasses on.",
+      "id": 86,
+      "implementation": "Thread::SetGlasses",
+      "interactive_name": "%p.SetGlasses = %p",
+      "name": "Set Glasses",
+      "parameter_types": [
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "b86ccfb5d5a436613d66194de3bad82fd8288aa0c0e541798ae891c95547e428",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 86
+    },
+    "87": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Sets pose for the scene actor.",
+      "id": 87,
+      "implementation": "Thread::SetPose",
+      "interactive_name": "%p.Pose = %p",
+      "name": "Set Pose",
+      "parameter_types": [
+        1,
+        4
+      ],
+      "provenance": {
+        "registration_sha256": "4f3eed65eb5eaf2078d25e356a065a8a8fef79f4e0d4bfac16865c35e1fc3fbd",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 87
+    },
+    "88": {
+      "category": "Npc Action",
+      "category_id": 5,
+      "description": "Cancels NPC's currently issued action",
+      "id": 88,
+      "implementation": "Thread::NpcCancelAction",
+      "interactive_name": "%p.CancelAction",
+      "name": "Cancel NPC's action",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "39e9d609e5c268601a10c336c71ba07b1a69dfe40426eb7b0a0e4cfad0ca1eb4",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 88
+    },
+    "89": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the answer the character will do.",
+      "id": 89,
+      "implementation": "Thread::SetNpcResponseAnswer",
+      "interactive_name": "CurrentResponseAnswer = %p",
+      "name": "Set Npc Current Response Answer",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "70c196205f379ee45c6d65104d4ae95c9c3e59498cea2ae3f45959522a7d8599",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 89
+    },
+    "9": {
+      "category": "Flow Control",
+      "category_id": 2,
+      "description": "Sets the given integer variable to the start value, then loops the subactions, increasing the variable by one after each pass, until the integer is greater or equal to the target value. Break and Continue may be used.",
+      "id": 9,
+      "implementation": "Thread::ShouldNotBeImplemented",
+      "interactive_name": "For %p from %p till %p (exclusive)",
+      "name": "For Loop",
+      "parameter_types": [
+        0,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "bff9dd580748a2d21a475a1b85f8450fad3b9f1f188a8bb30884decea12ee899",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 9
+    },
+    "90": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Turn on H-AI",
+      "id": 90,
+      "implementation": "Thread::SetH_AI",
+      "interactive_name": "H-AI = %p",
+      "name": "Turn on H-AI",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "9e02c3c49f680905e6162e73158d58325825282cba9542cb5c4ad22d385920bc",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 90
+    },
+    "91": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Changes PC's target. Very situational use, cannot be used to redirect PC's actions. Can be used to change second actor of h.",
+      "id": 91,
+      "implementation": "Thread::SetPCTarget",
+      "interactive_name": "PCTarget = %p",
+      "name": "Change PC Target",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "b5a90d41a06b47aacb93bf58c051c8d6fe09968e9536f79ae1684e6683ea5525",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 91
+    },
+    "92": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Sets the PC's response. Responses adhere to the following priority and override each other: Normal < Strong < Absolute. Use normal unless you know what you're doing. 0 is 'Yes', 1 is 'No', 2 is 'Huh ?', -1 is undefined",
+      "id": 92,
+      "implementation": "Thread::SetStrongResponse",
+      "interactive_name": "PCStrongResponse = %p",
+      "name": "Set Strong PC Response",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "1958809a1fa2eef3896bff97c250b9ce32ff13790b1c0e5adb7d0e140ba06a19",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 92
+    },
+    "93": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "Sets the PC's response. Responses adhere to the following priority and override each other: Normal < Strong < Absolute. Use normal unless you know what you're doing. 0 is 'Yes', 1 is 'No', 2 is 'Huh ?', -1 is undefined",
+      "id": 93,
+      "implementation": "Thread::SetAbsoluteResponse",
+      "interactive_name": "PCAbsoluteResponse = %p",
+      "name": "Set Absolute PC Response",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "8516d7c7eb828cbd03732215135b882fc995f39723d826466f29a6967799235f",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 93
+    },
+    "94": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the answer the character will do. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 94,
+      "implementation": "Thread::SetNpcStrongResponseSuccess",
+      "interactive_name": "NPCStrongResponseSuccess = %p",
+      "name": "Set Npc Strong Response Success",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "4f4ecede3dabf770764a1462e6424cc3285dc0fb346d29fe4330dc3761b3a9e2",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 94
+    },
+    "95": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the success percentage showed. Note that changing this value does not influence the Nps Answer, as it has allready been made. This Action only modifies the Percentage displayed in the UI. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 95,
+      "implementation": "Thread::SetNpcResponseStrongPercent",
+      "interactive_name": "NPCStrongResponsePercent = %p",
+      "name": "Set Npc Strong Response Percent",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "d551bfbdd80a70de01817fafad5f0507782346c66fb73d4275c9046d3ecd1e32",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 95
+    },
+    "96": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the success percentage showed. Note that changing this value does not influence the Nps Answer, as it has allready been made. This Action only modifies the Percentage displayed in the UI. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 96,
+      "implementation": "Thread::SetNpcResponseAbsolutePercent",
+      "interactive_name": "NPCAbsoluteResponsePercent = %p",
+      "name": "Set Npc Absolute Response Percent",
+      "parameter_types": [
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "a64e9e2371e8d98a00acd5e5e09df22d7ac389881955d25faa6576d3853f2337",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 96
+    },
+    "97": {
+      "category": "Event",
+      "category_id": 4,
+      "description": "When executed with a Npc Answers Event, this can be used to modify the answer the character will do. Adhers to the following priority and override each other: Normal < Strong < Absolute.",
+      "id": 97,
+      "implementation": "Thread::SetNpcAbsoluteResponseSuccess",
+      "interactive_name": "NPCAbsoluteResponseSuccess = %p",
+      "name": "Set Npc Absolute Response Success",
+      "parameter_types": [
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "70f29a4c7573138a9f07f13a6ff888e3f168021a46434d28e71b874478301b33",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 97
+    },
+    "98": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Enable or disable selected character's H preference.",
+      "id": 98,
+      "implementation": "Thread::SetCardPreference",
+      "interactive_name": "%p.HPreference(preference: %p) = %p",
+      "name": "Set H Preference",
+      "parameter_types": [
+        1,
+        1,
+        2
+      ],
+      "provenance": {
+        "registration_sha256": "4a1828fff3e5a73b54e11fd73118248bd2388bac43e5394947832a656565cc0c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 98
+    },
+    "99": {
+      "category": "Character Modification",
+      "category_id": 3,
+      "description": "Set the state of opinion of first character towards the second character.",
+      "id": 99,
+      "implementation": "Thread::SetCardOpinion",
+      "interactive_name": "%p.Opinion(id: %p, towards: %p) = %p",
+      "name": "Set Opinion",
+      "parameter_types": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "provenance": {
+        "registration_sha256": "da25d7df0e724b9b1684db558d211c742074f90d73a06c794914bc3b835c1500",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Actions.cpp"
+      },
+      "registry_index": 99
+    }
+  },
+  "generator_version": "4",
+  "schema": "aa2modulus.actions.v3",
+  "source_revision": "312c658b256f41771a5488fbf79a677d7b4551a8"
+}

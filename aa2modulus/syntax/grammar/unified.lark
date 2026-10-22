@@ -1,0 +1,151 @@
+start: top_level_item*
+
+?top_level_item: import_decl | macro_definition | module | trigger_template | const_decl | allowed_definition
+allowed_definition: allow_attr+ (macro_definition | module | trigger_template)
+allow_attr: _ALLOW "(" _allow_codes ")"
+// A separate rule keeps the state after `)` module-only, so the contextual lexer
+// reads `import.trigger` as the keyword rather than a QUALIFIED_NAME.
+module_allow_attr: _ALLOW "(" _allow_codes ")"
+_allow_codes: IDENT ("," IDENT)*
+import_decl: "import" ESCAPED_STRING ";"
+trigger_template: "trigger" ESCAPED_STRING "{" template_slot* trigger_item* "}"
+template_slot: "slot" name_ref source_type_ref ";"
+
+macro_definition: "macro" name_ref "{" macro_parameter* statement* "}"
+macro_parameter: "param" name_ref source_type_ref ";"
+
+const_decl: "const" name_ref ":" type_ref "=" const_value ";"
+?const_value: literal
+            | const_ref
+            | IDENT -> const_name
+const_ref: "const" "(" ESCAPED_STRING ")"
+
+module: "module" ESCAPED_STRING "{" module_item* "}"
+?module_item: description | depends_on | const_decl | global_decl | global_state_decl | trigger | trigger_import | allowed_trigger
+allowed_trigger: module_allow_attr+ (trigger | trigger_import)
+description: "description" ESCAPED_STRING ";"
+depends_on: "depends_on" ESCAPED_STRING ";"
+global_decl: "global" name_ref ":" source_type_ref "=" const_value ";"
+global_state_decl: "global" name_ref ":" source_type_ref "{" "default" raw_value ";" "current" raw_value ";" "initialized" BOOLEAN ";" "}"
+
+trigger: "trigger" ESCAPED_STRING "{" trigger_item* "}"
+trigger_import: "import.trigger" ESCAPED_STRING [ESCAPED_STRING] "{" slot_binding* "}"
+slot_binding: "slot" name_ref "=" expr ";"
+?trigger_item: event_decl | raw_event_decl | local_decl | statement | allowed_declaration
+allowed_declaration: allow_attr+ (event_decl | raw_event_decl | local_decl)
+event_decl: "on" source_name ";" -> named_event_empty
+          | "on" source_name "(" [expr_list] ")" ";" -> named_event_args
+raw_event_decl: "raw_event" SIGNED_INT "(" [expr_list] ")" ";" -> raw_event_args
+              | "raw_event" SIGNED_INT ";" -> raw_event_empty
+local_decl: "let" name_ref ":" source_type_ref "=" expr ";"
+
+?statement: _statement_body | allowed_statement
+allowed_statement: allow_attr+ _statement_body
+_statement_body: if_stmt | standalone_elseif_stmt | standalone_else_stmt | loop_stmt | for_stmt | loop_control | assignment | action_stmt | member_action_stmt | bare_member_stmt | raw_action_stmt
+if_stmt: "if" expr block elseif_clause* else_clause?
+elseif_clause: "else" "if" expr block
+else_clause: "else" block
+standalone_elseif_stmt: STANDALONE_ELSEIF expr block
+standalone_else_stmt: STANDALONE_ELSE ";" -> standalone_else_empty
+                    | STANDALONE_ELSE block -> standalone_else_block
+loop_stmt: "loop" block
+for_stmt: "for" name_ref "from" expr "to" expr block
+loop_control: LOOP_KEYWORD ("if" expr)? ";"
+assignment: assignment_target "=" expr ";"
+assignment_target: IDENT -> assignment_identifier
+                 | "variable" "(" ESCAPED_STRING ")" -> assignment_variable
+action_stmt: source_name "(" [expr_list] ")" ";" -> action_empty
+           | source_name "(" [expr_list] ")" block -> action_block
+member_action_stmt: member_receiver "." member_name "(" [expr_list] ")" ";"
+bare_member_stmt: (QUALIFIED_NAME | member_property) ";"
+raw_action_stmt: "raw_action" SIGNED_INT "(" [expr_list] ")" ";" -> raw_action_empty
+                | "raw_action" SIGNED_INT "(" [expr_list] ")" block -> raw_action_block
+                | "raw_action" SIGNED_INT ";" -> raw_action_plain
+block: "{" statement* "}"
+expr_list: expr ("," expr)*
+
+?expr: or_expr
+?or_expr: and_expr (OR_OP and_expr)*
+?and_expr: equality (AND_OP equality)*
+?equality: comparison (EQUALITY_OP comparison)?
+?comparison: additive (RELATIONAL_OP additive)?
+?additive: multiplicative (ADD_OP multiplicative)*
+?multiplicative: unary (MUL_OP unary)*
+?unary: NOT_OP unary -> unary_expr
+       | atom
+?atom: literal
+     | raw_expression
+     | variable_ref
+     | const_ref
+     | card_conversion
+     | call_expr
+     | member_call
+     | member_property
+     | bare_name
+     | "(" expr ")" -> grouped
+variable_ref: "variable" "(" ESCAPED_STRING ")"
+card_conversion: "Card" "(" expr ")"
+member_call: member_receiver "." member_name "(" [expr_list] ")"
+member_property: member_receiver "." member_name
+?member_name: IDENT | QUALIFIED_NAME
+?member_receiver: variable_ref
+                | const_ref
+                | card_conversion
+                | call_expr
+                | member_call
+                | member_property
+                | "(" expr ")" -> grouped
+call_expr: source_name "(" [expr_list] ")"
+bare_name: source_name
+source_name: QUALIFIED_NAME | IDENT
+?name_ref: IDENT -> bare_name_ref
+         | ESCAPED_STRING -> string_name_ref
+
+raw_expression: "raw_expression" type_ref SIGNED_INT "{" raw_payload "}"
+?raw_payload: "constant" raw_value ";" -> raw_constant
+            | "variable" ESCAPED_STRING ";" -> raw_variable
+            | "named_constant" type_ref SIGNED_INT ";" -> raw_named_constant
+            | "parameters" "[" expr* "]" ";" -> raw_parameters
+
+?raw_value: "invalid" -> invalid_literal
+          | literal
+
+?literal: ESCAPED_STRING -> string_literal
+         | SIGNED_FLOAT -> float_literal
+         | "float_bits" "(" HEX_INT ")" -> float_bits_literal
+         | SIGNED_INT -> int_literal
+        | BOOLEAN -> bool_literal
+
+// Declarations also accept the source-only `card` (a seat, written as int).
+?source_type_ref: type_ref
+                | "card" -> type_card
+?type_ref: "invalid" -> type_invalid
+         | "int" -> type_int
+         | "bool" -> type_bool
+         | "float" -> type_float
+         | "string" -> type_string
+         | "type" SIGNED_INT -> type_numeric
+
+OR_OP: "||"
+AND_OP: "&&"
+EQUALITY_OP: "==" | "!="
+RELATIONAL_OP: "<=" | ">=" | "<" | ">"
+ADD_OP: "+" | "-"
+MUL_OP: "*" | "/"
+NOT_OP: "!"
+_ALLOW: "@allow"
+LOOP_KEYWORD.2: /(?:break|continue)(?![A-Za-z0-9_])/
+BOOLEAN.2: /(?:true|false)(?![A-Za-z0-9_])/
+STANDALONE_ELSEIF.2: /ElseIf(?![A-Za-z0-9_])/
+STANDALONE_ELSE.2: /Else(?![A-Za-z0-9_])/
+QUALIFIED_NAME.3: /[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+/
+IDENT: /[A-Za-z_][A-Za-z0-9_]*/
+SIGNED_INT: /[+-]?[0-9]+/
+SIGNED_FLOAT: /[+-]?(?:[0-9]+\.[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?[fF]?/
+HEX_INT.2: /0[xX][0-9A-Fa-f]{1,8}/
+
+%import common.ESCAPED_STRING
+%import common.WS
+%ignore WS
+%ignore /\/\/[^\n]*/
+%ignore /\/\*[\s\S]*?\*\//

@@ -1,0 +1,438 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "Card"
+    },
+    {
+      "id": 1,
+      "name": "Character Action"
+    },
+    {
+      "id": 2,
+      "name": "Load"
+    },
+    {
+      "id": 3,
+      "name": "Time"
+    },
+    {
+      "id": 4,
+      "name": "Conversation"
+    },
+    {
+      "id": 5,
+      "name": "Other"
+    }
+  ],
+  "entries": {
+    "1": {
+      "category": "Character Action",
+      "category_id": 1,
+      "description": "Whenever a character changes clothes, either in the changing room or by entering the next period. (Not yet implemented)",
+      "id": 1,
+      "interactive_name": "Clothes Changed",
+      "name": "Clothes Changed",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "ca486c20c176f2f70e16cea620839ce7d58113d8997894578ccf4b5be6c68639",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 1,
+      "symbol": "CLOTHES_CHANGED"
+    },
+    "10": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever a NPC decides to do an action that does not require another Npc.",
+      "id": 10,
+      "interactive_name": "Npc Wants to do something with no Target",
+      "name": "Npc Wants to do something with no Target",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "1865e835d1b2067f2a8258becef9c0f198b91ebb0110fbba572441cfb3ca06d7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 10,
+      "symbol": "NPC_WANT_ACTION_NOTARGET"
+    },
+    "11": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever a NPC decides to talk to someone.",
+      "id": 11,
+      "interactive_name": "Npc Wants to Talk With Someone",
+      "name": "Npc Wants to Talk With Someone",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "4bd972e3486c08cd252fa2a88ad6a26783821319fbca3a88d42571b800821818",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 11,
+      "symbol": "NPC_WANT_TALK_WITH"
+    },
+    "12": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever a NPC decides to talk to someone about someone else, such as spreading rumors or asking for opinion about someone.",
+      "id": 12,
+      "interactive_name": "Npc Wants to Talk With Someone About Someone",
+      "name": "Npc Wants to Talk With Someone About Someone",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "2b58f52c14fa2c43a5c98ecba30e98f82d41b7b8c0bb569d751424a9c2f9a1cf",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 12,
+      "symbol": "NPC_WANT_TALK_WITH_ABOUT"
+    },
+    "13": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever PC conversation has moved on.",
+      "id": 13,
+      "interactive_name": "PC Conversation state updated",
+      "name": "PC conversation state updated",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "4e7c8aeb02a7b39a8ee90a50d514e99d44140214e0c1c558a6eaf0dbed49797c",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 13,
+      "symbol": "PC_CONVERSATION_STATE_UPDATED"
+    },
+    "14": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Right before the PC answer is processed. Triggering card is the PC",
+      "id": 14,
+      "interactive_name": "Pc Answers in a Conversation",
+      "name": "Pc Answers in a Conversation",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "68623de6dc3a6ada40cca89cd39601acf20dcaec251259e024ecf4cc0bb7a2b7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 14,
+      "symbol": "PC_RESPONSE"
+    },
+    "15": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever NPC speaks a line of dialogue in PC conversation.",
+      "id": 15,
+      "interactive_name": "PC Conversation line updated",
+      "name": "PC conversation line updated",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "055de27ac15c2c5a5f742e0e38cb36e991d43eacc16f0de5012413341e0421e9",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 15,
+      "symbol": "PC_CONVERSATION_LINE_UPDATED"
+    },
+    "16": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Card enters a new room. Works for all cards.",
+      "id": 16,
+      "interactive_name": "Card Changes Room",
+      "name": "Card Changes Room",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "d04f8fe271a21a32fff6d023d151cecc250599068796e120c7d4f2e65cfb689d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 16,
+      "symbol": "ROOM_CHANGE"
+    },
+    "17": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Key was pressed",
+      "id": 17,
+      "interactive_name": "Key was pressed",
+      "name": "Key Press",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "b69f82a7e6bcc2da1896affde73e9327c5f1f60fe55f8740bc5579dd3c040bb2",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 17,
+      "symbol": "KEY_PRESS"
+    },
+    "18": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "The H position changed.",
+      "id": 18,
+      "interactive_name": "H Position Change",
+      "name": "H Position Change",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "aa71331dfeb13dae3a36b1cee28659f677169631da6d6d7068607595f189a9b5",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 18,
+      "symbol": "HPOSITION_CHANGE"
+    },
+    "19": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "The event is fired after all the triggers have finished editing PC Response.",
+      "id": 19,
+      "interactive_name": "After PC Response",
+      "name": "After PC Response",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "ab062e990e6557eb4f8d4026c510a12b348d6e579f25f412a50cbdcad7b79cc7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 19,
+      "symbol": "PC_AFTER_RESPONSE"
+    },
+    "2": {
+      "category": "Card",
+      "category_id": 0,
+      "description": "After the AAU Card data was successfully loaded, either because a class containing this card was loaded, or because this card was added to the class roster",
+      "id": 2,
+      "interactive_name": "Card Initialized",
+      "name": "Card Initialized",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "1dacd542597db513998d8b29b2b79a0a046a30c835ec0066939fc1be88d48b13",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 2,
+      "symbol": "CARD_INITIALIZED"
+    },
+    "20": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "The event is fired after all the triggers have finished editing NPC Response.",
+      "id": 20,
+      "interactive_name": "After NPC Response",
+      "name": "After NPC Response",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "7b6f0227f56407d68a0bfa9384d01e11e63bd659c279e5e47f1d9b0da4a01f9e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 20,
+      "symbol": "NPC_AFTER_RESPONSE"
+    },
+    "21": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "The event is fired as the character's hi poly is despawning.",
+      "id": 21,
+      "interactive_name": "HI Poly Despawn",
+      "name": "HI Poly Despawn",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "0c458d91fe577d07ccae4073d8cb20952754f6bb7b24d44aa05fb929b3ae830b",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 21,
+      "symbol": "HI_POLY_DESPAWN"
+    },
+    "22": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "The event is fired as the H scene ends.",
+      "id": 22,
+      "interactive_name": "H Ends",
+      "name": "H End",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "954a07cd70889e9f2784fc1ff98c5e04abc434faf0302d3cbaf1ecb794e46365",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 22,
+      "symbol": "H_END"
+    },
+    "23": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "The event is fired as the H scene starts.",
+      "id": 23,
+      "interactive_name": "H Starts",
+      "name": "H Start",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "c119ca844c36768470e5a2262421d2a202c6a31c22bdd8f6ae4af82dc4c7df0d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 23,
+      "symbol": "H_START"
+    },
+    "24": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "The event is fired when a character expelled from class: either killed, arrested or fired.",
+      "id": 24,
+      "interactive_name": "Card Expelled",
+      "name": "Card Expelled",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "226029ea2fdd5424b581ec8e82f106485909f061618f8f0747df9ee4a36536bd",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 24,
+      "symbol": "CARD_EXPELLED"
+    },
+    "25": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "The event is fired when a conversation ends between two cards.",
+      "id": 25,
+      "interactive_name": "Conversation End",
+      "name": "Conversation End",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "d6eeaa5a3086e133e9f4729cf453830e7ea74e28888288bf25401c12294e20ed",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 25,
+      "symbol": "CONVERSATION_END"
+    },
+    "26": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "The event is fired just as relationship points are updated between characters.",
+      "id": 26,
+      "interactive_name": "Relationship Points Changed",
+      "name": "Relationship Points Changed",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "2bb326609ac8884a57567b3b14ae202ee2b7bb0e29bc4a1ad0b687ba304ffd9d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 26,
+      "symbol": "RELATIONSHIP_POINT_CHANGED"
+    },
+    "27": {
+      "category": "Other",
+      "category_id": 5,
+      "description": "This event is fired from other triggers after a delaay. TriggeringCard is the card whose trigger emitted this event. It does not persist between sessions.",
+      "id": 27,
+      "interactive_name": "Delayed Execution",
+      "name": "Delayed Execution",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "ade9d0826e0efde89b3a8ef561697164ae1a2520bd1177baff0ecfd56a973dd7",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 27,
+      "symbol": "DELAYED_EXECUTION"
+    },
+    "3": {
+      "category": "Card",
+      "category_id": 0,
+      "description": "Before the AAU Card data will be unloaded",
+      "id": 3,
+      "interactive_name": "Card Destroyed",
+      "name": "Card Destroyed",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "2e03e5058f96ab4b11d6b6fc6ab31d6949171a905ac772c26d10ae3ec96b2e0e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 3,
+      "symbol": "CARD_DESTROYED"
+    },
+    "4": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "Right after the Characters High Poly Model started loading",
+      "id": 4,
+      "interactive_name": "Hi Poly Model Initialized",
+      "name": "Hi Poly Model Initialized",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "360fb74f8c8d549dec532d6fc91170fc31363835898792ff0fef4417981b746d",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 4,
+      "symbol": "HI_POLY_INIT"
+    },
+    "5": {
+      "category": "Load",
+      "category_id": 2,
+      "description": "Right after the Character High Poly Model finished loading",
+      "id": 5,
+      "interactive_name": "Hi Poly Model Loaded",
+      "name": "Hi Poly Model Loaded",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "133a4fb7fbd4926341a4dec8bd9182c6d691b601e8e9848528e61629e922f3d3",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 5,
+      "symbol": "HI_POLY_END"
+    },
+    "6": {
+      "category": "Card",
+      "category_id": 0,
+      "description": "When a card (including this card) is added to a class, after the CARD_INTIALIZED event is executed",
+      "id": 6,
+      "interactive_name": "Card Added to Class",
+      "name": "Card Added to Class",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "72cf7b7976e7a85b396c2dd807635b85035e1a9af76567cc9c44d7bf14e89736",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 6,
+      "symbol": "CARD_ADDED"
+    },
+    "7": {
+      "category": "Time",
+      "category_id": 3,
+      "description": "After a period ends, including lessions themselves",
+      "id": 7,
+      "interactive_name": "A Period Ends",
+      "name": "A Period Ends",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "086f24a7011753a2f74ce7a08613996fbf3ea54ffe0fdd2571858e3923a7148e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 7,
+      "symbol": "PERIOD_ENDS"
+    },
+    "8": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever a NPC made a yes/no decision, no matter if towards the PC or another NPC. Triggering Card is the NPC that gives the Answer.",
+      "id": 8,
+      "interactive_name": "Npc Answers in a Conversation",
+      "name": "Npc Answers in a Conversation",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "ba56ef164519248ac0700ab9ea5699e19b3ee3dcf408d7a710f10b0e0468e512",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 8,
+      "symbol": "NPC_RESPONSE"
+    },
+    "9": {
+      "category": "Conversation",
+      "category_id": 4,
+      "description": "Whenever a NPC decides to walk towards a room.",
+      "id": 9,
+      "interactive_name": "Npc Starts Walking to a Room",
+      "name": "Npc Starts Walking to a Room",
+      "parameter_types": [],
+      "provenance": {
+        "registration_sha256": "0f682d02d57ea1c0af7fc3329f26c769c48ef60a3d10a69a266c1acaaf46122e",
+        "source_file": "AAUnlimited/Functions/Shared/Triggers/Event.cpp"
+      },
+      "registry_index": 9,
+      "symbol": "NPC_WALK_TO_ROOM"
+    }
+  },
+  "generator_version": "4",
+  "schema": "aa2modulus.events.v3",
+  "source_revision": "312c658b256f41771a5488fbf79a677d7b4551a8"
+}

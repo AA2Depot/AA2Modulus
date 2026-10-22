@@ -1,0 +1,37 @@
+macro "update_points" {
+  param seat card;
+  param target card;
+  param "love" int;
+  param "like" int;
+  param "spare" int;
+
+  seat.SetPoints(target, ToFloat(love), ToFloat(like),
+    0.0, 0.0, ToFloat(spare));
+}
+
+macro "debug" {
+  param "text" string;
+  WriteLog("DEBUG: " + text);
+}
+
+module "Macro Example" {
+  description "Typed local macros expand into ordinary native actions";
+
+  trigger "Conversation" {
+    on CONVERSATION_END;
+    let love: int = 0;
+    let like: int = 0;
+    let spare: int = 0;
+    if ThisCard.GetBool("Naive", true) {
+      if ThisCard == TriggeringCard {
+        if ThisCard.Dislike(Context.NpcTalkTarget) > 29 || ThisCard.Hate(Context.NpcTalkTarget) > 29 {
+          love = TriggeringCard.Love(Context.NpcTalkTarget);
+          like = TriggeringCard.Like(Context.NpcTalkTarget);
+          spare = 900 - (like + love);
+          update_points(ThisCard, Context.NpcTalkTarget, love, like, spare);
+          debug(ThisCard.FullName + " is naive");
+        }
+      }
+    }
+  }
+}
