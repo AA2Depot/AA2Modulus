@@ -1,0 +1,68 @@
+name: "Release"
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: linux-x64
+          - os: windows-2025
+            target: windows-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v5
+
+      - name: Check that the tag matches the project version
+        shell: bash
+        run: test "${GITHUB_REF_NAME#v}" = "$(uv version --short)"
+
+      - name: Lint and test
+        run: mise run verify
+
+      - name: Build
+        run: mise run build
+
+      - name: Zip output
+        if: runner.os == 'Linux'
+        run: zip -j "aa2modulus-${{ matrix.target }}.zip" dist/${{ matrix.target }}/*
+
+      - name: Zip output
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path "dist\${{ matrix.target }}\*" -DestinationPath "aa2modulus-${{ matrix.target }}.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.target }}
+          path: aa2modulus-${{ matrix.target }}.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: release/*.zip
