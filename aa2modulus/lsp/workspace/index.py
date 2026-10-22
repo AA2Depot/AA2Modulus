@@ -43,7 +43,7 @@ def discover(folders: Sequence[str], *, cap: int = FILE_CAP) -> tuple[tuple[str,
                 if name.startswith(".") or Path(name).suffix.lower() not in SOURCE_SUFFIXES:
                     continue
                 try:
-                    identity = os.path.normcase(str(Path(directory, name).resolve()))
+                    identity = str(Path(directory, name).resolve())
                 except (OSError, RuntimeError, ValueError):
                     continue
                 if identity in found:

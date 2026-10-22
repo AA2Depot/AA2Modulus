@@ -14,9 +14,17 @@ def test_file_identity_decodes_and_canonicalizes_native_file_uri(tmp_path):
     target = tmp_path / "folder with space" / "snowman-☃.aa2m"
     uri = target.as_uri()
 
-    assert file_identity(uri) == os.path.normcase(str(target.resolve()))
+    assert file_identity(uri) == str(target.resolve())
     localhost_uri = uri.replace("file:///", "file://localhost/", 1)
-    assert file_identity(localhost_uri) == os.path.normcase(str(target.resolve()))
+    assert file_identity(localhost_uri) == str(target.resolve())
+
+
+@pytest.mark.skipif(os.name != "nt", reason="needs a case-insensitive Windows filesystem")
+def test_file_identity_keeps_on_disk_casing_for_case_variant_uri(tmp_path):
+    target = tmp_path / "Library.aa2mi"
+    target.write_text("", encoding="utf-8")
+
+    assert file_identity(Path(str(target).lower()).as_uri()) == str(target.resolve())
 
 
 @pytest.mark.parametrize(
@@ -53,7 +61,7 @@ def test_identity_uri_emits_a_canonical_encoded_native_file_uri(tmp_path):
     canonical = str(target.resolve())
 
     assert identity_uri(canonical) == Path(canonical).as_uri()
-    assert file_identity(identity_uri(canonical)) == os.path.normcase(canonical)
+    assert file_identity(identity_uri(canonical)) == canonical
 
 
 def test_uri_helpers_reject_wrong_types_and_nul_identities():

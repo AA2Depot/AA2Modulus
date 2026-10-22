@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from lsprotocol import types
 
@@ -255,7 +257,7 @@ def test_discovery_skips_hidden_entries_and_reports_the_cap(tmp_path):
     (tmp_path / "nested" / "d.aa2m").write_text("", encoding="utf-8")
 
     files, truncated = discover((str(tmp_path),))
-    assert [item.rsplit("/", 1)[-1] for item in files] == ["a.aa2m", "b.aa2mi", "d.aa2m"]
+    assert [Path(item).name for item in files] == ["a.aa2m", "b.aa2mi", "d.aa2m"]
     assert not truncated
     assert discover((str(tmp_path),), cap=3) == (files, False)
     assert discover((str(tmp_path),), cap=2) == (files[:2], True)

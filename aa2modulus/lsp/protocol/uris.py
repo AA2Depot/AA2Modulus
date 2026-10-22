@@ -61,7 +61,7 @@ def file_identity(uri: str) -> str | None:
     if path is None:
         return None
     try:
-        return os.path.normcase(str(Path(path).resolve()))
+        return str(Path(path).resolve())
     except (OSError, RuntimeError, ValueError):
         return None
 

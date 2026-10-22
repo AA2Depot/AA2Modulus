@@ -89,9 +89,7 @@ def test_prepare_uses_current_overlay_graph_without_stale_edges_or_binding_error
             server.enqueue(server.sources.open(alias, "macro leaf {}", 1, "aa2mi"))
             result = await commands.prepare_compile(server, _request(root))
             assert result == {"dependencies": [outer.as_uri(), alias], "diagnostics": []}
-            assert (
-                os.path.normcase(str(old.resolve())) in server.sources.dependencies[root.as_uri()]
-            )
+            assert str(old.resolve()) in server.sources.dependencies[root.as_uri()]
             assert server.sources.snapshots[root.as_uri()].analysis.result.errors
 
     asyncio.run(run())

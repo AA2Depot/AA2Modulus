@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +32,7 @@ class FileSourceResolver:
 
     def resolve(self, path: str, *, importer: str | None) -> str:
         base = self.base if importer is None else Path(importer).parent
-        return os.path.normcase(str((base / path).resolve()))
+        return str((base / path).resolve())
 
     def read(self, identity: str, *, max_chars: int) -> str:
         with Path(identity).open(encoding="utf-8", newline="") as stream:
