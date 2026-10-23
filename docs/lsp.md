@@ -122,7 +122,9 @@ session; `--version` prints the `serverInfo.version` sent at `initialize`
   Constant.
 - Zero-argument runtime expressions use property items and insert bare names;
   events use event items after `on`. Variable assignment targets appear in statement
-  positions alongside actions/macros. Qualified edits replace the complete token,
+  positions alongside actions/macros, and so do card receivers (card-valued
+  built-ins, card variables and card formals), inserted without `;` so a member
+  follows. Qualified edits replace the complete token,
   preserve existing calls/terminators, and retain full candidate filter text so
   a client can refine the original list as more characters are typed. Known calls
   with no remaining usable arguments suppress impossible value suggestions.

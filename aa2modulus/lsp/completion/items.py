@@ -196,7 +196,10 @@ def _kind_enabled(kind: str, site: CompletionSite) -> bool:
         return False
     if site.event_position and kind != "event":
         return False
-    if kind in {"expression", "named_constant"} and not site.expression_position:
+    if kind == "named_constant" and not site.expression_position:
+        return False
+    if kind == "expression" and not (site.expression_position or site.statement_position):
+        # Statement positions keep only card receivers (see _group_items).
         return False
     return not (kind == "named_constant" and site.existing_parentheses)
 
@@ -230,6 +233,12 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
             entry = target.metadata
             if not _entry_selected(entry, site.expected_type):
                 continue
+            if (
+                kind == "expression"
+                and site.statement_position
+                and not _returns_card(request, entry)
+            ):
+                continue
             for form in target.forms:
                 if form.kind == "member" or not form.reversible:
                     # Card-first targets are members, never flat names.
@@ -238,6 +247,16 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
                 if item is not None:
                     items.append(item)
     return items
+
+
+def _returns_card(request: CompletionRequest, entry: object) -> bool:
+    """Whether a built-in expression returns a card, which can start a member statement."""
+
+    return (
+        isinstance(entry, ExpressionMetadata)
+        and request.context.source_policy.expression_result_role(entry.return_type, entry.id)
+        == CARD_ROLE
+    )
 
 
 def _form_item(
@@ -276,7 +295,8 @@ def _form_item(
             entry.parameter_types,
             context=context,
             action=entry if isinstance(entry, ActionMetadata) else None,
-            statement=site.statement_position or site.event_position,
+            # A card receiver is continued with a member, never terminated.
+            statement=kind != "expression" and (site.statement_position or site.event_position),
             event=site.event_position,
             snippet_support=request.snippet_support,
             existing_parentheses=site.existing_parentheses,
@@ -428,6 +448,8 @@ def _authored_item(
         else f"{_variable_text(name, context)} = "
         if site.statement_position
         and isinstance(declaration, (SourceGlobal, SourceLocal))
+        # A card variable usually starts a member statement, so it stays bare.
+        and declaration.type is not CARD
         and not (site.following is not None and site.following.type == "EQUAL")
         else _constant_text(name)
         if isinstance(declaration, SourceConstant)
