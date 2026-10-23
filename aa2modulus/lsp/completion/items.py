@@ -231,13 +231,12 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
             if target.wire.kind != kind:
                 continue
             entry = target.metadata
-            if not _entry_selected(entry, site.expected_type):
-                continue
-            if (
-                kind == "expression"
-                and site.statement_position
-                and not _returns_card(request, entry)
+            receiver = _returns_card(request, entry)
+            if not _entry_selected(entry, site.expected_type) and (
+                not receiver or site.existing_parentheses
             ):
+                continue
+            if kind == "expression" and site.statement_position and not receiver:
                 continue
             for form in target.forms:
                 if form.kind == "member" or not form.reversible:
@@ -250,7 +249,10 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
 
 
 def _returns_card(request: CompletionRequest, entry: object) -> bool:
-    """Whether a built-in expression returns a card, which can start a member statement."""
+    """Whether a built-in expression returns a card, a receiver for member statements and values.
+
+    Card members return every value type, so a receiver fits any value slot.
+    """
 
     return (
         isinstance(entry, ExpressionMetadata)
@@ -318,11 +320,16 @@ def _form_item(
         kind=_item_kind(kind, entry),
         detail=metadata_signature(name, entry, policy),
         filter_text=name,
-        # Values whose result role matches the argument rank first.
+        # Values whose result role matches the argument rank first, and card
+        # receivers that need a member to fit the slot rank last.
         sort_text=f"0{name}"
         if site.expected_role is not None
         and isinstance(entry, ExpressionMetadata)
         and policy.expression_result_role(entry.return_type, entry.id) == site.expected_role
+        else f"2{name}"
+        if site.expected_type is not None
+        and isinstance(entry, ExpressionMetadata)
+        and entry.return_type != site.expected_type
         else None,
         documentation=types.MarkupContent(types.MarkupKind.Markdown, body) if body else None,
         insert_text=insert,
@@ -411,7 +418,12 @@ def authored_items(
             if name.casefold() in macro_names:
                 continue
             macro_names.add(name.casefold())
-        elif site.expected_type is not None and wire_type(declaration.type) != site.expected_type:
+        elif (
+            site.expected_type is not None
+            and wire_type(declaration.type) != site.expected_type
+            # A card is a receiver whose members fit every value slot.
+            and declaration.type is not CARD
+        ):
             continue
         matches = (
             name.casefold().startswith(site.prefix.suffix.casefold())
@@ -472,11 +484,16 @@ def _authored_item(
         documentation=types.MarkupContent(types.MarkupKind.Markdown, documentation)
         if documentation
         else None,
-        # Card variables rank first where a card is expected.
+        # Card variables rank first where a card is expected, and last where
+        # they need a member to fit the slot.
         sort_text=f"0{name}"
         if site.expected_role == CARD_ROLE
         and not isinstance(declaration, SourceMacro)
         and declaration.type is CARD
+        else f"2{name}"
+        if site.expected_type is not None
+        and not isinstance(declaration, SourceMacro)
+        and wire_type(declaration.type) != site.expected_type
         else None,
         text_edit=types.TextEdit(site.edit_range, insert),
         insert_text_format=types.InsertTextFormat.Snippet

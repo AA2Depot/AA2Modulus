@@ -243,7 +243,8 @@ def test_member_argument_slots_filter_by_the_selected_parameter_type(context):
     string_labels = _argument_labels(context, "coach.SetFirstName(")
     assert "Context.DelayedEventLabel" in string_labels
     assert "Globals.CurrentDay" not in string_labels
-    assert "coach" not in string_labels
+    # A card receiver fits through a member such as ``coach.FirstName``.
+    assert "coach" in string_labels
 
 
 def test_member_overload_uses_the_expected_result_type(context):
@@ -383,3 +384,18 @@ def test_statement_start_offers_card_macro_formals(context):
     }
 
     assert variables == {"c": "c"}
+
+
+@pytest.mark.parametrize("tail", ["Notification(", "let s: string = ", "let f: float = "])
+def test_value_slots_offer_card_receivers_after_matching_values(context, tail):
+    ranked = _ranked(context, tail)
+    receivers = _CARD_BUILT_INS | {"coach"}
+
+    assert set(ranked[-len(receivers) :]) == receivers
+
+
+def test_value_slot_card_receiver_inserts_the_bare_name(context):
+    source = _HEAD + "Notification(Th"
+    items = completions(source + "); } }", len(source), context, snippet_support=True)
+
+    assert [(item.label, item.text_edit.new_text) for item in items] == [("ThisCard", "ThisCard")]
