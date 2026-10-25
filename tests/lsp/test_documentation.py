@@ -19,8 +19,8 @@ from aa2modulus.syntax.parser.units import parse_source_unit
 from tests.support.lsp_workspace import analyze_workspace
 
 
-def test_builtin_definition_is_a_page_under_the_client_base_uri(context):
-    documentation = BuiltinDocumentation(context.metadata, "aa2m-builtin:/")
+def test_builtin_definition_is_a_server_page_only_when_enabled(context):
+    documentation = BuiltinDocumentation(context.metadata, enabled=True)
     workspace = SourceWorkspace()
     uri = "untitled:Module"
     source = 'module "M" { trigger "T" { Notification("hello"); } }'
@@ -35,19 +35,12 @@ def test_builtin_definition_is_a_page_under_the_client_base_uri(context):
     assert target.range.start == target.range.end
     assert (target.range.start.line, target.range.start.character) == (0, 0)
 
-    documentation.configure(None)
+    documentation.enabled = False
     assert definition(snapshot, position, "utf-16", workspace, documentation=documentation) == []
 
 
-def test_invalid_base_uri_is_ignored(caplog, metadata):
-    documentation = BuiltinDocumentation(metadata, "relative/path/")
-    assert documentation.base_uri is None
-    assert documentation.location(metadata.action(108)) is None
-    assert "absolute URI" in caplog.text
-
-
 def test_anchors_cover_actions_events_and_named_constant_ordinals(metadata):
-    documentation = BuiltinDocumentation(metadata, "aa2m-builtin:/")
+    documentation = BuiltinDocumentation(metadata, enabled=True)
     assert documentation.anchor(metadata.action(108)) == "action-108"
     assert documentation.anchor(metadata.event(6)) == "event-6"
     first_int = next(item for item in metadata.named_constants if item.value_type == 1)
@@ -144,7 +137,7 @@ def test_imported_comments_and_navigation_survive_unrelated_incomplete_edit(tmp_
 
 
 def test_builtin_with_wrong_arguments_still_identifies_selected_page(context):
-    documentation = BuiltinDocumentation(context.metadata, "aa2m-builtin:/")
+    documentation = BuiltinDocumentation(context.metadata, enabled=True)
     workspace = SourceWorkspace()
     uri = "untitled:Module"
     source = 'module "M" { trigger "T" { Notification(1); } }'

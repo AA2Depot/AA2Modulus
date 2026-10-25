@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import logging
 from concurrent.futures import Future
 
 from lsprotocol import types
 
 from ...workspace.index import WATCH_PATTERN
 from ..app import AA2LanguageServer
-
-logger = logging.getLogger(__name__)
 
 
 def register(server: AA2LanguageServer) -> None:
@@ -22,12 +19,6 @@ def register(server: AA2LanguageServer) -> None:
             if isinstance(encoding, types.PositionEncodingKind)
             else encoding or "utf-16"
         )
-        options = params.initialization_options
-        base = options.get("builtinDocumentationBaseUri") if isinstance(options, dict) else None
-        if base is not None and not isinstance(base, str):
-            logger.warning("builtinDocumentationBaseUri must be a URI string")
-            base = None
-        server.documentation.configure(base)
         text_document = params.capabilities.text_document
         completion_options = text_document.completion if text_document else None
         item_options = completion_options.completion_item if completion_options else None
@@ -39,6 +30,7 @@ def register(server: AA2LanguageServer) -> None:
         server.watch_files = bool(watched and watched.dynamic_registration)
         tokens = workspace.semantic_tokens if workspace else None
         server.token_refresh = bool(tokens and tokens.refresh_support)
+        server.documentation.enabled = bool(workspace and workspace.text_document_content)
 
     @server.feature(types.INITIALIZED)
     def initialized(params: types.InitializedParams) -> None:

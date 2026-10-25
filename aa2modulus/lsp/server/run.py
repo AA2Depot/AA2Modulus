@@ -9,7 +9,16 @@ from pygls.exceptions import JsonRpcException
 
 from ..commands.register import register_commands
 from .app import AA2LanguageServer
-from .handlers import code_actions, completion, lifecycle, navigation, presentation, rename, sync
+from .handlers import (
+    builtins,
+    code_actions,
+    completion,
+    lifecycle,
+    navigation,
+    presentation,
+    rename,
+    sync,
+)
 
 _REFUSAL_CODES = frozenset(
     {types.LSPErrorCodes.RequestFailed.value, types.LSPErrorCodes.ContentModified.value}
@@ -33,6 +42,7 @@ def create_server() -> AA2LanguageServer:
     lifecycle.register(server)
     sync.register(server)
     navigation.register(server)
+    builtins.register(server)
     rename.register(server)
     presentation.register(server)
     code_actions.register(server)

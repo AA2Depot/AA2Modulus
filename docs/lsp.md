@@ -283,25 +283,23 @@ policy [parameter names](metadata.md#parameter-names)
 member signatures use their `[members]` argument names, and macros their
 formal names. The server reads no documentation file.
 
-F12 on a built-in returns `<base><anchor>.md` at line 0, where `<base>` is the
-optional `initializationOptions.builtinDocumentationBaseUri` (any absolute
-URI). The VS Code extension sends `aa2m-builtin:/` and renders those pages
-itself from `builtins.json`, which `aa2modulus editor-catalog` generates from
-the same language data ([development](development.md#checks)). Anchors are
+F12 on a built-in returns `aa2m-builtin:/<anchor>.md` at line 0. The server
+serves those pages itself through `workspace/textDocumentContent` (LSP 3.18),
+rendered from the same entries `aa2modulus editor-catalog` writes to
+`builtins.json` ([development](development.md#checks)); an unknown anchor gets
+an "Unknown built-in" page. `workspace/symbol` lists built-ins ranked by name,
+alias, native name and description (at most 200), each located at its page, so
+a client finds built-ins by filtering results to the `aa2m-builtin` scheme.
+The pages are built on the first page or symbol request, which compiles every
+example once. Anchors are
 stable across renames: expression anchors include the return type, constant
 anchors the original scoped ordinal (`action-108`, `expression-int-101`,
 `named-constant-int-310`), and aliases and literal source values share their
-row's anchor. Without a base URI, built-ins have no definition target.
+row's anchor. Pages, built-in symbols and built-in definition targets exist
+only when the client advertises `workspace.textDocumentContent`.
 Authored definitions continue to navigate to their source.
 
-The server advertises `capabilities.experimental.aa2modulus.builtinDocumentationBaseUri: true`
-during initialization (see the [client contract](#client-contract));
-an executable without it predates built-in pages.
-
-Initialization also reports
-`capabilities.experimental.aa2modulus.catalogFingerprint`, the fingerprint of
-the server's resolved fact/evidence/policy inputs. Portable references record
-the same value for matching inputs. Binding, formatting and editor features use
+Binding, formatting and editor features use
 that catalog's source forms and exact signature candidates. Equivalent constant
 rows produce one completion; qualified literal values insert a name that binds
 to a primitive literal, and hover/F12 retain the original native row's anchor.
@@ -339,15 +337,19 @@ trust, UI) belongs to the client.
   input and output. There is no `--stdio` flag.
 - **Documents:** language IDs `aa2m` and `aa2mi`, with `file:` or `untitled:`
   URIs. Command file arguments are local `file:` URIs on the server's host.
-- **Initialization option:** `builtinDocumentationBaseUri`, an optional
-  absolute URI (see [built-in documentation](#built-in-documentation)).
 - **Initialize result:** `serverInfo` carries `name` and `version`.
   `capabilities.experimental.aa2modulus` is
-  `{ "builtinDocumentationBaseUri": true, "catalogFingerprint": "<hex>" }`.
-  A client treats `builtinDocumentationBaseUri: true` as support for built-in
-  pages. It may compare `catalogFingerprint` with the `catalogFingerprint` of
-  its `builtins.json` to detect stale documentation; a mismatch is
-  informational only.
+  `{ "contractVersion": 1, "builtinCatalog": true }`. A client gates features
+  on these fields, not on `serverInfo.version`.
+  `contractVersion` increments only on a breaking wire change. An additive
+  feature adds a flag instead, which is present and `true` only when the
+  feature is available; a missing flag means unsupported. `builtinCatalog`
+  means built-in pages, symbols and definition targets (see
+  [built-in documentation](#built-in-documentation)); it and
+  `capabilities.workspace.textDocumentContent.schemes: ["aa2m-builtin"]` appear
+  only when the client advertises `workspace.textDocumentContent`. A client
+  that serves its own `aa2m-builtin` documents must stop doing so for this
+  contract.
 - **Commands:** `executeCommandProvider.commands` lists the module commands.
   A client checks the list before it starts a command.
 - **Diagnostics:** published with the document version when known. A closed
