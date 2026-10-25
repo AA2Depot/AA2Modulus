@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from aa2modulus.app.editor_catalog.document import editor_catalog
 from aa2modulus.app.editor_catalog.pages import page
+from aa2modulus.syntax.lexicon import source_lexicon
 from tests.support.lsp_client import Client
 
 _CONTENT_SUPPORT = {"workspace": {"textDocumentContent": {"dynamicRegistration": True}}}
@@ -13,9 +14,10 @@ def test_stdio_builtin_hover_completion_and_page_definition(context):
     client = Client(snippet_support=True, capabilities=_CONTENT_SUPPORT)
     try:
         capabilities = client.initialized["capabilities"]
-        assert capabilities["experimental"] == {
-            "aa2modulus": {"contractVersion": 1, "builtinCatalog": True}
-        }
+        features = capabilities["experimental"]["aa2modulus"]
+        assert features["contractVersion"] == 1
+        assert features["builtinCatalog"] is True
+        assert features["syntax"]["fingerprint"] == source_lexicon().fingerprint
         assert capabilities["workspace"]["textDocumentContent"] == {"schemes": ["aa2m-builtin"]}
         description = context.metadata.action(108).description
         uri = "untitled:Builtins"

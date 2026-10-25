@@ -285,7 +285,7 @@ formal names. The server reads no documentation file.
 
 F12 on a built-in returns `aa2m-builtin:/<anchor>.md` at line 0. The server
 serves those pages itself through `workspace/textDocumentContent` (LSP 3.18),
-rendered from the same entries `aa2modulus editor-catalog` writes to
+rendered from the same entries `aa2modulus editor-data catalog` writes to
 `builtins.json` ([development](development.md#checks)); an unknown anchor gets
 an "Unknown built-in" page. `workspace/symbol` lists built-ins ranked by name,
 alias, native name and description (at most 200), each located at its page, so
@@ -349,7 +349,12 @@ trust, UI) belongs to the client.
   `capabilities.workspace.textDocumentContent.schemes: ["aa2m-builtin"]` appear
   only when the client advertises `workspace.textDocumentContent`. A client
   that serves its own `aa2m-builtin` documents must stop doing so for this
-  contract.
+  contract. `syntax` is always present:
+  `{ "version": <policy language_version>, "fingerprint": "<64 hex>" }`. The
+  fingerprint is the SHA-256 of the grammar's lexicon, the same value
+  `aa2modulus editor-data lexicon` prints; built-ins and policy do not change
+  it. A client whose highlighting grammar records another fingerprint should
+  warn, not refuse.
 - **Commands:** `executeCommandProvider.commands` lists the module commands.
   A client checks the list before it starts a command.
 - **Diagnostics:** published with the document version when known. A closed

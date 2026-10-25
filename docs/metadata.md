@@ -253,9 +253,8 @@ role. Source names are PascalCase ASCII identifiers; acronyms count as words
   `Conversation`, `Trait`, `Day`, `Period`, `PregnancyRisk`, `EventType`, `Mood`,
   `Preference`, `Opinion`, `Room`) and the last segment is `UPPER_SNAKE`:
   `Constants.Mood.JEALOUS`, `Constants.Room.SCHOOL_GATES`.
-- **Events keep their native symbols** (`on CARD_ADDED;`). `event` is a reserved
-  word and names never contain keyword segments, so event-type constants use
-  the category `EventType` (`Constants.EventType.KEY_PRESS`).
+- **Events keep their native symbols** (`on CARD_ADDED;`). Event-type constants
+  use the native category name `EventType` (`Constants.EventType.KEY_PRESS`).
 - Native spellings (`AddLikePoints`, `NpcTalkTarget`) are not accepted for a
   target with a preferred name or member form.
 
@@ -558,7 +557,7 @@ the destination as a documentation bundle directory. These maintenance commands
 are outside pytest and `mise run verify`; a consumer's copy changes only through
 explicit export.
 
-`aa2modulus editor-catalog [--output <path>]` writes the editor's built-in
+`aa2modulus editor-data catalog [--output <path>]` writes the editor's built-in
 documentation, `builtins.json` (schema
 `aa2modulus.editor-builtins.v1`), from the same catalog: canonical names,
 signatures with parameter names and roles, descriptions (overrides first),

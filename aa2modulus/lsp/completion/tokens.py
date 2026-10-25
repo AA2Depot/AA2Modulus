@@ -14,6 +14,7 @@ from ...context.limits import SourceLimitError
 from ...context.operation import SourceContext
 from ...pipeline.analysis import SourceAnalysis
 from ...pipeline.authoring import editor_prefix
+from ...syntax.lexicon import terminal_literals
 from ...syntax.limits import check_source_text
 from ...syntax.parser.engine import shared_parser
 from ...syntax.parser.errors import SourceParseError
@@ -282,26 +283,13 @@ def classify_following(parser: Lark, source: str, end: int) -> tuple[bool, bool,
 
 def literal_keywords(parser: Lark, expected: Iterable[str]) -> tuple[str, ...]:
     by_name = {terminal.name: terminal for terminal in parser.terminals}
-    values: set[str] = set()
-    for name in expected:
-        terminal = by_name.get(name)
-        pattern = None if terminal is None else terminal.pattern
-        if pattern is None:
-            continue
-        if pattern.type == "str":
-            candidates = [str(pattern.value)]
-        else:
-            # Keyword terminals may add a boundary lookahead to literal words.
-            literal = re.match(
-                r"^(?:\(\?:([A-Za-z_][A-Za-z0-9_|]*)\)|([A-Za-z_][A-Za-z0-9_]*))\(\?!",
-                str(pattern.value),
-            )
-            candidates = (literal.group(1) or literal.group(2)).split("|") if literal else []
-        values.update(
-            value
-            for value in candidates
-            if value and all(part.isidentifier() for part in value.split("."))
-        )
+    values = {
+        value
+        for name in expected
+        if (terminal := by_name.get(name)) is not None
+        for value in terminal_literals(terminal)
+        if all(part.isidentifier() for part in value.split("."))
+    }
     return tuple(sorted(values, key=str.casefold))
 
 

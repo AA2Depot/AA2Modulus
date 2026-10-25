@@ -1,4 +1,4 @@
-"""Markdown pages for built-ins, one per ``editor-catalog`` entry.
+"""Markdown pages for built-ins, one per ``editor-data catalog`` entry.
 
 The text matches the VS Code extension's ``pages.ts`` renderer character for
 character, so a page reads the same whichever side serves it.
