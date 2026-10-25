@@ -129,6 +129,13 @@ def test_expression_and_constant_inventory_obeys_expected_type(context, type_nam
         if entry.return_type in ((1, 2, 3, 4) if value_type == 2 else (value_type,))
         for name in _source_spellings(context, entry, "expression")
     }
+    # Card receivers fit every value slot through a member.
+    expected_expressions.update(
+        name
+        for entry in context.metadata.expressions
+        if context.source_policy.expression_result_role(entry.return_type, entry.id) == "card"
+        for name in _source_spellings(context, entry, "expression")
+    )
     expected_constants = {
         name
         for entry in context.metadata.named_constants

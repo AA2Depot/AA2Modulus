@@ -9,7 +9,7 @@ from lsprotocol import types
 
 from ...context.limits import SourceLimitError
 from ...context.operation import SourceContext
-from ...language.types import wire_type
+from ...language.types import CARD, wire_type
 from ...model.types import ValueType
 from ...pipeline.analysis import SourceAnalysis
 from ...pipeline.authoring import SourceAuthoring
@@ -201,13 +201,20 @@ def _authored_declarations(
     unit: SourceUnit | None,
     visible: Sequence[SourceGlobal | SourceLocal | SourceParameter | SourceConstant],
 ) -> Sequence[_Declaration]:
-    """Declarations offered at the cursor: assignment targets and macros, or all visible names."""
+    """Declarations offered at the cursor: statement starts, or all visible names.
+
+    A statement starts with a macro call, an assignment target or a card
+    receiver such as a card formal (``c.SetVirtue(3);``).
+    """
 
     if site.statement_position and not site.event_position:
-        assignment_targets = tuple(
-            item for item in visible if isinstance(item, (SourceGlobal, SourceLocal))
+        statement_starts = tuple(
+            item
+            for item in visible
+            if isinstance(item, (SourceGlobal, SourceLocal))
+            or (isinstance(item, SourceParameter) and item.type is CARD)
         )
-        return (*unit.macros, *assignment_targets) if unit is not None else assignment_targets
+        return (*unit.macros, *statement_starts) if unit is not None else statement_starts
     if site.expression_position and not site.event_position and not site.existing_parentheses:
         return visible
     return ()

@@ -196,7 +196,10 @@ def _kind_enabled(kind: str, site: CompletionSite) -> bool:
         return False
     if site.event_position and kind != "event":
         return False
-    if kind in {"expression", "named_constant"} and not site.expression_position:
+    if kind == "named_constant" and not site.expression_position:
+        return False
+    if kind == "expression" and not (site.expression_position or site.statement_position):
+        # Statement positions keep only card receivers (see _group_items).
         return False
     return not (kind == "named_constant" and site.existing_parentheses)
 
@@ -228,7 +231,12 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
             if target.wire.kind != kind:
                 continue
             entry = target.metadata
-            if not _entry_selected(entry, site.expected_type):
+            receiver = _returns_card(request, entry)
+            if not _entry_selected(entry, site.expected_type) and (
+                not receiver or site.existing_parentheses
+            ):
+                continue
+            if kind == "expression" and site.statement_position and not receiver:
                 continue
             for form in target.forms:
                 if form.kind == "member" or not form.reversible:
@@ -238,6 +246,19 @@ def _group_items(request: CompletionRequest, site: CompletionSite) -> list[types
                 if item is not None:
                     items.append(item)
     return items
+
+
+def _returns_card(request: CompletionRequest, entry: object) -> bool:
+    """Whether a built-in expression returns a card, a receiver for member statements and values.
+
+    Card members return every value type, so a receiver fits any value slot.
+    """
+
+    return (
+        isinstance(entry, ExpressionMetadata)
+        and request.context.source_policy.expression_result_role(entry.return_type, entry.id)
+        == CARD_ROLE
+    )
 
 
 def _form_item(
@@ -276,7 +297,8 @@ def _form_item(
             entry.parameter_types,
             context=context,
             action=entry if isinstance(entry, ActionMetadata) else None,
-            statement=site.statement_position or site.event_position,
+            # A card receiver is continued with a member, never terminated.
+            statement=kind != "expression" and (site.statement_position or site.event_position),
             event=site.event_position,
             snippet_support=request.snippet_support,
             existing_parentheses=site.existing_parentheses,
@@ -298,11 +320,16 @@ def _form_item(
         kind=_item_kind(kind, entry),
         detail=metadata_signature(name, entry, policy),
         filter_text=name,
-        # Values whose result role matches the argument rank first.
+        # Values whose result role matches the argument rank first, and card
+        # receivers that need a member to fit the slot rank last.
         sort_text=f"0{name}"
         if site.expected_role is not None
         and isinstance(entry, ExpressionMetadata)
         and policy.expression_result_role(entry.return_type, entry.id) == site.expected_role
+        else f"2{name}"
+        if site.expected_type is not None
+        and isinstance(entry, ExpressionMetadata)
+        and entry.return_type != site.expected_type
         else None,
         documentation=types.MarkupContent(types.MarkupKind.Markdown, body) if body else None,
         insert_text=insert,
@@ -391,7 +418,12 @@ def authored_items(
             if name.casefold() in macro_names:
                 continue
             macro_names.add(name.casefold())
-        elif site.expected_type is not None and wire_type(declaration.type) != site.expected_type:
+        elif (
+            site.expected_type is not None
+            and wire_type(declaration.type) != site.expected_type
+            # A card is a receiver whose members fit every value slot.
+            and declaration.type is not CARD
+        ):
             continue
         matches = (
             name.casefold().startswith(site.prefix.suffix.casefold())
@@ -428,6 +460,8 @@ def _authored_item(
         else f"{_variable_text(name, context)} = "
         if site.statement_position
         and isinstance(declaration, (SourceGlobal, SourceLocal))
+        # A card variable usually starts a member statement, so it stays bare.
+        and declaration.type is not CARD
         and not (site.following is not None and site.following.type == "EQUAL")
         else _constant_text(name)
         if isinstance(declaration, SourceConstant)
@@ -450,11 +484,16 @@ def _authored_item(
         documentation=types.MarkupContent(types.MarkupKind.Markdown, documentation)
         if documentation
         else None,
-        # Card variables rank first where a card is expected.
+        # Card variables rank first where a card is expected, and last where
+        # they need a member to fit the slot.
         sort_text=f"0{name}"
         if site.expected_role == CARD_ROLE
         and not isinstance(declaration, SourceMacro)
         and declaration.type is CARD
+        else f"2{name}"
+        if site.expected_type is not None
+        and not isinstance(declaration, SourceMacro)
+        and wire_type(declaration.type) != site.expected_type
         else None,
         text_edit=types.TextEdit(site.edit_range, insert),
         insert_text_format=types.InsertTextFormat.Snippet

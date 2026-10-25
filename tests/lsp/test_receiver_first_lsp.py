@@ -243,7 +243,8 @@ def test_member_argument_slots_filter_by_the_selected_parameter_type(context):
     string_labels = _argument_labels(context, "coach.SetFirstName(")
     assert "Context.DelayedEventLabel" in string_labels
     assert "Globals.CurrentDay" not in string_labels
-    assert "coach" not in string_labels
+    # A card receiver fits through a member such as ``coach.FirstName``.
+    assert "coach" in string_labels
 
 
 def test_member_overload_uses_the_expected_result_type(context):
@@ -293,26 +294,29 @@ def _ranked(context, tail):
     return [item.label for item in sorted(items, key=lambda item: item.sort_text or item.label)]
 
 
+# Flat built-ins whose result role is card.
+_CARD_BUILT_INS = {
+    "ThisCard",
+    "TriggeringCard",
+    "Context.NpcAnswerTarget",
+    "Context.NpcTalkTarget",
+    "Context.NpcTalkAbout",
+    "Context.RelationshipTowards",
+    "Conversation.Actor",
+    "Conversation.PcTalkAbout",
+    "Globals.FindSeat",
+    "Globals.PcTarget",
+    "Globals.PlayerCharacter",
+    "H.ActiveActor",
+    "H.PassiveActor",
+    "H.DominantActor",
+    "H.SubmissiveActor",
+}
+
+
 def test_card_arguments_rank_card_valued_built_ins_first(context):
     ranked = _ranked(context, "coach.AddLike(")
-    cards = {
-        "ThisCard",
-        "TriggeringCard",
-        "Context.NpcAnswerTarget",
-        "Context.NpcTalkTarget",
-        "Context.NpcTalkAbout",
-        "Context.RelationshipTowards",
-        "Conversation.Actor",
-        "Conversation.PcTalkAbout",
-        "Globals.FindSeat",
-        "Globals.PcTarget",
-        "Globals.PlayerCharacter",
-        "H.ActiveActor",
-        "H.PassiveActor",
-        "H.DominantActor",
-        "H.SubmissiveActor",
-    }
-    assert set(ranked[: len(cards)]) == cards
+    assert set(ranked[: len(_CARD_BUILT_INS)]) == _CARD_BUILT_INS
     # Ranking never filters: other int values, variables included, follow.
     assert {"coach", "Globals.CurrentDay"} <= set(ranked)
     assert _ranked(context, "coach.AddLike(H")[:4] == [
@@ -329,3 +333,69 @@ def test_card_arguments_rank_card_valued_built_ins_first(context):
 def test_positions_without_a_card_role_are_not_ranked(context, tail):
     source = _HEAD + tail
     assert all(item.sort_text is None for item in completions(source, len(source), context))
+
+
+def test_statement_start_offers_card_built_ins_as_receivers(context):
+    items = completions(_HEAD, len(_HEAD), context, snippet_support=True)
+    expressions = {
+        item.label: item
+        for item in items
+        if item.kind in {CompletionItemKind.Property, CompletionItemKind.Function}
+        and item.detail.endswith(" -> card")
+    }
+
+    assert set(expressions) == _CARD_BUILT_INS
+    assert not {"Globals.CurrentDay", "Text.Length"} & {item.label for item in items}
+    # A receiver is continued with a member: no parentheses, no terminator.
+    this_card = expressions["ThisCard"]
+    assert this_card.text_edit.new_text == "ThisCard"
+    assert this_card.insert_text_format == InsertTextFormat.PlainText
+    assert expressions["Conversation.Actor"].text_edit.new_text == "Conversation.Actor(${1:0})$0"
+
+
+@pytest.mark.parametrize(
+    ("prefix", "expected"),
+    [("Th", {"ThisCard"}), ("Tr", {"TriggeringCard"}), ("Globals.Pl", {"Globals.PlayerCharacter"})],
+)
+def test_statement_prefix_completes_card_receivers(context, prefix, expected):
+    source = _HEAD + prefix
+    assert {item.label for item in completions(source, len(source), context)} == expected
+
+
+def test_statement_start_card_variables_stay_bare(context):
+    source = _HEAD + "let n: int = 0; "
+    edits = {
+        item.label: item.text_edit.new_text
+        for item in completions(source, len(source), context)
+        if item.kind == CompletionItemKind.Variable
+    }
+
+    assert edits["coach"] == "coach"
+    assert edits["n"] == "n = "
+
+
+def test_statement_start_offers_card_macro_formals(context):
+    before = 'macro "m" { param c card; param n int; '
+    source = before + '}\nmodule "M" { trigger "T" { on CARD_ADDED; } }\n'
+    variables = {
+        item.label: item.text_edit.new_text
+        for item in completions(source, len(before), context)
+        if item.kind == CompletionItemKind.Variable
+    }
+
+    assert variables == {"c": "c"}
+
+
+@pytest.mark.parametrize("tail", ["Notification(", "let s: string = ", "let f: float = "])
+def test_value_slots_offer_card_receivers_after_matching_values(context, tail):
+    ranked = _ranked(context, tail)
+    receivers = _CARD_BUILT_INS | {"coach"}
+
+    assert set(ranked[-len(receivers) :]) == receivers
+
+
+def test_value_slot_card_receiver_inserts_the_bare_name(context):
+    source = _HEAD + "Notification(Th"
+    items = completions(source + "); } }", len(source), context, snippet_support=True)
+
+    assert [(item.label, item.text_edit.new_text) for item in items] == [("ThisCard", "ThisCard")]
