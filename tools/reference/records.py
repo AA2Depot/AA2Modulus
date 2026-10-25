@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from aa2modulus.context.operation import SourceContext
+from aa2modulus.language.catalog.names import source_names
 from aa2modulus.language.documentation import builtin_anchor, constant_ordinals
 from aa2modulus.language.loader import LANGUAGE_POLICY
 from aa2modulus.language.values import EventValues, MemberForm
@@ -23,7 +24,6 @@ from aa2modulus.model.types import (
 )
 
 from .bundle import DOCS, GRAMMAR, examples
-from .names import source_names
 
 SCHEMA = "aa2modulus.language-reference.v8"
 PAYLOAD_KINDS = {

@@ -5,18 +5,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from aa2modulus.context.operation import SourceContext
-from aa2modulus.language.documentation import builtin_anchor, builtin_description, constant_ordinals
-from aa2modulus.metadata.identities import native_key
-from aa2modulus.model.display import type_name, value_text
-from aa2modulus.model.native import (
+from ...context.operation import SourceContext
+from ...language.catalog.names import source_names
+from ...language.documentation import builtin_anchor, builtin_description, constant_ordinals
+from ...metadata.identities import native_key
+from ...model.display import type_name, value_text
+from ...model.native import (
     ActionMetadata,
     EventMetadata,
     ExpressionMetadata,
     NamedConstantMetadata,
 )
-from aa2modulus.model.types import ValueType
-from tools.reference.names import source_names
+from ...model.types import ValueType
 
 DEFAULT_EVENT = "CARD_ADDED"
 PLACEHOLDERS = {

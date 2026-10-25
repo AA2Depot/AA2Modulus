@@ -35,7 +35,7 @@ That's it. A module holds triggers, each trigger says which events start it
 
 ## What it does
 
-One executable, five commands:
+One executable, six commands:
 
 - `validate` checks a module and tells you exactly where it's wrong
 - `compile` turns `.aa2m` source into a binary module
@@ -43,6 +43,7 @@ One executable, five commands:
   compiles to the exact same bytes
 - `inspect` prints a binary module's records as AAUnlimited sees them
 - `lsp-server` runs the language server for your editor
+- `editor-catalog` prints the built-ins catalog your editor extension reads
 
 `aa2modulus <command> --help` lists the options, and
 [CLI usage](docs/user/cli-usage.md) covers all of them plus the exit codes.

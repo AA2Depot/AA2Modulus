@@ -1,22 +1,15 @@
-"""The editor ``builtins.json`` export: entries, compiled examples and ``--check``."""
+"""The editor built-ins catalog: header, entries and compiled examples."""
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 import pytest
 
 from aa2modulus.app.compile import compile_source
+from aa2modulus.app.editor_catalog.document import SCHEMA, editor_catalog
+from aa2modulus.app.editor_catalog.entries import Report
 from aa2modulus.context.operation import SourceContext
-from tools.editor_docs.entries import Report
-from tools.export_editor_docs import (
-    SCHEMA,
-    build_editor_docs,
-    check_output,
-    main,
-    render,
-)
 
 
 @pytest.fixture(scope="module")
@@ -26,7 +19,7 @@ def context() -> SourceContext:
 
 @pytest.fixture(scope="module")
 def generated(context: SourceContext) -> tuple[dict[str, Any], Report]:
-    return build_editor_docs(context=context)
+    return editor_catalog(context=context)
 
 
 @pytest.fixture(scope="module")
@@ -101,16 +94,3 @@ def test_examples_compile(
             event = (entry["valueEvents"] or ["CARD_ADDED"])[0]
             example = f'trigger "Example" {{\n  on {event};\n  {example}\n}}'
         compile_source(f'module "Examples" {{\n{example}\n}}\n', context=context)
-
-
-def test_check_detects_stale_file(generated: tuple[dict[str, Any], Report], tmp_path: Path) -> None:
-    document = generated[0]
-    path = tmp_path / "builtins.json"
-    assert check_output(path, document) is not None
-    path.write_text(render(document), encoding="utf-8", newline="\n")
-    assert check_output(path, document) is None
-    path.write_text(render(document).replace("H.Start", "H.Begin"), encoding="utf-8")
-    assert check_output(path, document) is not None
-    with pytest.raises(SystemExit) as exit:
-        main(["--output", str(path), "--check"])
-    assert exit.value.code == 1
