@@ -1,34 +1,36 @@
-"""Built-in documentation targets and description text."""
+"""Built-in documentation targets, pages and workspace symbols."""
 
 from __future__ import annotations
 
-import logging
-import re
+from collections.abc import Mapping
+from typing import Any
 
 from lsprotocol import types
 
+from ...app.editor_catalog.document import editor_catalog
+from ...context.operation import SourceContext
 from ...language.documentation import DocumentedMetadata, builtin_anchor, constant_ordinals
 from ...language.values import SourceValue
 from ...metadata.identities import NativeMetadata
 from ...metadata.snapshot import MetadataSnapshot
 
-logger = logging.getLogger(__name__)
-_URI_SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:")
+SCHEME = "aa2m-builtin"
+_SYMBOL_KINDS = {
+    "action": types.SymbolKind.Function,
+    "event": types.SymbolKind.Event,
+    "expression": types.SymbolKind.Function,
+    "named_constant": types.SymbolKind.Constant,
+}
 
 
 class BuiltinDocumentation:
-    """Definition targets for built-ins: one read-only page per stable anchor.
+    """Read-only built-in pages, ``aa2m-builtin:/<anchor>.md``, one per stable anchor.
 
-    The client supplies ``builtinDocumentationBaseUri`` (the VS Code extension
-    uses ``aa2m-builtin:/``) and renders ``<base><anchor>.md`` from its own
-    generated data; the server never reads a documentation file.
+    Targets exist only when ``enabled``: the client advertised
+    ``workspace.textDocumentContent``, so it can open the server's pages.
     """
 
-    def __init__(
-        self,
-        metadata: MetadataSnapshot,
-        base_uri: str | None = None,
-    ) -> None:
+    def __init__(self, metadata: MetadataSnapshot, *, enabled: bool = False) -> None:
         entries: tuple[NativeMetadata, ...] = (
             *metadata.actions,
             *metadata.events,
@@ -37,14 +39,8 @@ class BuiltinDocumentation:
         self._keys: dict[int, str] = {id(entry): builtin_anchor(entry) for entry in entries}
         for constant, ordinal in constant_ordinals(metadata.named_constants):
             self._keys[id(constant)] = builtin_anchor(constant, ordinal=ordinal)
-        self.base_uri: str | None = None
-        self.configure(base_uri)
-
-    def configure(self, base_uri: str | None) -> None:
-        if base_uri is not None and _URI_SCHEME.match(base_uri) is None:
-            logger.warning("builtinDocumentationBaseUri must be an absolute URI: %r", base_uri)
-            base_uri = None
-        self.base_uri = base_uri
+        self.enabled = enabled
+        self._entries: dict[str, dict[str, Any]] | None = None
 
     def anchor(self, metadata: DocumentedMetadata) -> str | None:
         key = self._keys.get(id(metadata))
@@ -54,7 +50,30 @@ class BuiltinDocumentation:
 
     def location(self, metadata: DocumentedMetadata) -> types.Location | None:
         anchor = self.anchor(metadata)
-        if anchor is None or self.base_uri is None:
-            return None
-        start = types.Position(0, 0)
-        return types.Location(f"{self.base_uri}{anchor}.md", types.Range(start, start))
+        return page_location(anchor) if anchor is not None and self.enabled else None
+
+    def entries(self, context: SourceContext) -> dict[str, dict[str, Any]]:
+        """``editor-catalog`` entries by id, built on the first call.
+
+        The build compiles every example, so the server makes the first call on
+        its analysis thread.
+        """
+
+        if self._entries is None:
+            document, _ = editor_catalog(context=context)
+            self._entries = {entry["id"]: entry for entry in document["entries"]}
+        return self._entries
+
+
+def page_location(anchor: str) -> types.Location:
+    start = types.Position(0, 0)
+    return types.Location(f"{SCHEME}:/{anchor}.md", types.Range(start, start))
+
+
+def builtin_symbol(entry: Mapping[str, Any]) -> types.WorkspaceSymbol:
+    return types.WorkspaceSymbol(
+        location=page_location(entry["id"]),
+        name=entry["name"],
+        kind=_SYMBOL_KINDS[entry["kind"]],
+        container_name=entry["nativeName"],
+    )

@@ -173,7 +173,7 @@ _SOURCE = (
 
 
 def test_hover_and_definition_cover_member_and_property_names(context):
-    documentation = BuiltinDocumentation(context.metadata, "aa2m-builtin:/")
+    documentation = BuiltinDocumentation(context.metadata, enabled=True)
     workspace = SourceWorkspace()
     uri = "untitled:ReceiverFirst"
     workspace.open(uri, _SOURCE, 1)

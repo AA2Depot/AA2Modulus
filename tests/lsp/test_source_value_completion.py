@@ -39,7 +39,7 @@ def test_school_gate_source_value_completion_applies_as_a_typed_literal(context)
 def test_source_value_documentation_uses_its_original_constant_row(context):
     source_value = context.catalog.source_value("Constants.Room.SCHOOL_GATES")
     assert source_value is not None
-    documentation = BuiltinDocumentation(context.metadata, "aa2m-builtin:/")
+    documentation = BuiltinDocumentation(context.metadata, enabled=True)
 
     location = documentation.location(source_value)
     assert location is not None

@@ -1,22 +1,22 @@
-"""Real stdio authoring: built-in pages under a client base URI, prose from policy."""
+"""Real stdio authoring: server built-in pages, the built-in list, prose from policy."""
 
 from __future__ import annotations
 
+from aa2modulus.app.editor_catalog.document import editor_catalog
+from aa2modulus.app.editor_catalog.pages import page
 from tests.support.lsp_client import Client
+
+_CONTENT_SUPPORT = {"workspace": {"textDocumentContent": {"dynamicRegistration": True}}}
 
 
 def test_stdio_builtin_hover_completion_and_page_definition(context):
-    client = Client(
-        initialization_options={"builtinDocumentationBaseUri": "aa2m-builtin:/"},
-        snippet_support=True,
-    )
+    client = Client(snippet_support=True, capabilities=_CONTENT_SUPPORT)
     try:
-        assert client.initialized["capabilities"]["experimental"] == {
-            "aa2modulus": {
-                "builtinDocumentationBaseUri": True,
-                "catalogFingerprint": context.catalog.fingerprint,
-            }
+        capabilities = client.initialized["capabilities"]
+        assert capabilities["experimental"] == {
+            "aa2modulus": {"contractVersion": 1, "builtinCatalog": True}
         }
+        assert capabilities["workspace"]["textDocumentContent"] == {"schemes": ["aa2m-builtin"]}
         description = context.metadata.action(108).description
         uri = "untitled:Builtins"
         source = 'module "M" { trigger "T" { Notification("hello"); Noti'
@@ -47,3 +47,48 @@ def test_stdio_builtin_hover_completion_and_page_definition(context):
         if client.process.poll() is None:
             client.process.terminate()
             client.process.wait(timeout=10)
+
+
+def test_stdio_serves_builtin_pages_and_ranked_builtin_symbols():
+    document, _ = editor_catalog()
+    notification = next(item for item in document["entries"] if item["id"] == "action-108")
+    client = Client(capabilities=_CONTENT_SUPPORT)
+    try:
+        content = client.request(
+            "workspace/textDocumentContent", {"uri": "aa2m-builtin:/action-108.md"}
+        )
+        assert content == {"text": page(notification, website=None)}
+        unknown = client.request("workspace/textDocumentContent", {"uri": "aa2m-builtin:/nope.md"})
+        assert unknown["text"].startswith("# Unknown built-in\n")
+
+        symbols = client.request("workspace/symbol", {"query": "notification"})
+        assert symbols[0] == {
+            "name": "Notification",
+            "kind": 12,
+            "containerName": "Notification",
+            "location": {
+                "uri": "aa2m-builtin:/action-108.md",
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 0},
+                },
+            },
+        }
+        everything = client.request("workspace/symbol", {"query": ""})
+        assert len(everything) == 200
+        assert all(item["location"]["uri"].startswith("aa2m-builtin:/") for item in everything)
+        client.finish()
+    finally:
+        if client.process.poll() is None:
+            client.process.terminate()
+            client.process.wait(timeout=10)
+
+
+def test_stdio_without_content_support_has_no_builtin_targets(client):
+    uri = "untitled:Builtins"
+    source = 'module "M" { trigger "T" { Notification("hello"); } }'
+    client.open(uri, source)
+    point = {"line": 0, "character": source.index("Notification")}
+    params = {"textDocument": {"uri": uri}, "position": point}
+    assert client.request("textDocument/definition", params) == []
+    assert client.request("workspace/symbol", {"query": "notification"}) == []

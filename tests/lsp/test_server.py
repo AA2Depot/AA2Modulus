@@ -13,10 +13,9 @@ def test_stdio_capabilities_navigation_and_diagnostic_parity(client, context):
     capabilities = client.initialized["capabilities"]
     assert capabilities["positionEncoding"] == "utf-16"
     assert capabilities["textDocumentSync"]["change"] == 2
-    assert (
-        capabilities["experimental"]["aa2modulus"]["catalogFingerprint"]
-        == context.catalog.fingerprint
-    )
+    # Without client textDocumentContent support there are no built-in pages.
+    assert capabilities["experimental"] == {"aa2modulus": {"contractVersion": 1}}
+    assert "textDocumentContent" not in capabilities.get("workspace", {})
     assert all(
         capabilities[key]
         for key in (
