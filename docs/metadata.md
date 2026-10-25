@@ -558,7 +558,7 @@ the destination as a documentation bundle directory. These maintenance commands
 are outside pytest and `mise run verify`; a consumer's copy changes only through
 explicit export.
 
-`tools/export_editor_docs.py --output <path>` writes the editor's built-in
+`aa2modulus editor-catalog [--output <path>]` writes the editor's built-in
 documentation, `builtins.json` (schema
 `aa2modulus.editor-builtins.v1`), from the same catalog: canonical names,
 signatures with parameter names and roles, descriptions (overrides first),
@@ -566,8 +566,7 @@ value events from policy `[event_values]`, and one placeholder example per entry
 Every example is compiled in a trigger for one of its value events; the export
 reports omitted examples (currently INT/100, whose native declaration is BOOL),
 targets skipped for lack of a source spelling, and parameterized targets without
-names. With `--check` it fails when the file is stale. The file is
-never hand-edited; better documentation comes from better policy data.
+names on stderr. The file is never hand-edited; better documentation comes from better policy data.
 
 After editing the policy, run `mise run test -m metadata`; use `mise run verify` for
 the full suite. Metadata tests exercise shipped spellings through compilation,

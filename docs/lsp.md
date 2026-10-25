@@ -286,7 +286,7 @@ formal names. The server reads no documentation file.
 F12 on a built-in returns `<base><anchor>.md` at line 0, where `<base>` is the
 optional `initializationOptions.builtinDocumentationBaseUri` (any absolute
 URI). The VS Code extension sends `aa2m-builtin:/` and renders those pages
-itself from `builtins.json`, which `tools/export_editor_docs.py` generates from
+itself from `builtins.json`, which `aa2modulus editor-catalog` generates from
 the same language data ([development](development.md#checks)). Anchors are
 stable across renames: expression anchors include the return type, constant
 anchors the original scoped ordinal (`action-108`, `expression-int-101`,

@@ -44,11 +44,12 @@ These operations are outside `check`; neither examples nor reference generation
 is a pytest subject.
 
 The editor's compiled-example built-in documentation, `builtins.json`, belongs
-to the extension repository, so its export names the destination:
+to the extension repository. The `editor-catalog` command writes it, so a
+release executable produces the catalog that matches its own server:
 
 ```bash
-python tools/export_editor_docs.py --output <extension>/docs/generated/builtins.json
-python tools/export_editor_docs.py --output <extension>/docs/generated/builtins.json --check
+aa2modulus editor-catalog --output <extension>/docs/generated/builtins.json
+aa2modulus editor-catalog | diff - <extension>/docs/generated/builtins.json
 ```
 
 Tests live in five directories under [tests/](../tests/): `source`, `binary`,

@@ -1,6 +1,6 @@
 # CLI usage
 
-`aa2modulus` has five commands. Run `aa2modulus <command> --help` for the same
+`aa2modulus` has six commands. Run `aa2modulus <command> --help` for the same
 list in the terminal.
 
 | Command | What it does |
@@ -10,6 +10,7 @@ list in the terminal.
 | `decompile MODULE [-o OUTPUT]` | Turn a binary module into `.aa2m` source (stdout without `-o`). |
 | `inspect MODULE` | Print a binary module's records with their native labels and IDs. |
 | `lsp-server` | Run the [language server](../lsp.md) over stdio for an editor. |
+| `editor-catalog [-o OUTPUT]` | Print the built-ins catalog (`builtins.json`) that editor extensions read (stdout without `-o`; report on stderr). |
 
 `aa2modulus --version` and `aa2modulus lsp-server --version` print the version.
 

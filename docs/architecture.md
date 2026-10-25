@@ -56,7 +56,7 @@ import-cycle rules. The one tolerated exception is the CLI's lazy
 | 9 | [`semantics/allows.py`](../aa2modulus/semantics/allows.py) | `@allow` acknowledgement: downgrades covered hazard errors after validation (and in definition validation) and reports the attributes' own findings. |
 | 9 | [`decompile/`](../aa2modulus/decompile/) | Formatting (decompilation) of SIR to source text (`format/`: text, context, cards, expressions, inference, fallbacks, statements, module). |
 | 10 | [`pipeline/`](../aa2modulus/pipeline/) | Compiler drivers: [`analysis.py`](../aa2modulus/pipeline/analysis.py) is the shared driver retaining completed stages, diagnostics, and resolved import edges for editor consumers; `authoring.py` is the current-buffer editor view. |
-| 11 | [`app/`](../aa2modulus/app/) | Application use cases: validate/compile source (`compile.py`) and recover source with diagnostics (`decompile.py`). |
+| 11 | [`app/`](../aa2modulus/app/) | Application use cases: validate/compile source (`compile.py`), recover source with diagnostics (`decompile.py`), and the editor built-ins catalog with compile-checked examples (`editor_catalog/`). |
 | 12 | [`cli/`](../aa2modulus/cli/) | Commands (`commands/`), argument parsing, streams, exit codes, inspection, and diagnostic rendering (`render/`). |
 | 12 | [`lsp/`](../aa2modulus/lsp/) | Stdio protocol (`server/`, `protocol/`), versioned buffers (`workspace/`), import overlays/invalidation, diagnostic ownership, compiler-backed authoring, completion, signature help, documentation, references/rename (`features/`), module commands (`commands/`) and the lazy workspace index. |
 | 13 | [`aa2modulus/__init__.py`](../aa2modulus/__init__.py) | Docstring only; the root re-exports nothing. Import from the owning module. |
@@ -68,7 +68,6 @@ Maintenance and test locations:
 | [`tools/`](../tools/) | Explicit maintenance scripts, one job each; each script's components live in its own package. |
 | [`tools/generate_registry.py`](../tools/generate_registry.py), [`tools/registry/`](../tools/registry/) | Registry generation and `--check` from a pinned AAUnlimited source checkout given with `--source-root`: C++ table reading and manifest writing. |
 | [`tools/export_reference.py`](../tools/export_reference.py), [`tools/reference/`](../tools/reference/) | Portable reference bundle export from committed contracts, examples, registry and policy. |
-| [`tools/export_editor_docs.py`](../tools/export_editor_docs.py), [`tools/editor_docs/`](../tools/editor_docs/) | Editor `builtins.json` export: entries and compile-checked examples. |
 | [`tools/build.py`](../tools/build.py), [`tools/standalone/`](../tools/standalone/) | Native single-file executable build script; its notice and version smoke-check components. |
 | [`tools/check_layers.py`](../tools/check_layers.py) | Package layer, lazy-import, private-import and import-cycle check (part of `mise run lint`). |
 | [`tests/`](../tests/) | Scenario tests grouped by source, binary, metadata, CLI, and LSP; shared helpers in support/. The standalone interfaces define the product contract, not a Python embedding API. |

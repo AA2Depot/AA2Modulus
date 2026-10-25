@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from aa2modulus.core.source_names import source_identifier
-from aa2modulus.language.catalog.model import LanguageCatalog, SourceForm
-from aa2modulus.metadata.identities import native_key
-from aa2modulus.model.native import NamedConstantMetadata
+from ...core.source_names import source_identifier
+from ...metadata.identities import NativeMetadata, native_key
+from ...model.native import NamedConstantMetadata
+from .model import LanguageCatalog, SourceForm
 
 
-def source_names(entry: Any, catalog: LanguageCatalog) -> dict[str, Any]:
+def source_names(entry: NativeMetadata, catalog: LanguageCatalog) -> dict[str, Any]:
     wire = native_key(entry)
     target = catalog.native_targets[wire]
 

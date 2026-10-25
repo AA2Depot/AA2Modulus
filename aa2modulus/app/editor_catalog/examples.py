@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from aa2modulus.app.compile import CompileError, compile_source
-from aa2modulus.context.operation import SourceContext
-
+from ...context.operation import SourceContext
+from ..compile import CompileError, compile_source
 from .entries import Draft, Report
 
 # Examples compile in batches; a failing batch is retried one draft at a time.
