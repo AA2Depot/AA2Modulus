@@ -43,13 +43,13 @@ returns `0` when it recovers source, even if that source has semantic errors.
 
 Each code is listed in the [diagnostic reference](../reference/diagnostics.md).
 
-## Globals from other modules
+## Undeclared variables
 
-A module can read a global that only another module on the card declares.
-`decompile` keeps such a reference raw and warns, and its help names the
-declaration to add, for example `global counter: int = 0;`. Until you add it,
-`validate` and `compile` report the variable as an error. Declaring it is safe:
-AAUnlimited keeps a card's existing value for a global it already has.
+Modules are standalone: a module uses only the globals it declares. When a
+native module reads a variable it never declares, `decompile` keeps the
+reference raw and warns, and its help names the declaration to add, for example
+`global counter: int = 0;`. Until you add it, `validate` and `compile` report
+the variable as an error.
 
 ## Inspect options
 

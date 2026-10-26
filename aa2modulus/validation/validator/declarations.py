@@ -1,9 +1,7 @@
 """Suggest a module global for a variable the module never declares.
 
-A module that reads another module's global has no declaration of its own.
-AAUnlimited adds a module's missing globals to the card and keeps the ones the
-card already has, so declaring the global in the module makes it work alone
-and next to the module that owns it.
+Modules are standalone, so a module must declare every global it reads.
+Declaring the missing global makes the module compile on its own.
 """
 
 from __future__ import annotations

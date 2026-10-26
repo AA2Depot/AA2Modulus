@@ -148,9 +148,9 @@ local scope, visible in events, local defaults, and statements regardless of
 declaration order. Lookup searches globals first, then trigger locals. Duplicate
 globals and duplicate locals within a trigger are semantic errors; resolution
 uses the first declaration while checking an invalid module. Other triggers'
-locals are never visible. Blocks do not introduce declaration scopes. A global
-that only another module declares is undefined; see
-[globals from other modules](language.md#globals-from-other-modules).
+locals are never visible. Blocks do not introduce declaration scopes. A
+variable the module never declares is undefined; see
+[undeclared variables](language.md#undeclared-variables).
 
 Version 3 replaces incremental local binding with complete-trigger lookup,
 matching the pinned native resolver. This defines reference visibility, not
