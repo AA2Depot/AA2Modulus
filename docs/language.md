@@ -483,9 +483,12 @@ native Windows/MSVC execution is separate.
 
 ### Undeclared variables
 
-Modules are standalone: a module uses only the globals it declares, and
-nothing declared in another module is visible to it. A native module can still
-read a variable it never declares, and such a variable is undefined:
+A global is a module-level variable that every trigger of the module can
+read. AAUnlimited also lets a module read a global that another module on the
+same card declares, through its dependency list ([native format](native-format.md)
+N3, N4). That support was never finished and almost no module uses it, so this
+language does not resolve dependencies: a module uses only the globals it
+declares, and a variable it never declares is undefined:
 
 - Decompilation keeps the reference raw (`raw_expression int 2 { variable "x"; }`)
   and reports `UNDEFINED_VARIABLE` as a warning, with help naming the
@@ -494,9 +497,10 @@ read a variable it never declares, and such a variable is undefined:
   editor offers the declaration as a quick fix. It uses the zero value of the
   reference's type (`0`, `false`, `0.0`, `""`).
 
-Declaring the global makes the module standalone. It also adds the global to
-the compiled module, so the output is no longer byte-identical to the original
-binary.
+Declaring the global makes the module work on its own. On a card that already
+has a global with that name, AAUnlimited keeps the card's value. The
+declaration also adds the global to the compiled module, so the output is no
+longer byte-identical to the original binary.
 
 ## Acknowledging Native Hazards
 

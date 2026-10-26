@@ -45,11 +45,12 @@ Each code is listed in the [diagnostic reference](../reference/diagnostics.md).
 
 ## Undeclared variables
 
-Modules are standalone: a module uses only the globals it declares. When a
-native module reads a variable it never declares, `decompile` keeps the
-reference raw and warns, and its help names the declaration to add, for example
-`global counter: int = 0;`. Until you add it, `validate` and `compile` report
-the variable as an error.
+A module uses only the globals it declares; dependencies on other modules'
+globals are not resolved. When a native module reads a variable it never
+declares, `decompile` keeps the reference raw and warns, and its help names the
+declaration to add, for example `global counter: int = 0;`. Until you add it,
+`validate` and `compile` report the variable as an error. Declaring it is safe:
+AAUnlimited keeps a card's existing value for a global it already has.
 
 ## Inspect options
 
