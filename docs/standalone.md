@@ -94,6 +94,12 @@ Configure an existing editor client with an absolute executable path and
 `["lsp-server"]` arguments. Working directory and `PYTHONPATH` setup are unnecessary
 for the frozen executable. [LSP setup](lsp.md) describes language IDs and behavior.
 
+A `v*.*.*` tag push runs [the release workflow](../.github/workflows/release.yml).
+Each build job runs its frozen executable's `editor-data manifest`;
+[tools/release_manifest.py](../tools/release_manifest.py) requires the fragments
+to match and publishes them as `aa2modulus-manifest.json` beside the zips (see
+the [client contract](lsp.md#client-contract)).
+
 These are local, unsigned artifacts. Windows 10 is a build target; native
 acceptance was performed on Windows 11. Hashes identify the actual outputs; locked
 inputs do not establish byte-identical reproducibility. Native AAUnlimited game

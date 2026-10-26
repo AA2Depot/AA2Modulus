@@ -10,7 +10,7 @@ list in the terminal.
 | `decompile MODULE [-o OUTPUT]` | Turn a binary module into `.aa2m` source (stdout without `-o`). |
 | `inspect MODULE` | Print a binary module's records with their native labels and IDs. |
 | `lsp-server` | Run the [language server](../lsp.md) over stdio for an editor. |
-| `editor-data {catalog,lexicon} [-o OUTPUT]` | Print the built-ins catalog (`builtins.json`) or the grammar lexicon with its fingerprint, which editor extensions read (stdout without `-o`; report on stderr). |
+| `editor-data {catalog,lexicon,manifest} [-o OUTPUT]` | Print the built-ins catalog (`builtins.json`), the grammar lexicon with its fingerprint or the release manifest's compatibility facts, which editor extensions read (stdout without `-o`; report on stderr). |
 
 `aa2modulus --version` and `aa2modulus lsp-server --version` print the version.
 

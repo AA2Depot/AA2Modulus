@@ -14,8 +14,8 @@ from pygls.exceptions import JsonRpcContentModified
 from pygls.lsp.server import LanguageServer
 from pygls.protocol import LanguageServerProtocol, lsp_method
 
+from ...app.editor_manifest import BUILTIN_CATALOG, server_features
 from ...context.operation import SourceContext
-from ...syntax.lexicon import source_lexicon
 from ...version import __version__
 from ..documentation.builtins import SCHEME, BuiltinDocumentation
 from ..features.references import Target
@@ -28,8 +28,6 @@ from ..workspace.index import WorkspaceIndex, analyze_closed, discover
 from .worker import analyze_pending, poll
 
 logger = logging.getLogger(__name__)
-# Increments only on a breaking wire change; additive features add a flag instead.
-CONTRACT_VERSION = 1
 
 
 class AA2LanguageServerProtocol(LanguageServerProtocol):
@@ -39,19 +37,13 @@ class AA2LanguageServerProtocol(LanguageServerProtocol):
     ) -> Generator[Any, Any, types.InitializeResult]:
         result = yield from super().lsp_initialize(params)
         server = cast(AA2LanguageServer, self._server)
-        features: dict[str, object] = {
-            "contractVersion": CONTRACT_VERSION,
-            "syntax": {
-                "version": server.context.source_policy.language_version,
-                "fingerprint": source_lexicon().fingerprint,
-            },
-        }
+        features = server_features(context=server.context)
         if server.documentation.enabled:
             # pygls fills no textDocumentContent option, so the scheme is declared here.
             workspace = result.capabilities.workspace or types.WorkspaceOptions()
             workspace.text_document_content = types.TextDocumentContentOptions([SCHEME])
             result.capabilities.workspace = workspace
-            features["builtinCatalog"] = True
+            features[BUILTIN_CATALOG] = True
         result.capabilities.experimental = {"aa2modulus": features}
         return result
 
