@@ -71,9 +71,9 @@ def decompile_module(
         ),
         metadata=metadata,
     )
-    # A variable the module never declares usually belongs to another module on
-    # the card. Recovery keeps it raw and warns; the help names the declaration
-    # that makes the recovered source compile.
+    # A variable the module never declares may come from another module on the
+    # card, but dependencies are not resolved. Recovery keeps it raw and warns;
+    # the help names the declaration that makes the recovered source compile.
     semantic = tuple(
         replace(item, severity="warning") if item.code == "UNDEFINED_VARIABLE" else item
         for item in validate_module(

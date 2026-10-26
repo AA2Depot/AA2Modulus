@@ -1,6 +1,6 @@
 [project]
 name = "aa2modulus"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cross-platform AAUnlimited module reader, compiler, decompiler, and DSL tooling"
 requires-python = ">=3.13"
 license = "GPL-3.0-only"

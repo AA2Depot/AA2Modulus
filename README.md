@@ -1,5 +1,9 @@
 # aa2modulus
 
+[![CI](https://github.com/AA2Depot/AA2Modulus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AA2Depot/AA2Modulus/actions/workflows/ci.yml?query=branch%3Amain)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAA2Depot%2FAA2Modulus%2Fbadges%2Fcoverage.json)](https://github.com/AA2Depot/AA2Modulus/actions/workflows/ci.yml?query=branch%3Amain)
+[![License](https://img.shields.io/github/license/AA2Depot/AA2Modulus)](LICENSE)
+
 If you've ever built an AAUnlimited trigger module in AAEdit, you know the
 drill: lots of clicking, nested menus, and no easy way to see the whole thing
 at once. aa2modulus lets you write those modules as plain text instead, compile

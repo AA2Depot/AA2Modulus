@@ -164,7 +164,7 @@ session; `--version` prints the `serverInfo.version` sent at `initialize`
   Source spans retain their inclusive Unicode code-point contract internally.
 
 The server uses bundled metadata/policy and the existing source budgets. It
-does not read binary modules; a global that only another module declares is
+does not read binary modules; a variable the module never declares is
 undefined until declared. Formatting is not planned (revisit if users ask).
 
 ## References and rename
@@ -216,8 +216,7 @@ view's selections are used, as for hover.
   output byte-identical. Renaming a template also writes the old name as the
   output name of each `import.trigger` that had none, so trigger names are kept.
   Renaming a global or local changes the serialized variable name; for a global
-  the server warns that other modules on a card that read it keep the old
-  name.
+  the server also shows a warning saying so.
 
 Edits use versioned `documentChanges` when the client supports them (closed
 files have no version), and `changes` otherwise.
@@ -288,7 +287,7 @@ diagnostic with exactly one fix marks it preferred.
 | assignment to a protected name (`ThisCard = 3;`) | `variable("ThisCard") = 3;` |
 | `AMBIGUOUS_CONST` read | `const("K")` or `variable("K")`; an assignment target gets only `variable("K")` |
 | an `int` where a card is expected (`n.SetVirtue(1)`, `coach == n`) | `Card(n)` |
-| `UNDEFINED_VARIABLE` with a known type, such as a decompiled read of another module's global | `global x: int = 0;` after the last global, or before the first trigger |
+| `UNDEFINED_VARIABLE` with a known type, such as a decompiled read of a variable the module never declares | `global x: int = 0;` after the last global, or before the first trigger |
 | a bare reserved word as a declaration, assignment target or constant read (`let import: int = 1;`) | `"import"`, `variable("import")` or `const("import")` |
 | a common mistake from another language (`if (y = 3)`, `x += 1`, `a and b`, `'text'`, `elif`, `while (c) { ... }`) | the exact rewrite listed in [language](language.md#api-diagnostics) |
 

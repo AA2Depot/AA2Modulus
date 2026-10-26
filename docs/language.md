@@ -38,9 +38,9 @@ empty vector; no empty block is needed.
 The pinned AAUnlimited exporter derives these names from globals owned by attached
 modules, but its module loader does not resolve or enforce the names. `depends_on`
 does not load another module, supply globals, establish card membership/load order,
-or import `.aa2mi` definitions. Declare a global the module reads (see
-[globals from other modules](#globals-from-other-modules)) and use `import` for
-source definitions.
+or import `.aa2mi` definitions. Declare every global the module reads (see
+[undeclared variables](#undeclared-variables)) and use `import` for source
+definitions.
 
 Native export has further limits ([evidence](native-format.md#dependency-evidence)):
 it scans only action parameters, so a global used only in event parameters or
@@ -346,8 +346,8 @@ is the version 3 scope rule. It uses native global-before-local search priority
 within the module environment, without promising runtime initialization order
 or safe self/cyclic defaults.
 
-A variable that only another module declares is undefined here; see
-[globals from other modules](#globals-from-other-modules).
+A variable the module never declares is undefined; see
+[undeclared variables](#undeclared-variables).
 
 ## Compile-Time Constants
 
@@ -481,12 +481,14 @@ this profile. [Dependency metadata lint](#dependency-metadata) is also warning-o
 in the native profile; strict defaults retain errors. These are source-derived compatibility checks;
 native Windows/MSVC execution is separate.
 
-### Globals from other modules
+### Undeclared variables
 
-A trigger may read a global that only another module on the same card
-declares. AAUnlimited adds each module's missing globals to the card and keeps
-the ones the card already has ([native format](native-format.md) N3), but this
-toolchain sees one module at a time, so such a variable is undefined:
+A global is a module-level variable that every trigger of the module can
+read. AAUnlimited also lets a module read a global that another module on the
+same card declares, through its dependency list ([native format](native-format.md)
+N3, N4). That support was never finished and almost no module uses it, so this
+language does not resolve dependencies: a module uses only the globals it
+declares, and a variable it never declares is undefined:
 
 - Decompilation keeps the reference raw (`raw_expression int 2 { variable "x"; }`)
   and reports `UNDEFINED_VARIABLE` as a warning, with help naming the
@@ -495,10 +497,10 @@ toolchain sees one module at a time, so such a variable is undefined:
   editor offers the declaration as a quick fix. It uses the zero value of the
   reference's type (`0`, `false`, `0.0`, `""`).
 
-Declaring the global makes the module work alone and next to the module that
-owns it, since a card keeps the value it already has. It also adds the global
-to the compiled module, so the output is no longer byte-identical to the
-original binary.
+Declaring the global makes the module work on its own. On a card that already
+has a global with that name, AAUnlimited keeps the card's value. The
+declaration also adds the global to the compiled module, so the output is no
+longer byte-identical to the original binary.
 
 ## Acknowledging Native Hazards
 

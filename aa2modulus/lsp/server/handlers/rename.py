@@ -48,8 +48,7 @@ def register(server: AA2LanguageServer) -> None:
                 types.ShowMessageParams(
                     types.MessageType.Warning,
                     f"Renamed global '{target.name}' to '{params.new_name}': its serialized "
-                    f"variable name changes, and other modules on a card that read "
-                    f"'{target.name}' still use the old name.",
+                    "variable name changes.",
                 )
             )
         return edit

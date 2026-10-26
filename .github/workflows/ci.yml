@@ -1,0 +1,72 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v5
+
+      - name: Lint
+        run: mise run lint
+
+  test:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v5
+
+      - name: Test
+        run: mise run test
+
+  coverage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v5
+
+      - name: Test with coverage
+        run: mise run coverage
+
+      - name: Publish coverage badge
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          total=$(uv run --locked coverage report --format=total)
+          if [ "$total" -ge 90 ]; then color=brightgreen
+          elif [ "$total" -ge 85 ]; then color=green
+          elif [ "$total" -ge 75 ]; then color=yellow
+          else color=red
+          fi
+          badge="$RUNNER_TEMP/badges"
+          git init --quiet -b badges "$badge"
+          printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' \
+            "$total" "$color" > "$badge/coverage.json"
+          git -C "$badge" add coverage.json
+          git -C "$badge" -c user.name="github-actions[bot]" \
+            -c user.email="github-actions[bot]@users.noreply.github.com" \
+            commit --quiet -m "Coverage ${total}% at ${GITHUB_SHA::7}"
+          git -C "$badge" push --force --quiet \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" badges
