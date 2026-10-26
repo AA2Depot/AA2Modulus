@@ -137,6 +137,19 @@ report it. Change it together with `[project].version` in
 `pyproject.toml`; `tests/cli/test_cli_lsp.py` fails when they differ. There is
 no build identity: every build of one version reports the same text.
 
+### Release checklist
+
+1. Run `uv version X.Y.Z`. It updates `pyproject.toml` and `uv.lock`.
+2. Set `__version__` in `aa2modulus/version.py` to the same value.
+3. Run `mise run verify`.
+4. Merge the release commit into `main`.
+5. Tag `main` and push the tag: `git tag vX.Y.Z` and `git push origin vX.Y.Z`.
+   The [release workflow](../.github/workflows/release.yml) refuses a tag
+   that differs from the project version.
+6. When the workflow finishes, check that the release has both zips and
+   `aa2modulus-manifest.json`. Add the breaking wire changes to the generated
+   notes, and mark the release as a pre-release if it is one.
+
 ## Project records
 
 Contributor rules, work-log format, plans and handover are in
