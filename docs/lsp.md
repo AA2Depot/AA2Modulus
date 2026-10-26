@@ -307,13 +307,16 @@ to a primitive literal, and hover/F12 retain the original native row's anchor.
 
 ## Module commands
 
-The server advertises `aa2modulus.prepareCompile`, `aa2modulus.compileDocument` and
+The server advertises `aa2modulus.compileDocument` and
 `aa2modulus.decompileModule` through `workspace/executeCommand`; request and result
 shapes are in the [client contract](#command-wire-format).
-Compilation reads saved disk inputs, checks relevant buffers and disk files for
-changes (stale or dirty inputs report `ContentModified`), rejects source/import
-destinations, and atomically commits output only after strict compilation succeeds;
-canceled or failed requests preserve existing output. Decompilation returns
+Compilation uses the same inputs as analysis: the synced text of each open
+document in the import graph, saved or not, and disk for the rest. The client
+does not need to save first. Before it commits, the server checks that no used
+buffer changed or closed, no buffer opened for a file read from disk, and no
+disk input changed; otherwise it reports `ContentModified`. It rejects
+source/import destinations, and atomically commits output only after strict
+compilation succeeds; canceled or failed requests preserve existing output. Decompilation returns
 readable source with raw fallbacks and recovery diagnostics, including semantic
 errors and trailing-byte warnings; fatal read/decode failures are request errors.
 Command diagnostic messages use the CLI `short` form (`file:line:col:
@@ -340,7 +343,7 @@ trust, UI) belongs to the client.
   URIs. Command file arguments are local `file:` URIs on the server's host.
 - **Initialize result:** `serverInfo` carries `name` and `version`.
   `capabilities.experimental.aa2modulus` is
-  `{ "contractVersion": 1, "builtinCatalog": true }`. A client gates features
+  `{ "contractVersion": 2, "builtinCatalog": true }`. A client gates features
   on these fields, not on `serverInfo.version`.
   `contractVersion` increments only on a breaking wire change. An additive
   feature adds a flag instead, which is present and `true` only when the
@@ -380,15 +383,13 @@ Document versions are integers; booleans are rejected.
 
 | Command | Request object | Result object |
 | --- | --- | --- |
-| `aa2modulus.prepareCompile` | `{ "textDocument": { "uri", "version" } }` | `{ "dependencies": string[], "diagnostics": CommandDiagnostic[] }` |
 | `aa2modulus.compileDocument` | `{ "textDocument": { "uri", "version" }, "outputUri": string }` | `{ "compiled": boolean, "diagnostics": CommandDiagnostic[] }` |
 | `aa2modulus.decompileModule` | `{ "inputUri": string }` | `{ "source": string, "diagnostics": CommandDiagnostic[] }` |
 
-`prepareCompile` needs an open `.aa2m` module at the given version. It returns
-the import URIs reachable from the current buffers (unsaved libraries
-included), so the client can save them before it calls `compileDocument`.
-These URIs are source imports, not `depends_on` names. Request failures,
-invalid parameters and changed inputs are JSON-RPC/LSP errors.
+`compileDocument` needs an open, file-backed `.aa2m` module at the given
+version; the file need not exist on disk yet. Contract version 2 removed
+`prepareCompile`, which listed imports for the client to save. Request
+failures, invalid parameters and changed inputs are JSON-RPC/LSP errors.
 
 A `CommandDiagnostic` always has `severity` (`error`, `warning` or `info`) and
 `message`: the CLI short line followed by any `note:`/`help:` lines. Other
