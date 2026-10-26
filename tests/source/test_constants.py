@@ -128,7 +128,7 @@ def test_constants_work_as_receivers():
 def test_quoted_keyword_like_names_and_prefix_identifiers_are_ordinary():
     items = (
         'const "int": string = "a"; const "if": string = "b"; const const_x: string = "c"; '
-        'const constant: string = "d"; const constant_x: string = "e";'
+        'const "constant": string = "d"; const constant_x: string = "e";'
     )
     use = (
         'Notification(const("int")); Notification(const("if")); Notification(const_x); '

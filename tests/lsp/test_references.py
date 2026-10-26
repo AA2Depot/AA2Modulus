@@ -130,6 +130,15 @@ def test_rename_to_a_non_identifier_quotes_declarations_and_wraps_uses(context):
     assert 'if (variable("my count") > 1)' in edited
 
 
+def test_rename_to_a_reserved_word_quotes_declarations_and_wraps_uses(context):
+    _, snapshot = _open(LOCALS, context)
+    target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
+    edited = rename([snapshot], target, "If", context).files["untitled:A"].edited
+    assert 'let "If": int = 0;' in edited
+    assert 'variable("If") = variable("If") + 1;' in edited
+    assert 'for "If" from 0 to 3' in edited
+
+
 def test_rename_refuses_shadowing_protected_names_and_new_errors(context):
     _, snapshot = _open(LOCALS, context)
     target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")

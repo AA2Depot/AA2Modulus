@@ -22,6 +22,7 @@ from ..spans import meta_span, token_span
 from .base import (
     Dependency,
     Description,
+    NamedValue,
     TransformerBase,
     as_const_value,
     as_literal,
@@ -118,6 +119,7 @@ class DeclarationsMixin(TransformerBase):
 
     def const_decl(self, meta: Meta, children: list[object]) -> SourceConstant:
         name = as_named(children[0])
+        self._check_bare_name(name)
         return SourceConstant(
             name.value,
             as_type_id(children[1]),
@@ -130,6 +132,7 @@ class DeclarationsMixin(TransformerBase):
     def const_name(self, meta: Meta, children: list[object]) -> SourceName:
         token = as_token(children[0])
         span = token_span(token, self.filename)
+        self._check_bare_name(NamedValue(str(token), span), "constant")
         return SourceName(str(token), source_span=span, name_span=span)
 
     def const_ref(self, meta: Meta, children: list[object]) -> SourceConstantReference:
@@ -142,6 +145,7 @@ class DeclarationsMixin(TransformerBase):
 
     def global_decl(self, meta: Meta, children: list[object]) -> SourceGlobal:
         name = as_named(children[0])
+        self._check_bare_name(name)
         return SourceGlobal(
             name.value,
             as_source_type(children[1]),
@@ -153,6 +157,7 @@ class DeclarationsMixin(TransformerBase):
 
     def global_state_decl(self, meta: Meta, children: list[object]) -> SourceGlobal:
         name = as_named(children[0])
+        self._check_bare_name(name)
         return SourceGlobal(
             name.value,
             as_source_type(children[1]),

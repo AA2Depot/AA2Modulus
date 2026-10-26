@@ -53,6 +53,8 @@ assignment targets. `const` is a reserved keyword; `const_x` and `constant_x`
 remain identifiers, and a quoted `"const"` name is valid. `card` and `Card`
 (any case) are reserved too. The reserved words are exactly the grammar's
 words, each segment of `import.trigger` included, in any letter case.
+A bare reserved word cannot name or assign a variable or constant: quote it,
+or write `variable("...")` or `const("...")`.
 `aa2modulus editor-data lexicon` prints this lexical surface (words by group,
 operators, punctuation, literal patterns and comments) as JSON with its
 fingerprint, for editor grammars to test against.

@@ -332,7 +332,9 @@ Assignments compile to the AAUnlimited `Set Variable` action. A serialized
 variable name that is not a valid identifier can be written as
 `variable("name with spaces")`.
 Quote declarations whose names are keywords, such as `let "true": bool = false;`,
-and reference or assign them with `variable("true")`. Keyword prefixes do not
+and reference or assign them with `variable("true")`. A bare reserved name in a
+declaration, assignment or `for` target, or a constant initializer, is a
+`SYNTAX_ERROR` whose fix writes the quoted form. Keyword prefixes do not
 reserve longer identifiers: `true_flag` and `breakpoint` are ordinary names.
 
 Lookup searches module globals before locals in the current trigger. Every

@@ -9,7 +9,9 @@ from typing import NoReturn
 from lark import Token, Transformer_NonRecursive
 from lark.tree import Meta
 
+from ....core.diagnostics import SourceFix
 from ....core.locations import SourceSpan
+from ....core.source_names import SOURCE_RESERVED
 from ....language.types import CARD, SourceType
 from ....model.types import TypeId
 from ...ast import (
@@ -46,6 +48,13 @@ from ...ast import (
 from ...spans import qualified_segment_spans
 from ..errors import SourceParseError
 from ..spans import meta_span, token_span
+
+# Help and replacement of a bare reserved word, by where it is written.
+_RESERVED_REWRITES = {
+    "declaration": ("quote the name: `{}`", "{}"),
+    "assignment": ("assign it with `{}`", "variable({})"),
+    "constant": ("read it with `{}`", "const({})"),
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,25 +218,42 @@ class TransformerBase(Transformer_NonRecursive[Token, object]):
 
     def _fail(
         self,
-        meta: Meta | Token,
+        meta: Meta | Token | SourceSpan,
         message: str,
         code: str = "SYNTAX_ERROR",
         *,
         help: str | None = None,
+        fixes: tuple[SourceFix, ...] = (),
     ) -> NoReturn:
-        span = (
-            token_span(meta, self.filename)
-            if isinstance(meta, Token)
-            else meta_span(meta, self.filename)
-        )
+        if isinstance(meta, SourceSpan):
+            span = meta
+        elif isinstance(meta, Token):
+            span = token_span(meta, self.filename)
+        else:
+            span = meta_span(meta, self.filename)
         raise SourceParseError(
             self.filename,
-            getattr(meta, "line", 1),
-            getattr(meta, "column", 1),
+            span.start_line,
+            span.start_column,
             message,
             code,
             source_span=span,
             help=help,
+            fixes=fixes,
+        )
+
+    def _check_bare_name(self, name: NamedValue, position: str = "declaration") -> None:
+        """Fail when ``name`` is a bare reserved word; the fix writes it as ``position`` needs."""
+
+        if name.quoted or name.explicit_variable or name.value.casefold() not in SOURCE_RESERVED:
+            return
+        help, form = _RESERVED_REWRITES[position]
+        replacement = form.format(f'"{name.value}"')
+        self._fail(
+            name.span,
+            f"{name.value!r} is a reserved word",
+            help=help.format(replacement),
+            fixes=(SourceFix(f"Write '{replacement}'", name.span, replacement),),
         )
 
     def _string(self, token: Token) -> str:

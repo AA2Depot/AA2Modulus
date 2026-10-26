@@ -91,6 +91,7 @@ class StatementsMixin(TransformerBase):
 
     def for_stmt(self, meta: Meta, children: list[object]) -> SourceFor:
         target = as_named(children[0])
+        self._check_bare_name(target)
         return SourceFor(
             target.value,
             as_expression(children[1]),
@@ -120,7 +121,9 @@ class StatementsMixin(TransformerBase):
 
     def assignment_identifier(self, meta: Meta, children: list[object]) -> NamedValue:
         token = as_token(children[0])
-        return NamedValue(self._identifier(token), token_span(token, self.filename))
+        target = NamedValue(self._identifier(token), token_span(token, self.filename))
+        self._check_bare_name(target, "assignment")
+        return target
 
     def assignment_variable(self, meta: Meta, children: list[object]) -> NamedValue:
         token = as_token(children[0])
