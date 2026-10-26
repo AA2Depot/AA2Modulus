@@ -177,6 +177,7 @@ class DefinitionsMixin(TransformerBase):
 
     def local_decl(self, meta: Meta, children: list[object]) -> SourceLocal:
         name = as_named(children[0])
+        self._check_bare_name(name)
         return SourceLocal(
             name.value,
             as_source_type(children[1]),

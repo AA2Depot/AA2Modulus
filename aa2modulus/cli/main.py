@@ -12,7 +12,7 @@ from ..metadata.schema import MetadataError
 from ..version import __version__
 from .arguments import report_settings_from_args, source_limits_from_args
 from .commands import compile as compile_command
-from .commands import decompile, editor_catalog, inspect, validate
+from .commands import decompile, editor_data, inspect, validate
 from .common import DEFAULT_SETTINGS, EXIT_INTERNAL_ERROR, EXIT_OK, EXIT_USAGE_ERROR
 from .render.terminal import ReportSettings
 
@@ -34,7 +34,7 @@ _COMMANDS: dict[str, _Command] = {
     "validate": validate,
     "compile": compile_command,
     "decompile": decompile,
-    "editor-catalog": editor_catalog,
+    "editor-data": editor_data,
 }
 
 
@@ -78,8 +78,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             source_limits = source_limits_from_args(args)
         except ValueError as exc:
             parser.error(str(exc))
-    # The catalog reports no diagnostics, so its parser has no report options.
+    # Editor data reports no diagnostics, so its parser has no report options.
     settings = (
-        DEFAULT_SETTINGS if args.command == "editor-catalog" else report_settings_from_args(args)
+        DEFAULT_SETTINGS if args.command == "editor-data" else report_settings_from_args(args)
     )
     return command.run(args, settings, source_limits)

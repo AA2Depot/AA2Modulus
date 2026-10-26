@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import re
 
-_SOURCE_RESERVED = frozenset(
+SOURCE_RESERVED = frozenset(
     {
         "bool",
         "break",
         "card",
-        "compile",
         "const",
         "constant",
         "continue",
@@ -19,7 +18,6 @@ _SOURCE_RESERVED = frozenset(
         "description",
         "else",
         "elseif",
-        "event",
         "false",
         "float",
         "float_bits",
@@ -48,8 +46,6 @@ _SOURCE_RESERVED = frozenset(
         "true",
         "trigger",
         "type",
-        "validate",
-        "var",
         "variable",
     }
 )
@@ -58,7 +54,7 @@ _SOURCE_RESERVED = frozenset(
 def source_identifier(value: str) -> str:
     """Turn metadata display text into a stable source identifier."""
 
-    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value) and value.casefold() not in _SOURCE_RESERVED:
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value) and value.casefold() not in SOURCE_RESERVED:
         return value
     words = re.findall(r"[A-Za-z0-9]+", value)
     candidate = "".join(word[:1].upper() + word[1:] for word in words)
@@ -71,7 +67,7 @@ def source_identifier(value: str) -> str:
         }.get(value, "Expression")
     if candidate[0].isdigit():
         candidate = "Value" + candidate
-    if candidate.casefold() in _SOURCE_RESERVED:
+    if candidate.casefold() in SOURCE_RESERVED:
         candidate += "Value"
     return candidate
 
@@ -91,7 +87,7 @@ def is_source_name(value: str, *, allow_qualified: bool = True) -> bool:
         return False
     return all(
         re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", part) is not None
-        and part.casefold() not in _SOURCE_RESERVED
+        and part.casefold() not in SOURCE_RESERVED
         for part in parts
     )
 

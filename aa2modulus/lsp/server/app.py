@@ -15,6 +15,7 @@ from pygls.lsp.server import LanguageServer
 from pygls.protocol import LanguageServerProtocol, lsp_method
 
 from ...context.operation import SourceContext
+from ...syntax.lexicon import source_lexicon
 from ...version import __version__
 from ..documentation.builtins import SCHEME, BuiltinDocumentation
 from ..features.references import Target
@@ -38,7 +39,13 @@ class AA2LanguageServerProtocol(LanguageServerProtocol):
     ) -> Generator[Any, Any, types.InitializeResult]:
         result = yield from super().lsp_initialize(params)
         server = cast(AA2LanguageServer, self._server)
-        features: dict[str, object] = {"contractVersion": CONTRACT_VERSION}
+        features: dict[str, object] = {
+            "contractVersion": CONTRACT_VERSION,
+            "syntax": {
+                "version": server.context.source_policy.language_version,
+                "fingerprint": source_lexicon().fingerprint,
+            },
+        }
         if server.documentation.enabled:
             # pygls fills no textDocumentContent option, so the scheme is declared here.
             workspace = result.capabilities.workspace or types.WorkspaceOptions()

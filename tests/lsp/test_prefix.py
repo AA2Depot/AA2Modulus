@@ -151,13 +151,13 @@ def test_unknown_qualified_prefix_does_not_become_a_grammar_terminal(tmp_path):
 def test_authored_completions_respect_macro_and_template_scopes(context):
     macro_source = (
         'macro Work { param Formal int; if Formal > 0 {} } module "M" '
-        '{ global Global: int = 0; trigger "T" { let Local: int = 0; } }'
+        '{ global Shared: int = 0; trigger "T" { let Local: int = 0; } }'
     )
     analysis = analyze_source(macro_source, context=context)
     cursor = macro_source.index("Formal >")
     names = {item.label for item in completions(macro_source, cursor, context, analysis=analysis)}
     assert "Formal" in names
-    assert "Global" not in names
+    assert "Shared" not in names
     assert "Local" not in names
 
     template_source = (

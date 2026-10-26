@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from aa2modulus.syntax.lexicon import source_lexicon
 from aa2modulus.version import __version__
 from tests.support.lsp_client import Client
 
@@ -14,7 +15,11 @@ def test_stdio_capabilities_navigation_and_diagnostic_parity(client, context):
     assert capabilities["positionEncoding"] == "utf-16"
     assert capabilities["textDocumentSync"]["change"] == 2
     # Without client textDocumentContent support there are no built-in pages.
-    assert capabilities["experimental"] == {"aa2modulus": {"contractVersion": 1}}
+    syntax = {
+        "version": context.source_policy.language_version,
+        "fingerprint": source_lexicon().fingerprint,
+    }
+    assert capabilities["experimental"] == {"aa2modulus": {"contractVersion": 1, "syntax": syntax}}
     assert "textDocumentContent" not in capabilities.get("workspace", {})
     assert all(
         capabilities[key]

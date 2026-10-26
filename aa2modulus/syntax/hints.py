@@ -31,7 +31,7 @@ FOREIGN_KEYWORD_HELP: dict[str, str] = {
     "elseif": _ELSE_IF_HELP,
     "elsif": _ELSE_IF_HELP,
 }
-"""Help for words of other languages that aa2m does not reserve."""
+"""Help for words of other languages that aa2m has no construct for."""
 UNCLOSED_COMMENT_HELP = "this `/*` comment is never closed with `*/`"
 
 _WORD_OPERATORS = {"and": "&&", "or": "||"}

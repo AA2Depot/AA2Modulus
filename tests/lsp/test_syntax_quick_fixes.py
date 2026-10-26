@@ -55,3 +55,21 @@ def test_another_modules_global_is_declared_by_a_quick_fix(client: Client, tmp_p
 
     client.change(uri, fixed, 2)
     assert client.diagnostics(uri, version=2) == []
+
+
+RESERVED = 'module "M" {\n  trigger "T" {\n    on CARD_ADDED;\n    let import: int = 1;\n  }\n}\n'
+
+
+def test_a_bare_reserved_declaration_is_quoted_by_a_quick_fix(client: Client, tmp_path):
+    uri = (tmp_path / "reserved.aa2m").as_uri()
+    client.open(uri, RESERVED)
+    (diagnostic,) = client.diagnostics(uri, bool, version=1)
+
+    assert diagnostic["code"] == "SYNTAX_ERROR"
+    (action,) = _actions(client, uri, [diagnostic])
+    assert action["title"] == "Write '\"import\"'"
+    fixed = _apply(RESERVED, action["edit"]["changes"][uri])
+    assert fixed == RESERVED.replace("let import", 'let "import"')
+
+    client.change(uri, fixed, 2)
+    assert client.diagnostics(uri, version=2) == []

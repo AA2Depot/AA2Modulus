@@ -53,7 +53,7 @@ class BuiltinDocumentation:
         return page_location(anchor) if anchor is not None and self.enabled else None
 
     def entries(self, context: SourceContext) -> dict[str, dict[str, Any]]:
-        """``editor-catalog`` entries by id, built on the first call.
+        """``editor-data catalog`` entries by id, built on the first call.
 
         The build compiles every example, so the server makes the first call on
         its analysis thread.

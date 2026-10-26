@@ -44,12 +44,15 @@ These operations are outside `check`; neither examples nor reference generation
 is a pytest subject.
 
 The editor's compiled-example built-in documentation, `builtins.json`, belongs
-to the extension repository. The `editor-catalog` command writes it, so a
-release executable produces the catalog that matches its own server:
+to the extension repository. The `editor-data catalog` command writes it, so a
+release executable produces the catalog that matches its own server.
+`editor-data lexicon` prints the lexicon and syntax fingerprint the server
+advertises, for the extension's grammar test:
 
 ```bash
-aa2modulus editor-catalog --output <extension>/docs/generated/builtins.json
-aa2modulus editor-catalog | diff - <extension>/docs/generated/builtins.json
+aa2modulus editor-data catalog --output <extension>/docs/generated/builtins.json
+aa2modulus editor-data catalog | diff - <extension>/docs/generated/builtins.json
+aa2modulus editor-data lexicon --output <scratch>/lexicon.json
 ```
 
 Tests live in five directories under [tests/](../tests/): `source`, `binary`,
