@@ -1,9 +1,9 @@
 # Language server
 
 The shared CLI provides diagnostics, completion, hover, signature help,
-go-to-definition, document symbols, references, occurrence highlights, rename,
-semantic highlighting, parameter-name inlay hints and quick fixes for `.aa2m`
-modules and `.aa2mi` libraries.
+go-to-definition, import links, document and workspace symbols, references,
+occurrence highlights, rename, semantic highlighting, parameter-name inlay
+hints and quick fixes for `.aa2m` modules and `.aa2mi` libraries.
 Use an editor's existing LSP client or the VS Code extension, which lives in
 its own repository (`aa2modulus-extension`) and owns its setup and
 troubleshooting. The [client contract](#client-contract) lists the wire facts
@@ -71,6 +71,9 @@ session; `--version` prints the `serverInfo.version` sent at `initialize`
   Built-ins show signatures, descriptions, and policy defaults. Definitions
   navigate to authored variables, macro parameters/calls, template slots/uses,
   and import targets. Generated template-local names stay out of the outline.
+- `textDocument/documentLink` returns one link per import path token whose
+  file was read, targeting that file; it agrees with definition on the path.
+  Unresolved paths and untitled documents' imports get no link.
 - Completion and signature help use the existing grammar for incomplete
   prefixes, respect comments/strings and nested calls, and replace exact name
   tokens. A separate bounded editor view recovers completed declarations and
@@ -190,6 +193,12 @@ view's selections are used, as for hover.
   rediscovery; other clients are rediscovered on every such request. A request
   with a `workDoneToken` reports `$/progress` while uncached files are read.
   Without a workspace folder, open documents and their imports are searched.
+- **Workspace symbols.** `workspace/symbol` searches the same sources for
+  top-level constants, macros, templates and modules, and for each module's
+  globals, constants and triggers (`containerName` is the module name).
+  Locals, macro parameters and slots are not listed. Names match without case,
+  exact first, then prefix, then substring, each by file and position. These
+  results precede any built-ins; the list holds at most 200.
 - **Highlights** cover the current document. Declarations, assignment targets
   and `for` targets are writes; other uses are reads.
 - **Spelling.** A new name that is a non-keyword, unprotected identifier is
@@ -303,7 +312,8 @@ rendered from the same entries `aa2modulus editor-data catalog` writes to
 `builtins.json` ([development](development.md#checks)); an unknown anchor gets
 an "Unknown built-in" page. `workspace/symbol` lists built-ins ranked by name,
 alias, native name and description (at most 200), each located at its page, so
-a client finds built-ins by filtering results to the `aa2m-builtin` scheme.
+a client finds built-ins by filtering results to the `aa2m-builtin` scheme
+(authored results come first and use `file:` or `untitled:`).
 The pages are built on the first page or symbol request, which compiles every
 example once. Anchors are
 stable across renames: expression anchors include the return type, constant

@@ -217,17 +217,24 @@ class AA2LanguageServer(LanguageServer):
     async def scope(
         self, target: Target, current: Snapshot, token: types.ProgressToken | None = None
     ) -> list[Snapshot]:
-        """Analyses that can use ``target``: its file alone, or every workspace source.
+        """Analyses that can use ``target``: its file alone, or every workspace source."""
+
+        if not target.workspace_wide:
+            return [current]
+        return await self.workspace_snapshots(token, current=current)
+
+    async def workspace_snapshots(
+        self, token: types.ProgressToken | None = None, *, current: Snapshot | None = None
+    ) -> list[Snapshot]:
+        """Every open document and workspace source, ``current`` first.
 
         Open documents contribute their current snapshots; closed workspace files
         are analyzed from disk with open buffers overriding their imports.
         """
 
-        snapshots = [current]
-        if not target.workspace_wide:
-            return snapshots
+        snapshots = [current] if current is not None else []
         for uri in list(self.sources.documents):
-            if uri == current.document.uri:
+            if current is not None and uri == current.document.uri:
                 continue
             try:
                 snapshot = await self.current_snapshot(uri)
@@ -244,7 +251,7 @@ class AA2LanguageServer(LanguageServer):
                 self.window_show_message(
                     types.ShowMessageParams(
                         types.MessageType.Warning,
-                        f"aa2modulus: references and rename read only the first "
+                        f"aa2modulus: references, rename and symbol search read only the first "
                         f"{self.index.cap} workspace source files",
                     )
                 )

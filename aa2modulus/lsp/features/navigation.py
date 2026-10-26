@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
+
 from lsprotocol import types
 
+from ...core.locations import SourceSpan
 from ...hir.symbols import SourceDeclaration
 from ...language.documentation import builtin_description
 from ...language.types import source_type_name
@@ -112,6 +115,39 @@ def _constant_value(
     return next((item.value for item in (*top, *module) if item.declaration == node), None)
 
 
+_FILE_START = types.Range(types.Position(0, 0), types.Position(0, 0))
+
+
+def import_targets(snapshot: Snapshot) -> list[tuple[SourceSpan, str]]:
+    """The path token and target file of each import in the document that was read."""
+
+    unit = snapshot.analysis.ast or snapshot.authoring.ast
+    if unit is None:
+        return []
+    targets: dict[SourceSpan, str] = {}
+    for edge in (*snapshot.analysis.dependencies, *snapshot.authoring.dependencies):
+        span = edge.source_span
+        if span is None or span.filename != snapshot.document.filename:
+            continue
+        # Match only the authored path token, not the import keyword or semicolon.
+        path_span = next(
+            (item.path_span for item in unit.imports if item.source_span == span), None
+        )
+        if path_span is not None and edge.identity in snapshot.texts:
+            targets.setdefault(path_span, edge.identity)
+    return list(targets.items())
+
+
+def document_links(
+    snapshot: Snapshot, encoding: str, uri_for: Callable[[str], str]
+) -> list[types.DocumentLink]:
+    codec = position_codec(snapshot.document.text, encoding=encoding)
+    return [
+        types.DocumentLink(codec.range(path_span), target=uri_for(identity))
+        for path_span, identity in import_targets(snapshot)
+    ]
+
+
 def definition(
     snapshot: Snapshot,
     position: types.Position,
@@ -121,25 +157,9 @@ def definition(
     documentation: BuiltinDocumentation | None = None,
 ) -> list[types.Location]:
     codec = position_codec(snapshot.document.text, encoding=encoding)
-    unit = snapshot.analysis.ast or snapshot.authoring.ast
-    if unit is not None:
-        for edge in (*snapshot.analysis.dependencies, *snapshot.authoring.dependencies):
-            span = edge.source_span
-            if span is None or span.filename != snapshot.document.filename:
-                continue
-            # Match only the authored path token, not the import keyword or semicolon.
-            path_span = next(
-                (item.path_span for item in unit.imports if item.source_span == span), None
-            )
-            if path_span is not None and contains(codec, path_span, position):
-                if edge.identity not in snapshot.texts:
-                    return []
-                return [
-                    types.Location(
-                        workspace.uri_for(edge.identity),
-                        types.Range(types.Position(0, 0), types.Position(0, 0)),
-                    )
-                ]
+    for path_span, identity in import_targets(snapshot):
+        if contains(codec, path_span, position):
+            return [types.Location(workspace.uri_for(identity), _FILE_START)]
     reference = reference_at(snapshot, position, encoding)
     if reference is None:
         return []
@@ -226,3 +246,40 @@ def document_symbols(snapshot: Snapshot, encoding: str) -> list[types.DocumentSy
         if item is not None:
             result.append(item)
     return result
+
+
+def workspace_symbols(
+    snapshots: Iterable[Snapshot], query: str, *, encoding: str
+) -> list[types.WorkspaceSymbol]:
+    """Top-level and module-level declarations whose names contain ``query``.
+
+    Matching ignores case; an exact name ranks first, then a prefix, then any
+    other match, each ordered by file and position.
+    """
+
+    needle = query.casefold()
+    found: list[tuple[tuple[int, str, int, int], types.WorkspaceSymbol]] = []
+    for snapshot in snapshots:
+        for top in document_symbols(snapshot, encoding):
+            entries: list[tuple[types.DocumentSymbol, str | None]] = [(top, None)]
+            if top.kind == types.SymbolKind.Module:
+                entries += [(child, top.name) for child in top.children or ()]
+            for item, container in entries:
+                name = item.name.casefold()
+                if needle not in name:
+                    continue
+                rank = 0 if name == needle else 1 if name.startswith(needle) else 2
+                start = item.selection_range.start
+                found.append(
+                    (
+                        (rank, snapshot.document.filename, start.line, start.character),
+                        types.WorkspaceSymbol(
+                            types.Location(snapshot.document.uri, item.selection_range),
+                            item.name,
+                            item.kind,
+                            container_name=container,
+                        ),
+                    )
+                )
+    found.sort(key=lambda pair: pair[0])
+    return [symbol for _, symbol in found]
