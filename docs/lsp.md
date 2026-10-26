@@ -356,6 +356,15 @@ trust, UI) belongs to the client.
   `aa2modulus editor-data lexicon` prints; built-ins and policy do not change
   it. A client whose highlighting grammar records another fingerprint should
   warn, not refuse.
+- **Release manifest:** each release publishes `aa2modulus-manifest.json`
+  beside its zips, so a client can judge a release before it downloads one:
+  `{ "schema": "aa2modulus.release-manifest.v1", "version", "contractVersion",
+  "syntax", "features": { "builtinCatalog": true }, "platforms": [...] }`.
+  `version` equals `serverInfo.version`; `contractVersion` and `syntax` equal
+  the initialize result's. `features` lists every flag the server can offer;
+  a client receives each one in initialize only when it supports the feature.
+  `platforms` names the targets that built (`linux-x64`, `windows-x64`). The
+  binary prints its part with `aa2modulus editor-data manifest`.
 - **Commands:** `executeCommandProvider.commands` lists the module commands.
   A client checks the list before it starts a command.
 - **Diagnostics:** published with the document version when known. A closed

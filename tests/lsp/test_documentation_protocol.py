@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from aa2modulus.app.editor_catalog.document import editor_catalog
 from aa2modulus.app.editor_catalog.pages import page
+from aa2modulus.app.editor_manifest import editor_manifest
 from aa2modulus.syntax.lexicon import source_lexicon
 from tests.support.lsp_client import Client
 
@@ -15,8 +16,13 @@ def test_stdio_builtin_hover_completion_and_page_definition(context):
     try:
         capabilities = client.initialized["capabilities"]
         features = capabilities["experimental"]["aa2modulus"]
-        assert features["contractVersion"] == 1
-        assert features["builtinCatalog"] is True
+        manifest = editor_manifest()
+        # A client supporting every offered feature receives exactly the manifest's flags.
+        assert features == {
+            "contractVersion": manifest["contractVersion"],
+            "syntax": manifest["syntax"],
+            **manifest["features"],
+        }
         assert features["syntax"]["fingerprint"] == source_lexicon().fingerprint
         assert capabilities["workspace"]["textDocumentContent"] == {"schemes": ["aa2m-builtin"]}
         description = context.metadata.action(108).description

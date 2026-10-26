@@ -1,4 +1,4 @@
-"""``editor-data``: print the built-ins catalog or the lexicon that editor clients read."""
+"""``editor-data``: print the catalog, lexicon or release manifest that editor clients read."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from typing import BinaryIO, TextIO
 
 from ...app.editor_catalog.document import editor_catalog, render
 from ...app.editor_lexicon import editor_lexicon
+from ...app.editor_manifest import editor_manifest
 from ...context.limits import SourceLimits
 from ...metadata.schema import MetadataError
 from ..common import EXIT_INPUT_ERROR, EXIT_INTERNAL_ERROR, EXIT_OK
@@ -18,14 +19,17 @@ from ..render.terminal import ReportSettings
 def add_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     parser = commands.add_parser(
         "editor-data",
-        help="print editor client data (built-ins catalog or lexicon) as JSON",
+        help="print editor client data (built-ins catalog, lexicon or manifest) as JSON",
         description=(
             "Print a document that editor clients read: 'catalog' is the built-ins "
             "catalog (builtins.json), 'lexicon' is the lexical surface of the grammar "
-            "with its fingerprint. Reports go to stderr."
+            "with its fingerprint, 'manifest' is the compatibility facts the language "
+            "server advertises. Reports go to stderr."
         ),
     )
-    parser.add_argument("document", choices=("catalog", "lexicon"), help="document to print")
+    parser.add_argument(
+        "document", choices=("catalog", "lexicon", "manifest"), help="document to print"
+    )
     parser.add_argument("-o", "--output", type=Path, help="write the document to this file")
 
 
@@ -47,9 +51,12 @@ def write_editor_data(
             document, report = editor_catalog()
             print("\n".join(report.lines()), file=errors)
             summary = f"{len(document['entries'])} entries"
-        else:
+        elif document_name == "lexicon":
             document = editor_lexicon()
             summary = f"lexicon {document['fingerprint']}"
+        else:
+            document = editor_manifest()
+            summary = f"manifest {document['version']}"
     except MetadataError as exc:
         print(f"metadata error: {exc}", file=errors)
         return EXIT_INTERNAL_ERROR

@@ -15,8 +15,10 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: linux-x64
+            executable: aa2modulus
           - os: windows-2025
             target: windows-x64
+            executable: aa2modulus.exe
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -34,6 +36,10 @@ jobs:
       - name: Build
         run: mise run build
 
+      - name: Write manifest json fragment
+        shell: bash
+        run: dist/${{ matrix.target }}/${{ matrix.executable }} editor-data manifest -o manifest-${{ matrix.target }}.json
+
       - name: Zip output
         if: runner.os == 'Linux'
         run: zip -j "aa2modulus-${{ matrix.target }}.zip" dist/${{ matrix.target }}/*
@@ -45,7 +51,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}
-          path: aa2modulus-${{ matrix.target }}.zip
+          path: |
+            aa2modulus-${{ matrix.target }}.zip
+            manifest-${{ matrix.target }}.json
           if-no-files-found: error
 
   release:
@@ -54,10 +62,22 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v5
+
       - uses: actions/download-artifact@v8
         with:
           path: release
           merge-multiple: true
+
+      - name: Merge manifest fragments
+        run: >-
+          python tools/release_manifest.py
+          --fragment linux-x64=release/manifest-linux-x64.json
+          --fragment windows-x64=release/manifest-windows-x64.json
+          --output release/aa2modulus-manifest.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
@@ -65,4 +85,6 @@ jobs:
           generate_release_notes: true
           make_latest: true
           fail_on_unmatched_files: true
-          files: release/*.zip
+          files: |
+            release/*.zip
+            release/aa2modulus-manifest.json

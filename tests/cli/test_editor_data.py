@@ -1,4 +1,4 @@
-"""``editor-data`` writes the catalog or the lexicon as UTF-8 bytes and its report to stderr."""
+"""``editor-data`` writes its documents as UTF-8 bytes and its report to stderr."""
 
 from __future__ import annotations
 
@@ -12,11 +12,14 @@ import pytest
 from aa2modulus.app.editor_catalog.document import SCHEMA, editor_catalog, render
 from aa2modulus.app.editor_lexicon import SCHEMA as LEXICON_SCHEMA
 from aa2modulus.app.editor_lexicon import editor_lexicon
+from aa2modulus.app.editor_manifest import SCHEMA as MANIFEST_SCHEMA
+from aa2modulus.app.editor_manifest import editor_manifest
 from aa2modulus.cli.common import EXIT_INPUT_ERROR, EXIT_INTERNAL_ERROR, EXIT_OK, EXIT_USAGE_ERROR
 from aa2modulus.cli.main import main
 from aa2modulus.language.loader import load_language_policy
 from aa2modulus.metadata.schema import MetadataError
 from aa2modulus.syntax.lexicon import source_lexicon
+from aa2modulus.version import __version__
 from tests.support.paths import ROOT
 
 
@@ -73,7 +76,23 @@ def test_lexicon_output_file_creates_parents(tmp_path, capsys):
     assert json.loads(output.read_bytes())["schema"] == LEXICON_SCHEMA
 
 
-@pytest.mark.parametrize("document", ["catalog", "lexicon"])
+def test_manifest_is_utf8_json_with_the_server_version(tmp_path, capsysbinary):
+    assert main(["editor-data", "manifest"]) == EXIT_OK
+    captured = capsysbinary.readouterr()
+    document = json.loads(captured.out)
+    assert captured.out == render(editor_manifest()).encode("utf-8")
+    assert b"\r\n" not in captured.out
+    assert document["schema"] == MANIFEST_SCHEMA
+    assert document["version"] == __version__
+    assert document["syntax"]["fingerprint"] == source_lexicon().fingerprint
+
+    output = tmp_path / "manifest-linux-x64.json"
+    assert main(["editor-data", "manifest", "-o", str(output)]) == EXIT_OK
+    assert f"wrote manifest {__version__} to {output}".encode() in capsysbinary.readouterr().err
+    assert output.read_bytes() == render(document).encode("utf-8")
+
+
+@pytest.mark.parametrize("document", ["catalog", "lexicon", "manifest"])
 def test_output_write_failure_is_input_error(document, tmp_path, capsys):
     output = tmp_path / "data.json"
     output.mkdir()

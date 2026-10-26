@@ -4,22 +4,21 @@ from __future__ import annotations
 
 import pytest
 
-from aa2modulus.syntax.lexicon import source_lexicon
+from aa2modulus.app.editor_manifest import editor_manifest
 from aa2modulus.version import __version__
 from tests.support.lsp_client import Client
 
 
-def test_stdio_capabilities_navigation_and_diagnostic_parity(client, context):
+def test_stdio_capabilities_navigation_and_diagnostic_parity(client):
     assert client.initialized["serverInfo"] == {"name": "aa2modulus", "version": __version__}
     capabilities = client.initialized["capabilities"]
     assert capabilities["positionEncoding"] == "utf-16"
     assert capabilities["textDocumentSync"]["change"] == 2
-    # Without client textDocumentContent support there are no built-in pages.
-    syntax = {
-        "version": context.source_policy.language_version,
-        "fingerprint": source_lexicon().fingerprint,
+    # Without client textDocumentContent support there are no built-in pages or flags.
+    manifest = editor_manifest()
+    assert capabilities["experimental"] == {
+        "aa2modulus": {"contractVersion": manifest["contractVersion"], "syntax": manifest["syntax"]}
     }
-    assert capabilities["experimental"] == {"aa2modulus": {"contractVersion": 1, "syntax": syntax}}
     assert "textDocumentContent" not in capabilities.get("workspace", {})
     assert all(
         capabilities[key]

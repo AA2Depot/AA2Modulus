@@ -43,7 +43,7 @@ One executable, six commands:
   compiles to the exact same bytes
 - `inspect` prints a binary module's records as AAUnlimited sees them
 - `lsp-server` runs the language server for your editor
-- `editor-data` prints the built-ins catalog or the lexicon your editor extension reads
+- `editor-data` prints the built-ins catalog, lexicon or release manifest your editor extension reads
 
 `aa2modulus <command> --help` lists the options, and
 [CLI usage](docs/user/cli-usage.md) covers all of them plus the exit codes.
