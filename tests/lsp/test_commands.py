@@ -1,4 +1,4 @@
-"""Saved-file commands preserve exact binaries, input freshness, and recovery."""
+"""Module commands preserve exact binaries, input freshness, and recovery."""
 
 from __future__ import annotations
 
@@ -61,75 +61,6 @@ async def _wait_for_event(event: threading.Event, timeout: float = 3) -> bool:
     return event.is_set()
 
 
-def test_prepare_uses_current_overlay_graph_without_stale_edges_or_binding_errors(
-    monkeypatch, tmp_path
-):
-    root = tmp_path / "root.aa2m"
-    outer = tmp_path / "outer.aa2mi"
-    old = tmp_path / "old.aa2mi"
-    leaf = tmp_path / "leaf.aa2mi"
-    outer.write_text('import "old.aa2mi";', encoding="utf-8")
-    old.write_text("macro old {}", encoding="utf-8")
-    leaf.write_text("macro leaf {}", encoding="utf-8")
-    source = 'import "outer.aa2mi"; module "M" {}'
-
-    async def run():
-        async with _session(monkeypatch) as server:
-            _open(server, root, source)
-            first = await commands.prepare_compile(server, _request(root))
-            assert first == {"dependencies": [outer.as_uri(), old.as_uri()], "diagnostics": []}
-            _open(
-                server,
-                outer,
-                'import "leaf.aa2mi"; macro broken { Missing(); }',
-                saved=False,
-                library=True,
-            )
-            alias = leaf.as_uri().replace("file:///", "file://localhost/", 1)
-            server.enqueue(server.sources.open(alias, "macro leaf {}", 1, "aa2mi"))
-            result = await commands.prepare_compile(server, _request(root))
-            assert result == {"dependencies": [outer.as_uri(), alias], "diagnostics": []}
-            assert str(old.resolve()) in server.sources.dependencies[root.as_uri()]
-            assert server.sources.snapshots[root.as_uri()].analysis.result.errors
-
-    asyncio.run(run())
-
-
-@pytest.mark.parametrize(
-    "root_source,library_source,limits,code",
-    [
-        ('module "M" { @ }', "", SourceLimits(), "SYNTAX_ERROR"),
-        ('import "lib.aa2mi"; module "M" {}', None, SourceLimits(), "IMPORT_READ_ERROR"),
-        ('import "lib.aa2mi"; module "M" {}', "macro", SourceLimits(), "SYNTAX_ERROR"),
-        (
-            'import "lib.aa2mi"; module "M" {}',
-            "",
-            SourceLimits(max_import_files=0),
-            "IMPORT_FILE_LIMIT",
-        ),
-    ],
-)
-def test_prepare_reports_only_discovery_failures(
-    monkeypatch, tmp_path, root_source, library_source, limits, code
-):
-    root = tmp_path / "root.aa2m"
-    library = tmp_path / "lib.aa2mi"
-    if library_source is not None:
-        library.write_text(library_source, encoding="utf-8")
-
-    async def run():
-        async with _session(monkeypatch) as server:
-            server.context = replace(server.context, source_limits=limits)
-            _open(server, root, root_source)
-            result = await commands.prepare_compile(server, _request(root))
-            assert len(result["diagnostics"]) == 1
-            assert result["diagnostics"][0]["severity"] == "error"
-            assert code in result["diagnostics"][0]["message"]
-            assert result["dependencies"] == ([library.as_uri()] if "import" in root_source else [])
-
-    asyncio.run(run())
-
-
 def test_compile_saved_transitive_sources_matches_exact_compiler_bytes(monkeypatch, tmp_path):
     root = tmp_path / "😀 saved module.aa2m"
     outer = tmp_path / "outer.aa2mi"
@@ -157,47 +88,53 @@ def test_compile_saved_transitive_sources_matches_exact_compiler_bytes(monkeypat
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("dirty", ["root", "library"])
-def test_compile_rejects_dirty_relevant_buffers_and_preserves_output(monkeypatch, tmp_path, dirty):
+@pytest.mark.parametrize("dirty", ["root", "library", "unsaved"])
+def test_compile_uses_unsaved_buffers_and_closed_imports_from_disk(monkeypatch, tmp_path, dirty):
     root = tmp_path / "root.aa2m"
     library = tmp_path / "lib.aa2mi"
+    closed = tmp_path / "closed.aa2mi"
     output = tmp_path / "binary"
-    source = 'import "lib.aa2mi"; module "M" { trigger "T" { emit(); } }'
-    library.write_text('macro emit { Notification("disk"); }', encoding="utf-8")
-    output.write_bytes(b"previous output")
+    source = 'import "lib.aa2mi"; import "closed.aa2mi"; module "M" { trigger "T" { emit(); } }'
+    library_source = 'macro emit { Notification("disk"); }'
+    closed_source = 'macro other { Notification("closed"); }'
+    root_buffer = source.replace('"M"', '"buffer"') if dirty != "library" else source
+    library_buffer = library_source.replace("disk", "buffer") if dirty != "root" else library_source
+    for directory, root_text, library_text in [
+        (tmp_path, source, library_source),
+        (tmp_path / "expected", root_buffer, library_buffer),
+    ]:
+        directory.mkdir(exist_ok=True)
+        (directory / "root.aa2m").write_text(root_text, encoding="utf-8")
+        (directory / "lib.aa2mi").write_text(library_text, encoding="utf-8")
+        (directory / "closed.aa2mi").write_text(closed_source, encoding="utf-8")
+    expected = compile_source(root_buffer, import_base=tmp_path / "expected")
+    if dirty == "unsaved":
+        root.unlink()
 
     async def run():
         async with _session(monkeypatch) as server:
-            _open(server, root, source)
-            if dirty == "root":
-                server.enqueue(
-                    server.sources.change(root.as_uri(), source.replace('"M"', '"new"'), 2)
-                )
-                version = 2
-            else:
-                _open(
-                    server,
-                    library,
-                    'macro emit { Notification("buffer"); }',
-                    saved=False,
-                    library=True,
-                )
-                version = 1
-            with pytest.raises(JsonRpcContentModified, match="save this source"):
-                await commands.compile_document(server, _request(root, output, version=version))
-            assert output.read_bytes() == b"previous output"
+            _open(server, root, root_buffer, saved=False)
+            _open(server, library, library_buffer, saved=False, library=True)
+            result = await commands.compile_document(server, _request(root, output))
+            assert result == {"compiled": True, "diagnostics": []}
+            assert output.read_bytes() == expected
+            assert not root.exists() if dirty == "unsaved" else root.read_text() == source
+            assert library.read_text(encoding="utf-8") == library_source
+            assert closed.read_text(encoding="utf-8") == closed_source
             _no_staged(output)
 
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("target", ["root", "library", "hardlink", "symlink"])
+@pytest.mark.parametrize("target", ["root", "library", "buffer", "hardlink", "symlink"])
 def test_compile_never_overwrites_source_aliases(monkeypatch, tmp_path, target):
     root = tmp_path / "root.aa2m"
     library = tmp_path / "lib.aa2mi"
     source = 'import "lib.aa2mi"; module "M" {}'
     library.write_text("macro emit {}", encoding="utf-8")
     output = root if target == "root" else library
+    if target == "buffer":
+        library.unlink()
     if target in {"hardlink", "symlink"}:
         output = tmp_path / "alias"
         if target == "hardlink":
@@ -208,19 +145,24 @@ def test_compile_never_overwrites_source_aliases(monkeypatch, tmp_path, target):
     async def run():
         async with _session(monkeypatch) as server:
             _open(server, root, source)
+            if target == "buffer":
+                _open(server, library, "macro emit {}", saved=False, library=True)
             with pytest.raises(JsonRpcException, match="COMPILE_OUTPUT_SOURCE") as failure:
                 await commands.compile_document(server, _request(root, output))
             assert failure.value.code == -32803
             assert root.read_text(encoding="utf-8") == source
-            assert library.read_text(encoding="utf-8") == "macro emit {}"
+            if target == "buffer":
+                assert not library.exists()
+            else:
+                assert library.read_text(encoding="utf-8") == "macro emit {}"
             _no_staged(output)
 
     asyncio.run(run())
 
 
 @pytest.mark.parametrize("phase", ["compile", "stage"])
-@pytest.mark.parametrize("changed", ["buffer", "disk"])
-def test_compile_rechecks_imports_before_commit(monkeypatch, tmp_path, phase, changed):
+@pytest.mark.parametrize("changed", ["root", "buffer", "close", "open", "disk"])
+def test_compile_rechecks_inputs_before_commit(monkeypatch, tmp_path, phase, changed):
     root = tmp_path / "root.aa2m"
     library = tmp_path / "lib.aa2mi"
     output = tmp_path / "binary"
@@ -244,13 +186,21 @@ def test_compile_rechecks_imports_before_commit(monkeypatch, tmp_path, phase, ch
     async def run():
         async with _session(monkeypatch) as server:
             _open(server, root, source)
-            _open(server, library, library_source, library=True)
+            if changed in {"buffer", "close"}:
+                _open(server, library, library_source, library=True)
             request = asyncio.create_task(commands.compile_document(server, _request(root, output)))
             try:
                 assert await _wait_for_event(started)
-                if changed == "buffer":
-                    # Even an edit back to identical text is a renewed version.
+                # Even an edit back to identical text, or opening unchanged text,
+                # is a renewed input.
+                if changed == "root":
+                    server.enqueue(server.sources.change(root.as_uri(), source, 2))
+                elif changed == "buffer":
                     server.enqueue(server.sources.change(library.as_uri(), library_source, 2))
+                elif changed == "close":
+                    server.enqueue(server.sources.close(library.as_uri()))
+                elif changed == "open":
+                    _open(server, library, library_source, saved=False, library=True)
                 else:
                     # A same-size rewrite within one coarse timestamp tick keeps the
                     # (mtime, size, inode) signature; restoring mtime makes that certain.
@@ -320,7 +270,7 @@ def test_cancellation_leaves_no_output_or_temporary_files(monkeypatch, tmp_path,
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("failure", ["parse", "read", "write", "replace"])
+@pytest.mark.parametrize("failure", ["parse", "write", "replace"])
 def test_compilation_failures_preserve_previous_output(monkeypatch, tmp_path, failure):
     root = tmp_path / "root.aa2m"
     output = tmp_path / "binary"
@@ -328,7 +278,6 @@ def test_compilation_failures_preserve_previous_output(monkeypatch, tmp_path, fa
     output.write_bytes(b"previous")
     code = {
         "parse": "SYNTAX_ERROR",
-        "read": "SOURCE_READ_ERROR",
         "write": "OUTPUT_WRITE_ERROR",
         "replace": "OUTPUT_WRITE_ERROR",
     }[failure]
@@ -343,13 +292,13 @@ def test_compilation_failures_preserve_previous_output(monkeypatch, tmp_path, fa
 
     async def run():
         async with _session(monkeypatch) as server:
-            _open(server, root, source, saved=failure != "read")
+            _open(server, root, source)
             result = await commands.compile_document(server, _request(root, output))
             assert result["compiled"] is False
             assert result["diagnostics"][0]["severity"] == "error"
             assert code in result["diagnostics"][0]["message"]
             assert (
-                str((output if failure in {"write", "replace"} else root).resolve())
+                str((root if failure == "parse" else output).resolve())
                 in result["diagnostics"][0]["message"]
             )
             if failure != "parse":
@@ -361,7 +310,7 @@ def test_compilation_failures_preserve_previous_output(monkeypatch, tmp_path, fa
 
 
 @pytest.mark.parametrize("input_kind", ["stale", "library", "untitled", "closed"])
-def test_compile_requires_current_open_saved_module(monkeypatch, tmp_path, input_kind):
+def test_compile_requires_current_open_module_file(monkeypatch, tmp_path, input_kind):
     root = tmp_path / ("root.aa2mi" if input_kind == "library" else "root.aa2m")
     output = tmp_path / "binary"
 
@@ -383,17 +332,35 @@ def test_compile_requires_current_open_saved_module(monkeypatch, tmp_path, input
     asyncio.run(run())
 
 
-def test_oversized_saved_source_reports_compiler_budget(monkeypatch, tmp_path):
+@pytest.mark.parametrize(
+    "source,oversized",
+    [
+        ('module "a root module that is too large" {}', "root.aa2m"),
+        ('import "lib.aa2mi"; module "M" {}', "lib.aa2mi"),
+    ],
+)
+def test_oversized_buffer_reports_compiler_budget(monkeypatch, tmp_path, source, oversized):
     root = tmp_path / "root.aa2m"
+    library = tmp_path / "lib.aa2mi"
     output = tmp_path / "binary"
+    # The disk files fit the budget; only the buffers exceed it.
+    root.write_text("", encoding="utf-8")
+    library.write_text("", encoding="utf-8")
 
     async def run():
         async with _session(monkeypatch) as server:
-            server.context = replace(server.context, source_limits=SourceLimits(max_source_chars=8))
-            _open(server, root, 'module "too large" {}')
+            server.context = replace(
+                server.context, source_limits=SourceLimits(max_source_chars=40)
+            )
+            _open(server, root, source, saved=False)
+            library_source = 'macro too_large { Notification("library"); }'
+            _open(server, library, library_source, saved=False, library=True)
             result = await commands.compile_document(server, _request(root, output))
             assert result["compiled"] is False
-            assert "SOURCE_SIZE_LIMIT" in result["diagnostics"][0]["message"]
+            message = result["diagnostics"][0]["message"]
+            assert message.startswith(
+                f"{(tmp_path / oversized).resolve()}:1:1: error[SOURCE_SIZE_LIMIT]"
+            )
             assert not output.exists()
 
     asyncio.run(run())
@@ -485,7 +452,8 @@ def test_compile_binding_error_is_located_in_the_negotiated_encoding(
     async def run():
         async with _session(monkeypatch) as server:
             server.encoding = encoding
-            _open(server, root, source)
+            root.write_text('module "M" {}', encoding="utf-8")
+            _open(server, root, source, saved=False)
             result = await commands.compile_document(server, _request(root, output))
             assert result["compiled"] is False
             (finding,) = result["diagnostics"]
@@ -516,6 +484,13 @@ def test_compile_locates_findings_in_imported_libraries(monkeypatch, tmp_path):
             assert finding["target"] == "source"
             assert finding["uri"] == library.as_uri()
             assert finding["range"]["start"] == {"line": 1, "character": 2}
+            assert all(item["uri"] == root.as_uri() for item in finding.get("related", []))
+            buffer = "\n\nmacro emit {\n    Missing();\n}\n"
+            _open(server, library, buffer, saved=False, library=True)
+            result = await commands.compile_document(server, _request(root, output))
+            finding = result["diagnostics"][0]
+            assert finding["uri"] == library.as_uri()
+            assert finding["range"]["start"] == {"line": 3, "character": 4}
             assert all(item["uri"] == root.as_uri() for item in finding.get("related", []))
 
     asyncio.run(run())
@@ -564,17 +539,10 @@ def test_standard_execute_command_advertisement_and_wire_results(tmp_path):
     client = Client()
     try:
         supported = client.initialized["capabilities"]["executeCommandProvider"]["commands"]
-        assert {
-            results.PREPARE_COMPILE,
-            results.COMPILE_DOCUMENT,
-            results.DECOMPILE_MODULE,
-        } <= set(supported)
+        assert {results.COMPILE_DOCUMENT, results.DECOMPILE_MODULE} <= set(supported)
+        assert "aa2modulus.prepareCompile" not in supported
         client.open(root.as_uri(), source)
-        prepared = client.request(
-            "workspace/executeCommand",
-            {"command": results.PREPARE_COMPILE, "arguments": [_request(root)]},
-        )
-        assert prepared == {"dependencies": [library.as_uri()], "diagnostics": []}
+        client.open(library.as_uri(), 'macro emit { Notification("unsaved"); }', 1, "aa2mi")
         result = client.request(
             "workspace/executeCommand",
             {"command": results.COMPILE_DOCUMENT, "arguments": [_request(root, output)]},
@@ -585,6 +553,7 @@ def test_standard_execute_command_advertisement_and_wire_results(tmp_path):
             {"command": results.DECOMPILE_MODULE, "arguments": [{"inputUri": output.as_uri()}]},
         )
         assert decompiled["diagnostics"] == []
+        assert '"unsaved"' in decompiled["source"]
         assert compile_source(decompiled["source"]) == output.read_bytes()
         client.finish()
     finally:

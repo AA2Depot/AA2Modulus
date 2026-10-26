@@ -1,4 +1,4 @@
-"""Compile a saved module document through the strict compiler."""
+"""Compile an open module and its imports, buffers before disk, with the strict compiler."""
 
 from __future__ import annotations
 
@@ -20,17 +20,10 @@ from ...app.compile import CompileError, compile_source
 from ...context.operation import SourceContext
 from ...context.resolver import FileSourceResolver
 from ...core.diagnostics import Diagnostic
-from ...semantics.binding.state import SourceBindingError
 from ..workspace.documents import DiskSignature, Document, disk_signature
 from .arguments import file_argument, object_argument
 from .locator import command_diagnostics, source_locator
-from .results import (
-    CompileDocumentResult,
-    PrepareCompileResult,
-    diagnostic,
-    failed,
-    modified,
-)
+from .results import CompileDocumentResult, diagnostic, failed, modified
 
 if TYPE_CHECKING:
     from ..server.app import AA2LanguageServer
@@ -72,46 +65,28 @@ def _document(server: AA2LanguageServer, payload: Mapping[str, object]) -> Docum
             )
         )
     if document.version != version:
-        raise modified(document.filename, "the module changed; save it and retry compilation")
+        raise modified(document.filename, "the module changed; retry compilation")
     return document
 
 
-async def prepare_compile(server: AA2LanguageServer, value: object) -> PrepareCompileResult:
-    """Discover only the current import graph, including unsaved library inputs."""
+def _buffers(server: AA2LanguageServer) -> dict[str, Document]:
+    """Open documents by identity; the newest revision wins for aliases, as in analysis."""
 
-    payload = object_argument(value)
-    document = _document(server, payload)
-    snapshot = await server.current_snapshot(document.uri)
-    if snapshot is None or _document(server, payload) != document:
-        raise modified(document.filename, "the module changed while discovering its imports")
-    # Workspace dependencies deliberately retain earlier edges after failures for
-    # invalidation. Saving and compilation must use this operation's actual edges.
-    dependencies = list(
-        dict.fromkeys(
-            server.sources.uri_for(edge.identity, root=document)
-            for edge in snapshot.analysis.dependencies
-        )
-    )
-    failure = snapshot.analysis.failure
-    discovery = (
-        snapshot.analysis.result.diagnostics
-        if failure is not None and not isinstance(failure, SourceBindingError)
-        else ()
-    )
     return {
-        "dependencies": dependencies,
-        "diagnostics": command_diagnostics(
-            discovery, locator=source_locator(server, document, snapshot.texts)
-        ),
+        document.identity: document
+        for document in sorted(server.sources.documents.values(), key=lambda item: item.revision)
+        if document.identity is not None
     }
 
 
 @dataclass(slots=True)
-class _SavedFiles:
-    """Track the exact bounded disk inputs consumed by the strict compiler."""
+class _Inputs:
+    """Track the bounded inputs the strict compiler consumed: open buffers, then disk."""
 
     disk: FileSourceResolver
+    buffers: Mapping[str, Document]
     texts: dict[str, str] = field(default_factory=dict)
+    used: dict[str, Document] = field(default_factory=dict)
     signatures: dict[str, DiskSignature] = field(default_factory=dict)
     read_limits: dict[str, int] = field(default_factory=dict)
     stable: bool = True
@@ -120,113 +95,74 @@ class _SavedFiles:
         return self.disk.resolve(path, importer=importer)
 
     def read(self, identity: str, *, max_chars: int) -> str:
+        buffer = self.buffers.get(identity)
+        if buffer is not None:
+            self.used[identity] = buffer
+            # The prefix keeps the compiler's size diagnostic, as the disk reader does.
+            text = self.texts[identity] = buffer.text[: max_chars + 1]
+            return text
         before = disk_signature(identity)
         self.signatures[identity] = before
         self.read_limits[identity] = max_chars
         try:
-            text = self.disk.read(identity, max_chars=max_chars)
-            self.texts[identity] = text
+            text = self.texts[identity] = self.disk.read(identity, max_chars=max_chars)
             return text
         finally:
             self.stable = self.stable and before == disk_signature(identity)
 
     def unchanged(self) -> bool:
-        """Re-read each consumed input; signatures miss same-size rewrites within
+        """Re-read each disk input; signatures miss same-size rewrites within
         one coarse filesystem timestamp tick (10 ms on WSL2 ext4).
         """
 
-        for identity, text in self.texts.items():
+        for identity, limit in self.read_limits.items():
             try:
-                if self.disk.read(identity, max_chars=self.read_limits[identity]) != text:
+                if self.disk.read(identity, max_chars=limit) != self.texts[identity]:
                     return False
             except (OSError, UnicodeError):
                 return False
         return True
 
-    def matches(self, document: Document, text: str) -> bool:
-        # Oversized inputs are intentionally read only up to the compiler limit
-        # plus one. They can never produce output, but retain the size diagnostic
-        # when the open buffer agrees with the bounded prefix.
-        limit = self.read_limits[document.filename]
-        return document.text[: len(text)] == text if len(text) > limit else document.text == text
-
 
 @dataclass(frozen=True, slots=True)
 class _Compilation:
-    files: _SavedFiles
+    inputs: _Inputs
     data: bytes | None = None
     diagnostics: tuple[Diagnostic, ...] = ()
 
 
-def _compile_saved(document: Document, context: SourceContext) -> _Compilation:
+def _compile(
+    document: Document, buffers: Mapping[str, Document], context: SourceContext
+) -> _Compilation:
     assert document.identity is not None
-    files = _SavedFiles(FileSourceResolver(Path(document.identity).parent))
+    inputs = _Inputs(FileSourceResolver(Path(document.identity).parent), buffers)
+    inputs.texts[document.filename] = document.text
     operation = replace(
-        context, filename=document.filename, import_base=None, source_resolver=files
+        context, filename=document.filename, import_base=None, source_resolver=inputs
     )
     try:
-        source = files.read(
-            document.identity,
-            max_chars=min(
-                operation.source_limits.max_source_chars,
-                operation.source_limits.max_total_source_chars,
-            ),
-        )
-        data = compile_source(source, context=operation)
+        data = compile_source(document.text, context=operation)
     except CompileError as error:
-        return _Compilation(files, diagnostics=error.diagnostics)
-    except UnicodeError as error:
-        return _Compilation(
-            files,
-            diagnostics=(
-                diagnostic(
-                    document.filename, "SOURCE_ENCODING", f"source is not valid UTF-8: {error}"
-                ),
-            ),
-        )
-    except OSError as error:
-        return _Compilation(
-            files,
-            diagnostics=(
-                diagnostic(
-                    document.filename, "SOURCE_READ_ERROR", f"could not read source: {error}"
-                ),
-            ),
-        )
-    return _Compilation(files, data)
+        return _Compilation(inputs, diagnostics=error.diagnostics)
+    return _Compilation(inputs, data)
 
 
-def _verify_inputs(
-    server: AA2LanguageServer,
-    document: Document,
-    compilation: _Compilation,
-    buffers: tuple[Document, ...],
-) -> None:
-    files = compilation.files
+def _verify_inputs(server: AA2LanguageServer, document: Document, inputs: _Inputs) -> None:
     if server.sources.documents.get(document.uri) != document:
-        raise modified(
-            document.filename, "the module changed during compilation; save it and retry"
-        )
-    if not files.stable or any(
-        disk_signature(identity) != signature for identity, signature in files.signatures.items()
+        raise modified(document.filename, "the module changed during compilation; retry")
+    buffers = _buffers(server)
+    for identity, buffer in inputs.used.items():
+        if buffers.get(identity) != buffer:
+            raise modified(buffer.filename, "an imported source changed during compilation; retry")
+    if not inputs.stable or any(
+        identity in buffers or disk_signature(identity) != signature
+        for identity, signature in inputs.signatures.items()
     ):
-        raise modified(document.filename, "a source file changed on disk during compilation; retry")
-    for buffer in (*buffers, *server.sources.documents.values()):
-        if buffer.identity in files.texts and not files.matches(
-            buffer, files.texts[buffer.identity]
-        ):
-            raise modified(buffer.filename, "save this source file before compiling the module")
-    for buffer in buffers:
-        if buffer.identity in files.signatures:
-            current = server.sources.documents.get(buffer.uri)
-            if current != buffer:
-                raise modified(
-                    buffer.filename, "an imported source changed during compilation; retry"
-                )
+        raise modified(document.filename, "a source file changed during compilation; retry")
 
 
-def _verify_output(output: str, files: _SavedFiles) -> None:
-    for source in files.signatures:
+def _verify_output(output: str, inputs: _Inputs) -> None:
+    for source in inputs.texts:
         same_file = output == source
         if not same_file:
             with contextlib.suppress(OSError):
@@ -269,26 +205,27 @@ def _discard_staged(future: asyncio.Future[Path]) -> None:
 
 
 async def compile_document(server: AA2LanguageServer, value: object) -> CompileDocumentResult:
-    """Compile saved source and atomically commit only still-current inputs."""
+    """Compile the open buffers and saved files of the import graph, then
+    atomically commit only if every input is still current.
+    """
 
     payload = object_argument(value)
     document = _document(server, payload)
     output = file_argument(payload, "outputUri")
-    buffers = tuple(server.sources.documents.values())
     loop = asyncio.get_running_loop()
     compilation = await loop.run_in_executor(
-        server.executor, _compile_saved, document, server.context
+        server.executor, _compile, document, _buffers(server), server.context
     )
-    _verify_inputs(server, document, compilation, buffers)
+    inputs = compilation.inputs
+    _verify_inputs(server, document, inputs)
     if compilation.data is None:
         return {
             "compiled": False,
             "diagnostics": command_diagnostics(
-                compilation.diagnostics,
-                locator=source_locator(server, document, compilation.files.texts),
+                compilation.diagnostics, locator=source_locator(server, document, inputs.texts)
             ),
         }
-    _verify_output(output, compilation.files)
+    _verify_output(output, inputs)
     staged: Path | None = None
     canceled = threading.Event()
     try:
@@ -304,15 +241,15 @@ async def compile_document(server: AA2LanguageServer, value: object) -> CompileD
             if write.done():
                 _discard_staged(write)
             raise
-        unchanged = await loop.run_in_executor(server.executor, compilation.files.unchanged)
+        unchanged = await loop.run_in_executor(server.executor, inputs.unchanged)
         if not unchanged:
             raise modified(
                 document.filename, "a source file changed on disk during compilation; retry"
             )
-        _verify_inputs(server, document, compilation, buffers)
+        _verify_inputs(server, document, inputs)
         if file_argument(payload, "outputUri") != output:
             raise modified(output, "the output path changed during compilation; retry")
-        _verify_output(output, compilation.files)
+        _verify_output(output, inputs)
         staged.replace(output)
     except OSError as error:
         return {

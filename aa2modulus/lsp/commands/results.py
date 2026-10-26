@@ -9,7 +9,6 @@ from pygls.exceptions import JsonRpcContentModified, JsonRpcException
 
 from ...core.diagnostics import Diagnostic, DiagnosticSeverity
 
-PREPARE_COMPILE = "aa2modulus.prepareCompile"
 COMPILE_DOCUMENT = "aa2modulus.compileDocument"
 DECOMPILE_MODULE = "aa2modulus.decompileModule"
 
@@ -41,11 +40,6 @@ class CommandDiagnostic(TypedDict):
     uri: NotRequired[str]
     range: NotRequired[CommandRange]
     related: NotRequired[list[CommandRelated]]
-
-
-class PrepareCompileResult(TypedDict):
-    dependencies: list[str]
-    diagnostics: list[CommandDiagnostic]
 
 
 class CompileDocumentResult(TypedDict):
