@@ -37,6 +37,11 @@ Coverage also traces the CLI and LSP child processes the tests start
 (`patch = ["subprocess"]`), which makes the coverage run about three times
 slower than `mise run test`.
 
+A push to any branch runs [the CI workflow](../.github/workflows/ci.yml):
+`lint` and `test`, with `coverage` in place of `test` on `main`. The `main` run
+writes the README coverage badge to `coverage.json` on the orphan `badges`
+branch.
+
 `tools/export_reference.py --output-dir <dir>` exports the portable reference
 bundle on request; nothing in the repository keeps a copy (see
 [metadata maintenance](metadata.md#portable-language-and-metadata-reference)).
