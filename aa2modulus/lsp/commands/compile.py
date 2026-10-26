@@ -20,9 +20,10 @@ from ...app.compile import CompileError, compile_source
 from ...context.operation import SourceContext
 from ...context.resolver import FileSourceResolver
 from ...core.diagnostics import Diagnostic
+from ..protocol.uris import identity_uri
 from ..workspace.documents import DiskSignature, Document, disk_signature
 from .arguments import file_argument, object_argument
-from .locator import command_diagnostics, source_locator
+from .findings import report_findings
 from .results import CompileDocumentResult, diagnostic, failed, modified
 
 if TYPE_CHECKING:
@@ -147,6 +148,28 @@ def _compile(
     return _Compilation(inputs, data)
 
 
+def _result(
+    server: AA2LanguageServer,
+    document: Document,
+    inputs: _Inputs,
+    findings: tuple[Diagnostic, ...],
+    output: str | None = None,
+) -> CompileDocumentResult:
+    """Report a completed compile; ``output`` is the committed file, if any."""
+
+    uri_for = partial(server.sources.uri_for, root=document)
+    counts = report_findings(server, "compile", document.uri, findings, inputs.texts, uri_for)
+    result: CompileDocumentResult = {
+        "compiled": output is not None,
+        "errors": counts["errors"],
+        "warnings": counts["warnings"],
+        "unlocated": counts["unlocated"],
+    }
+    if output is not None:
+        result["outputUri"] = identity_uri(output)
+    return result
+
+
 def _verify_inputs(server: AA2LanguageServer, document: Document, inputs: _Inputs) -> None:
     if server.sources.documents.get(document.uri) != document:
         raise modified(document.filename, "the module changed during compilation; retry")
@@ -219,12 +242,7 @@ async def compile_document(server: AA2LanguageServer, value: object) -> CompileD
     inputs = compilation.inputs
     _verify_inputs(server, document, inputs)
     if compilation.data is None:
-        return {
-            "compiled": False,
-            "diagnostics": command_diagnostics(
-                compilation.diagnostics, locator=source_locator(server, document, inputs.texts)
-            ),
-        }
+        return _result(server, document, inputs, compilation.diagnostics)
     _verify_output(output, inputs)
     staged: Path | None = None
     canceled = threading.Event()
@@ -252,13 +270,9 @@ async def compile_document(server: AA2LanguageServer, value: object) -> CompileD
         _verify_output(output, inputs)
         staged.replace(output)
     except OSError as error:
-        return {
-            "compiled": False,
-            "diagnostics": command_diagnostics(
-                (diagnostic(output, "OUTPUT_WRITE_ERROR", f"could not write module: {error}"),)
-            ),
-        }
+        failure = diagnostic(output, "OUTPUT_WRITE_ERROR", f"could not write module: {error}")
+        return _result(server, document, inputs, (failure,))
     finally:
         if staged is not None:
             staged.unlink(missing_ok=True)
-    return {"compiled": True, "diagnostics": []}
+    return _result(server, document, inputs, (), output)

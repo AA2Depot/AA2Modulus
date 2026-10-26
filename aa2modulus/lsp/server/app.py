@@ -20,7 +20,7 @@ from ...version import __version__
 from ..documentation.builtins import SCHEME, BuiltinDocumentation
 from ..features.references import Target
 from ..features.rename import RenamePlan
-from ..protocol.diagnostics import aggregate_diagnostics, diagnostic_uris
+from ..protocol.diagnostics import aggregate_diagnostics, diagnostic_uris, merged_diagnostics
 from ..protocol.positions import position_codec
 from ..protocol.uris import file_identity
 from ..workspace.documents import Document, Snapshot, SourceWorkspace, read_disk
@@ -64,6 +64,7 @@ class AA2LanguageServer(LanguageServer):
         self.document_changes = False
         self.watch_files = False
         self.token_refresh = False
+        self.show_document = False
         # The document each open URI's last semantic tokens came from; a new
         # analysis of that same document (an import changed) needs a refresh.
         self.tokens_served: dict[str, Document] = {}
@@ -74,6 +75,9 @@ class AA2LanguageServer(LanguageServer):
         # Last (version, diagnostics) sent per URI, and the URIs each root's snapshot sent to.
         self.published: dict[str, tuple[int | None, list[types.Diagnostic]]] = {}
         self.contributions: dict[str, frozenset[str]] = {}
+        # Located findings of the last completed command run, keyed by compile
+        # root or decompile output URI, then by the URI they are published on.
+        self.command_findings: dict[str, dict[str, list[types.Diagnostic]]] = {}
         self.wake = asyncio.Event()
         self.ready = asyncio.Condition()
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="aa2m-analysis")
@@ -105,7 +109,10 @@ class AA2LanguageServer(LanguageServer):
         """
 
         snapshots = self.sources.snapshots
-        diagnostics = aggregate_diagnostics(snapshots.values(), self.sources, self.encoding)
+        diagnostics = merged_diagnostics(
+            aggregate_diagnostics(snapshots.values(), self.sources, self.encoding),
+            self.command_findings.values(),
+        )
         waiting = {
             uri
             for uri in self.pending.keys() | self.analyzing
@@ -130,6 +137,29 @@ class AA2LanguageServer(LanguageServer):
                 self.published[uri] = current
             else:
                 self.published.pop(uri, None)
+
+    def record_findings(self, key: str, findings: dict[str, list[types.Diagnostic]]) -> None:
+        """Replace the located findings of command run ``key`` and publish them."""
+
+        self.command_findings[key] = findings
+        self.publish()
+
+    def drop_findings(self, uri: str) -> bool:
+        """Forget command findings on ``uri`` or another URI of its file; the
+        caller publishes. Returns whether any were dropped.
+        """
+
+        identity = file_identity(uri)
+        dropped = False
+        for entry in self.command_findings.values():
+            for target in [
+                target
+                for target in entry
+                if target == uri or (identity is not None and file_identity(target) == identity)
+            ]:
+                del entry[target]
+                dropped = True
+        return dropped
 
     async def offload[**P, T](
         self, function: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs

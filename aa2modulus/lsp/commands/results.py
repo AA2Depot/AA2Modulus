@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, NotRequired, TypedDict
+from typing import NotRequired, TypedDict
 
 from lsprotocol import types
 from pygls.exceptions import JsonRpcContentModified, JsonRpcException
@@ -13,43 +13,29 @@ COMPILE_DOCUMENT = "aa2modulus.compileDocument"
 DECOMPILE_MODULE = "aa2modulus.decompileModule"
 
 
-class CommandPosition(TypedDict):
-    line: int
-    character: int
-
-
-class CommandRange(TypedDict):
-    start: CommandPosition
-    end: CommandPosition
-
-
-class CommandRelated(TypedDict):
-    uri: NotRequired[str]
-    range: CommandRange
-    message: str
-
-
-class CommandDiagnostic(TypedDict):
-    """One finding; ``range`` is present only when its text is known to the command."""
+class CommandFinding(TypedDict):
+    """A finding without a range; ``message`` is the CLI short line plus notes and help."""
 
     severity: DiagnosticSeverity
-    message: str
     code: str
-    detail: str
-    target: NotRequired[Literal["source", "recovered"]]
-    uri: NotRequired[str]
-    range: NotRequired[CommandRange]
-    related: NotRequired[list[CommandRelated]]
+    message: str
 
 
-class CompileDocumentResult(TypedDict):
+class CommandCounts(TypedDict):
+    """Errors and warnings among every finding of a command, and the unlocated ones."""
+
+    errors: int
+    warnings: int
+    unlocated: list[CommandFinding]
+
+
+class CompileDocumentResult(CommandCounts):
     compiled: bool
-    diagnostics: list[CommandDiagnostic]
+    outputUri: NotRequired[str]
 
 
-class DecompileModuleResult(TypedDict):
-    source: str
-    diagnostics: list[CommandDiagnostic]
+class DecompileModuleResult(CommandCounts):
+    outputUri: str
 
 
 def diagnostic(filename: str, code: str, message: str) -> Diagnostic:

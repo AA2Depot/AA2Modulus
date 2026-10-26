@@ -8,7 +8,8 @@ refuses them once the document has changed.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from functools import partial
 from typing import Any
 
 from lsprotocol import types
@@ -38,6 +39,56 @@ def diagnostic_uris(snapshot: Snapshot, workspace: SourceWorkspace) -> frozenset
     )
 
 
+_SEVERITY = {
+    "error": types.DiagnosticSeverity.Error,
+    "warning": types.DiagnosticSeverity.Warning,
+    "info": types.DiagnosticSeverity.Information,
+}
+
+
+def related_information(
+    note: RelatedLocation, texts: Mapping[str, str], uri_for: Callable[[str], str], *, encoding: str
+) -> types.DiagnosticRelatedInformation:
+    return types.DiagnosticRelatedInformation(
+        types.Location(
+            uri_for(note.span.filename),
+            position_codec(texts.get(note.span.filename, ""), encoding=encoding).range(note.span),
+        ),
+        note.message,
+    )
+
+
+def lsp_diagnostic(
+    diagnostic: Diagnostic,
+    texts: Mapping[str, str],
+    uri_for: Callable[[str], str],
+    *,
+    encoding: str,
+    source: str,
+    related: Sequence[types.DiagnosticRelatedInformation] | None = None,
+    data: dict[str, Any] | None = None,
+) -> types.Diagnostic:
+    """One finding located in ``texts``; ``related`` replaces its own notes."""
+
+    span = diagnostic.source_span or SourceSpan(
+        diagnostic.filename, diagnostic.line, diagnostic.column
+    )
+    if related is None:
+        related = [
+            related_information(note, texts, uri_for, encoding=encoding)
+            for note in diagnostic.related
+        ]
+    return types.Diagnostic(
+        range=position_codec(texts.get(span.filename, ""), encoding=encoding).range(span),
+        message=with_details(diagnostic.message, diagnostic),
+        severity=_SEVERITY[diagnostic.severity],
+        code=diagnostic.code,
+        source=source,
+        related_information=list(related) or None,
+        data=data,
+    )
+
+
 def aggregate_diagnostics(
     snapshots: Iterable[Snapshot], workspace: SourceWorkspace, encoding: str
 ) -> dict[str, list[types.Diagnostic]]:
@@ -63,46 +114,67 @@ def aggregate_diagnostics(
                     notes.append((note, snapshot))
 
     result = {}
-    severity = {
-        "error": types.DiagnosticSeverity.Error,
-        "warning": types.DiagnosticSeverity.Warning,
-        "info": types.DiagnosticSeverity.Information,
-    }
     for uri, entries in grouped.items():
         converted = []
         document = workspace.documents.get(uri)
         version = document.version if document is not None else None
         for diagnostic, (snapshot, notes) in entries.items():
-            span = diagnostic.source_span or SourceSpan(
-                diagnostic.filename, diagnostic.line, diagnostic.column
-            )
+            filename = (diagnostic.source_span or diagnostic).filename
             related = [
-                types.DiagnosticRelatedInformation(
-                    types.Location(
-                        workspace.uri_for(note.span.filename, root=owner.document),
-                        position_codec(
-                            owner.texts.get(note.span.filename, ""), encoding=encoding
-                        ).range(note.span),
-                    ),
-                    note.message,
+                related_information(
+                    note,
+                    owner.texts,
+                    partial(workspace.uri_for, root=owner.document),
+                    encoding=encoding,
                 )
                 for note, owner in notes
             ]
             converted.append(
-                types.Diagnostic(
-                    range=position_codec(
-                        snapshot.texts.get(span.filename, ""), encoding=encoding
-                    ).range(span),
-                    message=with_details(diagnostic.message, diagnostic),
-                    severity=severity[diagnostic.severity],
-                    code=diagnostic.code,
+                lsp_diagnostic(
+                    diagnostic,
+                    snapshot.texts,
+                    partial(workspace.uri_for, root=snapshot.document),
+                    encoding=encoding,
                     source="aa2modulus",
-                    related_information=related or None,
-                    data=_fix_data(diagnostic.fixes, snapshot, span.filename, version, encoding),
+                    related=related,
+                    data=_fix_data(diagnostic.fixes, snapshot, filename, version, encoding),
                 )
             )
         result[uri] = converted
     return result
+
+
+def merged_diagnostics(
+    published: Mapping[str, list[types.Diagnostic]],
+    layers: Iterable[Mapping[str, list[types.Diagnostic]]],
+) -> dict[str, list[types.Diagnostic]]:
+    """``published`` plus each layer's diagnostics that no earlier one on the URI
+    repeats by range, severity, code and message.
+    """
+
+    result = {uri: list(items) for uri, items in published.items()}
+    for layer in layers:
+        for uri, items in layer.items():
+            merged = result.setdefault(uri, [])
+            seen = {_finding(item) for item in merged}
+            for item in items:
+                if (finding := _finding(item)) not in seen:
+                    seen.add(finding)
+                    merged.append(item)
+    return result
+
+
+def _finding(diagnostic: types.Diagnostic) -> tuple[object, ...]:
+    start, end = diagnostic.range.start, diagnostic.range.end
+    return (
+        start.line,
+        start.character,
+        end.line,
+        end.character,
+        diagnostic.severity,
+        diagnostic.code,
+        diagnostic.message,
+    )
 
 
 def _fix_data(

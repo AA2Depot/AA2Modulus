@@ -31,6 +31,9 @@ def register(server: AA2LanguageServer) -> None:
         tokens = workspace.semantic_tokens if workspace else None
         server.token_refresh = bool(tokens and tokens.refresh_support)
         server.documentation.enabled = bool(workspace and workspace.text_document_content)
+        window = params.capabilities.window
+        show_document = window.show_document if window else None
+        server.show_document = bool(show_document and show_document.support)
 
     @server.feature(types.INITIALIZED)
     def initialized(params: types.InitializedParams) -> None:
