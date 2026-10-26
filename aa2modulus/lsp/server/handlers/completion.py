@@ -32,6 +32,7 @@ def register(server: AA2LanguageServer) -> None:
             authoring=snapshot.authoring,
             texts=snapshot.texts,
             snippet_support=server.snippet_support,
+            source_kind="library" if snapshot.document.is_library else "module",
         )
 
     @server.feature(

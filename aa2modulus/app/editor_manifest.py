@@ -12,8 +12,9 @@ SCHEMA = "aa2modulus.release-manifest.v1"
 # Increments only on a breaking wire change; additive features add a flag instead.
 CONTRACT_VERSION = 2
 BUILTIN_CATALOG = "builtinCatalog"
+COMPLETION_SNIPPETS = "completionSnippets"
 # Every additive flag the server can offer; initialize sets one only for a client that supports it.
-FEATURES = (BUILTIN_CATALOG,)
+FEATURES = (BUILTIN_CATALOG, COMPLETION_SNIPPETS)
 
 
 def server_features(*, context: SourceContext) -> dict[str, Any]:

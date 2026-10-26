@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Literal
 
 from lark import Token
 from lsprotocol import types
@@ -28,6 +29,7 @@ class CompletionRequest:
     authoring: SourceAuthoring | None = None
     texts: Mapping[str, str] | None = None
     snippet_support: bool = False
+    source_kind: Literal["module", "library"] = "module"
 
     @property
     def codec(self) -> PositionCodec:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 
 from lark import Token
 from lsprotocol import types
@@ -154,12 +154,14 @@ def constant_string_completions(
     return results
 
 
-def keyword_items(site: CompletionSite) -> list[types.CompletionItem]:
-    """Grammar keywords accepted at the cursor that match the typed prefix."""
+def keyword_items(site: CompletionSite, excluded: Collection[str]) -> list[types.CompletionItem]:
+    """Grammar keywords accepted at the cursor that match the typed prefix, except ``excluded``."""
 
     prefix = site.prefix
     results: list[types.CompletionItem] = []
     for keyword in literal_keywords(prefix.parser, prefix.expected):
+        if keyword in excluded:
+            continue
         if keyword in {"true", "false"} and site.expected_type not in {None, ValueType.BOOL}:
             continue
         if prefix.suffix and not keyword.casefold().startswith(prefix.suffix.casefold()):
