@@ -226,6 +226,8 @@ use explicit-ID-first, then positional lookup; source policy targets explicit
 scoped IDs. Lowering with no supplied resolver reads no catalog files.
 `SourceContext.catalog` composes those facts and policy event values with
 the resolved policy once; operation-local context replacements reuse it.
+A process loads the shipped registry and policy once, and builds one catalog
+per metadata and policy pair (`language_catalog`).
 Construction keeps lookup row, wire identity, native declaration, event values
 and native save/reload identity separate. Binding, formatting, completion,
 signatures and export use its checked candidates and canonical forms. Literal

@@ -114,6 +114,9 @@ checkout, require it at runtime, or copy it into artifacts.
   you touch that break it, but do not restyle code outside the task. If a rule
   in the guide gets in the way of clean code, raise it with the user instead
   of working around it, and update the guide when the user decides.
+- Write tests by the [Tests](docs/style.md#tests) rules: one owner test per
+  behaviour, expected values written by hand, in-process unless the test is
+  about the process. Check how long a new test takes.
 - Keep code, contracts, examples and the roadmap in sync.
 - Run the checks that fit the change and any verification the user asked for.
   [Development](docs/development.md) lists the `mise` tasks. Report exactly

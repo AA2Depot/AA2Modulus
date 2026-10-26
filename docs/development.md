@@ -12,7 +12,7 @@ use a separate dependency group and [native build recipe](standalone.md).
 | `mise run setup` | Install the locked dependencies into `.venv` |
 | `mise run format` | Format the package, tests and tools with Ruff |
 | `mise run lint` | Ruff lint, the Ruff format check, mypy and the layer check |
-| `mise run test` | The full test suite; extra arguments go to pytest |
+| `mise run test` | The full test suite in parallel; extra arguments go to pytest (`-n 0` runs it serially) |
 | `mise run coverage` | The test suite with branch coverage and the 85% floor |
 | `mise run verify` | `lint` and `test`; run it before handing over work |
 | `mise run docs:serve` / `docs:build` | Preview or build the documentation website |
@@ -34,8 +34,8 @@ area marker:
 holding only runtime code, resources and inputs, with original-project reads blocked.
 
 Coverage also traces the CLI and LSP child processes the tests start
-(`patch = ["subprocess"]`), which makes the coverage run about three times
-slower than `mise run test`.
+(`patch = ["subprocess"]`), which makes the coverage run about twice as
+slow as `mise run test`.
 
 A push to any branch runs [the CI workflow](../.github/workflows/ci.yml):
 `lint` and `test`, with `coverage` in place of `test` on `main`. The `main` run

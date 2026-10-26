@@ -13,11 +13,6 @@ from aa2modulus.context.operation import SourceContext
 
 
 @pytest.fixture(scope="module")
-def context() -> SourceContext:
-    return SourceContext.create()
-
-
-@pytest.fixture(scope="module")
 def generated(context: SourceContext) -> tuple[dict[str, Any], Report]:
     return editor_catalog(context=context)
 

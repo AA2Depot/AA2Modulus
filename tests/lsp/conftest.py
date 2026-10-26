@@ -1,16 +1,10 @@
-"""The shared source context and language-server client fixtures."""
+"""The shared language-server client fixtures."""
 
 from __future__ import annotations
 
 import pytest
 
-from aa2modulus.context.operation import SourceContext
 from tests.support.lsp_client import Client
-
-
-@pytest.fixture(scope="session")
-def context() -> SourceContext:
-    return SourceContext.create()
 
 
 @pytest.fixture(scope="module")
