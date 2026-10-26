@@ -14,10 +14,14 @@ def test_stdio_capabilities_navigation_and_diagnostic_parity(client):
     capabilities = client.initialized["capabilities"]
     assert capabilities["positionEncoding"] == "utf-16"
     assert capabilities["textDocumentSync"]["change"] == 2
-    # Without client textDocumentContent support there are no built-in pages or flags.
+    # Without client support there are no built-in pages or snippets; lexical tokens need none.
     manifest = editor_manifest()
     assert capabilities["experimental"] == {
-        "aa2modulus": {"contractVersion": manifest["contractVersion"], "syntax": manifest["syntax"]}
+        "aa2modulus": {
+            "contractVersion": manifest["contractVersion"],
+            "syntax": manifest["syntax"],
+            "lexicalTokens": True,
+        }
     }
     assert "textDocumentContent" not in capabilities.get("workspace", {})
     assert all(

@@ -1,4 +1,4 @@
-"""Semantic tokens from binder selections, declarations and their protocol session."""
+"""Semantic tokens from binder selections, declarations, the lexical scan and their session."""
 
 from __future__ import annotations
 
@@ -117,22 +117,40 @@ def test_every_legend_row_comes_from_the_selected_target(tmp_path, context):
 def test_templates_and_slots_in_a_library(tmp_path, context):
     tokens = _tokens(tmp_path, context, GREET, name="greet.aa2mi")
     assert tokens == [
+        ("trigger", "keyword", frozenset()),
         ('"Greet"', "class", frozenset({"declaration"})),
+        ("slot", "keyword", frozenset()),
         ('"who"', "parameter", frozenset({"declaration"})),
+        ("string", "type", frozenset()),
+        ("on", "keyword", frozenset()),
         ("CARD_ADDED", "event", LIBRARY),
         ("WriteLog", "function", LIBRARY),
         ("who", "parameter", frozenset()),
     ]
 
 
-def test_quoted_references_raw_forms_and_unresolved_names(tmp_path, context):
+def test_quoted_references_lexical_forms_and_unresolved_names(tmp_path, context):
     tokens = _tokens(tmp_path, context)
-    # The quoted spelling is the name, so it carries the declaration's kind.
+    # The quoted spelling is the name, so it carries the declaration's kind, not ``string``.
     assert _kinds(tokens, '"coach"') == [("variable", frozenset())]
     assert _kinds(tokens, '"Tag"') == [("variable", frozenset({"readonly"}))]
-    texts = {name for name, _, _ in tokens}
-    assert not texts & {"raw_action", "7", "true", "variable", "const", '"Naive"', '"1"'}
-    assert all("." not in name for name in texts)
+    assert _kinds(tokens, '"Greet"') == [("class", frozenset())]
+    for text, kind in (
+        ("raw_action", "keyword"),
+        ("variable", "keyword"),
+        ("const", "keyword"),
+        ("import.trigger", "keyword"),
+        ("true", "keyword"),
+        ("card", "type"),
+        ("7", "number"),
+        ('"Naive"', "string"),
+        ('"Tokens"', "string"),
+        ("+", "operator"),
+        ("=", "operator"),
+    ):
+        assert (kind, frozenset()) in _kinds(tokens, text), text
+    dotted = {name for name, _, _ in tokens if "." in name}
+    assert dotted == {"import.trigger", '"greet.aa2mi"'}
 
     # A typo binds to nothing, so it gets no token; the rest of the file keeps them.
     typo = _tokens(tmp_path, context, SOURCE.replace("coach.SetVirtue(3);", "WriteLog(Glob.X);"))
@@ -143,6 +161,40 @@ def test_quoted_references_raw_forms_and_unresolved_names(tmp_path, context):
     assert "SetVirtue" not in {name for name, _, _ in broken}
     assert _kinds(broken, "CurrentDay") == [("property", CONSTANT)]
     assert _kinds(broken, "FullName") == [("property", LIBRARY)]
+    assert _kinds(broken, "for") == [("keyword", frozenset())]
+
+
+def test_float_bits_is_a_keyword_and_number_and_allow_codes_are_enum_members(tmp_path, context):
+    source = (
+        'module "M" { @allow(NATIVE_DEFECTIVE_EXPRESSION) trigger "T" { on CARD_ADDED;'
+        " let f: float = float_bits(0x7fa00001); } }"
+    )
+    tokens = _tokens(tmp_path, context, source)
+    assert _kinds(tokens, "float_bits") == [("keyword", frozenset())]
+    assert _kinds(tokens, "0x7fa00001") == [("number", frozenset())]
+    assert _kinds(tokens, "@allow") == [("decorator", frozenset())]
+    assert _kinds(tokens, "NATIVE_DEFECTIVE_EXPRESSION") == [("enumMember", frozenset())]
+
+
+def test_comments_and_strings_are_split_per_line_in_every_encoding(tmp_path, context):
+    source = (
+        'module "M" {\n  /* one 😀\n  two\n  three */\n  trigger "T" { on CARD_ADDED; // é😀\r'
+        'still comment\n  WriteLog("é😀"); }\n}\n'
+    )
+    expected = None
+    for encoding in ("utf-8", "utf-16", "utf-32"):
+        tokens = _tokens(tmp_path, context, source, encoding=encoding)
+        # A line comment runs to ``\n``, and a lone ``\r`` splits it.
+        assert [name for name, kind, _ in tokens if kind == "comment"] == [
+            "/* one 😀",
+            "  two",
+            "  three */",
+            "// é😀",
+            "still comment",
+        ]
+        assert ('"é😀"', "string", frozenset()) in tokens
+        assert expected in (None, tokens)
+        expected = tokens
 
 
 def test_positions_use_the_negotiated_encoding(tmp_path, context):
@@ -175,6 +227,19 @@ def test_session_advertises_the_legend_and_refreshes_after_an_import_changes(tmp
     client = Client(capabilities={"workspace": {"semanticTokens": {"refreshSupport": True}}})
     try:
         provider = client.initialized["capabilities"]["semanticTokensProvider"]
+        # Earlier legend indices stay the same; new types are appended.
+        assert TOKEN_TYPES[:10] == (
+            "namespace",
+            "function",
+            "method",
+            "property",
+            "enumMember",
+            "event",
+            "variable",
+            "parameter",
+            "macro",
+            "class",
+        )
         assert provider["legend"] == {
             "tokenTypes": list(TOKEN_TYPES),
             "tokenModifiers": list(TOKEN_MODIFIERS),

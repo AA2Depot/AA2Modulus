@@ -50,6 +50,7 @@ import-cycle rules. The one tolerated exception is the CLI's lazy
 | 6 | [`syntax/`](../aa2modulus/syntax/) | Grammar, the parser package (`parser/`: engine, errors, entry points, and a transformer split into one mixin per grammar area), Source AST, AST walking (`walk.py`), qualified-name spans, import resolution, and text/tree/AST budgets. |
 | 6 | [`syntax/recovery.py`](../aa2modulus/syntax/recovery.py) | Bounded LALR checkpoint/rollback recovery over production tokens, shared by the editor's current-buffer view and the strict path's every-syntax-error report (`syntax_diagnostics`). |
 | 6 | [`syntax/lexicon.py`](../aa2modulus/syntax/lexicon.py) | The lexicon: every grammar literal classified into one group, the literal patterns and comments, and the syntax fingerprint the server advertises; a grammar change that the classification table does not cover raises. |
+| 6 | [`syntax/scanner.py`](../aa2modulus/syntax/scanner.py) | The error-tolerant lexical scan for highlighting: lexicon words, operators, `@allow` codes, numbers, strings and per-line comments, without a parse; a lexicon group or literal pattern its table does not cover raises. |
 | 6 | [`syntax/hints.py`](../aa2modulus/syntax/hints.py) | Help and exact fixes for common mistakes from other languages: syntax hints probe the failed parser state; the keyword table is shared with the binder's unknown-name paths. |
 | 7 | [`hir/`](../aa2modulus/hir/) | Bound HIR nodes, recorded symbol references and resolved constants, the binding work budget and HIR budgets. |
 | 8 | [`lowering/`](../aa2modulus/lowering/) | HIR to SIR: expressions, events and GUI action trees, modules. |
@@ -168,8 +169,9 @@ edited texts rather than re-implementing scope rules. Library declarations use a
 lazy workspace index ([`lsp/workspace/index.py`](../aa2modulus/lsp/workspace/index.py)) of closed-file
 analyses, re-validated against disk signatures and open buffers on each request.
 Semantic tokens ([`lsp/features/semantic_tokens.py`](../aa2modulus/lsp/features/semantic_tokens.py))
-classify the same committed binding targets plus authored declaration spans;
-the client holds no catalog knowledge for coloring. Inlay hints
+classify the same committed binding targets plus authored declaration spans,
+then add the lexical scan's tokens wherever no name token overlaps them;
+the client holds no catalog or keyword knowledge for coloring. Inlay hints
 ([`lsp/features/inlay_hints.py`](../aa2modulus/lsp/features/inlay_hints.py)) pair call syntax with
 those targets for parameter names. The binder attaches structured `SourceFix`
 edits (`Diagnostic.fixes`) where its `help` names one concrete rewrite; the CLI

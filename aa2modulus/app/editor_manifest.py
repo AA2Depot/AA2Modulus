@@ -13,8 +13,10 @@ SCHEMA = "aa2modulus.release-manifest.v1"
 CONTRACT_VERSION = 2
 BUILTIN_CATALOG = "builtinCatalog"
 COMPLETION_SNIPPETS = "completionSnippets"
-# Every additive flag the server can offer; initialize sets one only for a client that supports it.
-FEATURES = (BUILTIN_CATALOG, COMPLETION_SNIPPETS)
+LEXICAL_TOKENS = "lexicalTokens"
+# Every additive flag the server can offer; initialize sets one that needs a client
+# capability only for a client that has it.
+FEATURES = (BUILTIN_CATALOG, COMPLETION_SNIPPETS, LEXICAL_TOKENS)
 
 
 def server_features(*, context: SourceContext) -> dict[str, Any]:
