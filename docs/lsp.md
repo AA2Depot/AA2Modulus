@@ -108,6 +108,19 @@ session; `--version` prints the `serverInfo.version` sent at `initialize`
 - Inside `@allow(` completion offers the policy's acknowledgeable hazard codes
   (kind EnumMember) not yet listed in that attribute. There is no quick fix that
   adds an `@allow`: bypassing a hazard is not recommended.
+- For clients with `snippetSupport`, keyword completion adds Snippet items
+  (tab-indented bodies) where the grammar accepts their keyword: `module`,
+  `import`, `macro`, `const` declarations and library `trigger` templates at
+  the top level; `trigger`, `import.trigger`, `global`, `const`, `description`
+  and `depends_on` in a module; `slot` in templates and instances, `param` in
+  macros, `on` and `let` in triggers; `if`, `if`/`else`, `loop` and `for`
+  (declaring its `let` counter directly in a trigger, none in macros) as
+  statements; `else` and `else if` after an `if` block. Raw forms get none.
+  A document holding only whitespace and comments ranks a starter first: a
+  module with a trigger for `aa2m`, a macro plus trigger template for `aa2mi`.
+  Keywords and snippets follow the source kind (language ID or `.aa2mi`): a
+  library is never offered `module`, a module file never a top-level `trigger`
+  or a second `module`.
 - Compile-time constants (`const`) complete in value positions with kind
   Constant and detail `const Name: type = value` (the resolved literal), filtered
   by the expected type like variables. Module constants are visible only in the
@@ -351,7 +364,8 @@ trust, UI) belongs to the client.
   URIs. Command file arguments are local `file:` URIs on the server's host.
 - **Initialize result:** `serverInfo` carries `name` and `version`.
   `capabilities.experimental.aa2modulus` is
-  `{ "contractVersion": 2, "builtinCatalog": true }`. A client gates features
+  `{ "contractVersion": 2, "builtinCatalog": true, "completionSnippets": true }`.
+  A client gates features
   on these fields, not on `serverInfo.version`.
   `contractVersion` increments only on a breaking wire change. An additive
   feature adds a flag instead, which is present and `true` only when the
@@ -361,7 +375,10 @@ trust, UI) belongs to the client.
   `capabilities.workspace.textDocumentContent.schemes: ["aa2m-builtin"]` appear
   only when the client advertises `workspace.textDocumentContent`. A client
   that serves its own `aa2m-builtin` documents must stop doing so for this
-  contract. `syntax` is always present:
+  contract. `completionSnippets` means keyword snippets and the
+  empty-document starters (see [authoring behavior](#authoring-behavior)); it
+  appears only when the client advertises `completionItem.snippetSupport`.
+  `syntax` is always present:
   `{ "version": <policy language_version>, "fingerprint": "<64 hex>" }`. The
   fingerprint is the SHA-256 of the grammar's lexicon, the same value
   `aa2modulus editor-data lexicon` prints; built-ins and policy do not change
@@ -370,7 +387,8 @@ trust, UI) belongs to the client.
 - **Release manifest:** each release publishes `aa2modulus-manifest.json`
   beside its zips, so a client can judge a release before it downloads one:
   `{ "schema": "aa2modulus.release-manifest.v1", "version", "contractVersion",
-  "syntax", "features": { "builtinCatalog": true }, "platforms": [...] }`.
+  "syntax", "features": { "builtinCatalog": true, "completionSnippets": true },
+  "platforms": [...] }`.
   `version` equals `serverInfo.version`; `contractVersion` and `syntax` equal
   the initialize result's. `features` lists every flag the server can offer;
   a client receives each one in initialize only when it supports the feature.

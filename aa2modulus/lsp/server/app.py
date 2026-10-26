@@ -14,7 +14,7 @@ from pygls.exceptions import JsonRpcContentModified
 from pygls.lsp.server import LanguageServer
 from pygls.protocol import LanguageServerProtocol, lsp_method
 
-from ...app.editor_manifest import BUILTIN_CATALOG, server_features
+from ...app.editor_manifest import BUILTIN_CATALOG, COMPLETION_SNIPPETS, server_features
 from ...context.operation import SourceContext
 from ...version import __version__
 from ..documentation.builtins import SCHEME, BuiltinDocumentation
@@ -44,6 +44,8 @@ class AA2LanguageServerProtocol(LanguageServerProtocol):
             workspace.text_document_content = types.TextDocumentContentOptions([SCHEME])
             result.capabilities.workspace = workspace
             features[BUILTIN_CATALOG] = True
+        if server.snippet_support:
+            features[COMPLETION_SNIPPETS] = True
         result.capabilities.experimental = {"aa2modulus": features}
         return result
 

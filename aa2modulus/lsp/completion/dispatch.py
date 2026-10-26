@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import Literal
 
 from lark.exceptions import UnexpectedInput
 from lsprotocol import types
@@ -36,6 +37,7 @@ from .items import (
 from .members import member_completions, member_end, member_site
 from .request import CompletionRequest, CompletionSite
 from .scope import visible_declarations
+from .snippets import snippet_items, unavailable_keywords
 from .tokens import (
     NAME_TOKENS,
     Prefix,
@@ -57,8 +59,12 @@ def completions(
     authoring: SourceAuthoring | None = None,
     texts: Mapping[str, str] | None = None,
     snippet_support: bool = False,
+    source_kind: Literal["module", "library"] | None = None,
 ) -> list[types.CompletionItem]:
-    """Return syntax and visible name completions at a Python source offset."""
+    """Return syntax and visible name completions at a Python source offset.
+
+    ``source_kind`` defaults to the kind the filename suffix implies.
+    """
 
     offset = min(max(offset, 0), len(source)) if isinstance(offset, int) else offset
     try:
@@ -66,7 +72,15 @@ def completions(
     except SourceLimitError:
         return []
     request = CompletionRequest(
-        source, offset, context, encoding, analysis, authoring, texts, snippet_support
+        source,
+        offset,
+        context,
+        encoding,
+        analysis,
+        authoring,
+        texts,
+        snippet_support,
+        source_kind or ("library" if context.filename.endswith(".aa2mi") else "module"),
     )
     found = _constant_string_branch(request)
     if found is not None:
@@ -183,7 +197,10 @@ def _syntax_branch(
 ) -> list[types.CompletionItem]:
     """Keywords, built-ins and authored names accepted at the cursor."""
 
-    results = keyword_items(site)
+    excluded = unavailable_keywords(request, site, unit)
+    results = keyword_items(site, excluded)
+    if request.snippet_support:
+        results.extend(snippet_items(request, site, excluded))
     for item in builtin_items(request, site):
         item.text_edit = types.TextEdit(site.edit_range, item.insert_text or item.label)
         results.append(item)
