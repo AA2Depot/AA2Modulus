@@ -316,17 +316,25 @@ does not need to save first. Before it commits, the server checks that no used
 buffer changed or closed, no buffer opened for a file read from disk, and no
 disk input changed; otherwise it reports `ContentModified`. It rejects
 source/import destinations, and atomically commits output only after strict
-compilation succeeds; canceled or failed requests preserve existing output. Decompilation returns
+compilation succeeds; canceled or failed requests preserve existing output. Decompilation writes
 readable source with raw fallbacks and recovery diagnostics, including semantic
-errors and trailing-byte warnings; fatal read/decode failures are request errors.
-Command diagnostic messages use the CLI `short` form (`file:line:col:
-severity[CODE]: message`); published and command diagnostics append a finding's
-notes and help as `note: ...` and `help: ...` lines. Command diagnostics also
-carry the `code`, the headline-free `detail`, and, when the finding's text is
-known, a `range` in the negotiated position encoding: compile findings name the
-module or import `uri` (`target: "source"`), and decompile findings point into
-the returned source (`target: "recovered"`). Output, read and binary-only
-findings have no range.
+errors and trailing-byte warnings, to a new file beside the binary; fatal
+read/decode and write failures are request errors.
+
+Command findings reach the client three ways:
+
+- Located findings are published with `textDocument/publishDiagnostics`, in
+  the negotiated position encoding, on the module or import (compile) or the
+  written file (decompile). A finding that repeats an analysis diagnostic on
+  the same URI (same range, severity, code and message) is hidden, so compile
+  mostly adds writer errors. The next completed compile of the same root
+  replaces its findings; an edit or close of a file, or a watched change or
+  delete, drops the command findings on it.
+- Every finding is logged once with `window/logMessage`: `compile: ` or
+  `decompile: `, then the CLI `short` line (`file:line:col: severity[CODE]:
+  message`) and any `note: ...`/`help: ...` lines.
+- The result counts errors and warnings and lists the findings without a
+  range: output, write, read and binary-only findings.
 
 Protocol behavior follows [LSP 3.17](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/)
 and uses [Pygls lifecycle and synchronization](https://pygls.readthedocs.io/en/latest/servers/reference/built-in-features.html).
@@ -370,9 +378,15 @@ trust, UI) belongs to the client.
   binary prints its part with `aa2modulus editor-data manifest`.
 - **Commands:** `executeCommandProvider.commands` lists the module commands.
   A client checks the list before it starts a command.
-- **Diagnostics:** published with the document version when known. A closed
-  file keeps its diagnostics (published without a version, rechecked from disk)
-  until it is reopened or deleted; an untitled document clears on close.
+- **Command output:** decompile creates `<input>.aa2m`, or `<input>-2.aa2m`
+  up to `-100` when a name exists on disk or is open, and never overwrites.
+  When the client advertises `window.showDocument.support`, the server opens
+  the file with `window/showDocument` before it returns the result.
+- **Diagnostics:** published with the document version when known. Analysis
+  uses the source `aa2modulus`; command findings use `aa2modulus compile` and
+  `aa2modulus decompile`. A closed file keeps its diagnostics (published
+  without a version, rechecked from disk) until it is reopened or deleted; an
+  untitled document clears on close.
   `Diagnostic.data` is opaque: a client only echoes it back in
   `textDocument/codeAction` context and never reads or stores it.
 
@@ -383,31 +397,21 @@ Document versions are integers; booleans are rejected.
 
 | Command | Request object | Result object |
 | --- | --- | --- |
-| `aa2modulus.compileDocument` | `{ "textDocument": { "uri", "version" }, "outputUri": string }` | `{ "compiled": boolean, "diagnostics": CommandDiagnostic[] }` |
-| `aa2modulus.decompileModule` | `{ "inputUri": string }` | `{ "source": string, "diagnostics": CommandDiagnostic[] }` |
+| `aa2modulus.compileDocument` | `{ "textDocument": { "uri", "version" }, "outputUri": string }` | `{ "compiled": boolean, "outputUri"?: string, "errors": int, "warnings": int, "unlocated": CommandFinding[] }` |
+| `aa2modulus.decompileModule` | `{ "inputUri": string }` | `{ "outputUri": string, "errors": int, "warnings": int, "unlocated": CommandFinding[] }` |
 
 `compileDocument` needs an open, file-backed `.aa2m` module at the given
 version; the file need not exist on disk yet. Contract version 2 removed
-`prepareCompile`, which listed imports for the client to save. Request
+`prepareCompile`, which listed imports for the client to save, and the
+`diagnostics` arrays of both results. Request
 failures, invalid parameters and changed inputs are JSON-RPC/LSP errors.
 
-A `CommandDiagnostic` always has `severity` (`error`, `warning` or `info`) and
-`message`: the CLI short line followed by any `note:`/`help:` lines. Other
-fields are optional:
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `code` | string | Diagnostic code, for example `WRITE_ERROR` |
-| `detail` | string | `message` without the location headline |
-| `target` | `"source"` or `"recovered"` | What `range` points into; present only with `range` |
-| `uri` | string | Source document for `target: "source"` |
-| `range` | LSP `Range` | Location in the negotiated position encoding |
-| `related` | `{ uri?, range, message }[]` | Located notes; no `uri` inside recovered source |
-
-Compile findings use `target: "source"` with a `uri`; decompile findings point
-into the returned `source` with `target: "recovered"`. Output, read and
-binary-only findings (such as trailing bytes) have no `range`. A client ignores
-a `range` whose `target` it does not know.
+Compile `outputUri` is present only when `compiled` is true. Decompile
+`outputUri` is the file the server wrote. `errors` and `warnings` count every
+finding of the command, located or not, including hidden duplicates. A
+`CommandFinding` is `{ "severity", "code", "message" }`: `severity` is `error`,
+`warning` or `info`, and `message` is the CLI short line followed by any
+`note:`/`help:` lines.
 
 ### CLI short format
 

@@ -12,6 +12,14 @@ def register(server: AA2LanguageServer) -> None:
     @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
     def watched_files(params: types.DidChangeWatchedFilesParams) -> None:
         server.index.changed(params.changes)
+        # The server's own decompile output arrives as a creation; keep its findings.
+        dropped = [
+            server.drop_findings(change.uri)
+            for change in params.changes
+            if change.type != types.FileChangeType.Created
+        ]
+        if any(dropped):
+            server.publish()
 
     @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
     def did_open(params: types.DidOpenTextDocumentParams) -> None:
@@ -37,6 +45,7 @@ def register(server: AA2LanguageServer) -> None:
                 text = text[:start] + change.text + text[end:]
             else:
                 text = change.text
+        server.drop_findings(uri)
         server.enqueue(server.sources.change(uri, text, params.text_document.version))
 
     @server.feature(types.TEXT_DOCUMENT_DID_SAVE, types.SaveOptions(include_text=False))
@@ -48,6 +57,7 @@ def register(server: AA2LanguageServer) -> None:
     @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
     async def did_close(params: types.DidCloseTextDocumentParams) -> None:
         server.tokens_served.pop(params.text_document.uri, None)
+        server.drop_findings(params.text_document.uri)
         server.enqueue(server.sources.close(params.text_document.uri))
         server.publish()
         async with server.ready:
