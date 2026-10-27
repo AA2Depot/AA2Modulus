@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import NoReturn
 
@@ -48,6 +49,9 @@ from ...ast import (
 from ...spans import qualified_segment_spans
 from ..errors import SourceParseError
 from ..spans import meta_span, token_span
+
+_LINE_BREAK = re.compile(r"\r\n|\r|\n")
+_UNESCAPED_QUOTE = re.compile(r'(\\.)|"')
 
 # Help and replacement of a bare reserved word, by where it is written.
 _RESERVED_REWRITES = {
@@ -264,6 +268,33 @@ class TransformerBase(Transformer_NonRecursive[Token, object]):
         if isinstance(decoded, str):
             return decoded
         raise TypeError(f"JSON string token decoded to non-string value {decoded!r}")
+
+    def _block_string(self, token: Token) -> str:
+        """Decode a ``\"\"\"`` block: the closing line's indent is removed, lines join with CRLF."""
+
+        parts = _LINE_BREAK.split(str(token)[3:-3])
+        if len(parts) < 2 or parts[0].strip(" \t"):
+            self._fail(token, 'block string text starts on the line after `"""`', "INVALID_STRING")
+        _, *lines, closing = parts
+        if closing.strip(" \t"):
+            self._fail(token, 'the closing `"""` must stand on its own line', "INVALID_STRING")
+        decoded: list[str] = []
+        for number, line in enumerate(lines, (token.line or 1) + 1):
+            span = SourceSpan(self.filename, number, 1, number, max(1, len(line)))
+            if line.startswith(closing):
+                text = line[len(closing) :]
+            elif closing.startswith(line):
+                text = ""
+            else:
+                self._fail(span, 'line is indented less than the closing `"""`', "INVALID_STRING")
+            if (len(text) - len(text.rstrip("\\"))) % 2:
+                self._fail(span, "a block string line cannot end with `\\`", "INVALID_STRING")
+            quoted = _UNESCAPED_QUOTE.sub(lambda match: match.group(1) or '\\"', text)
+            try:
+                decoded.append(json.loads(f'"{quoted}"'))
+            except json.JSONDecodeError as exc:
+                self._fail(span, f"invalid JSON string: {exc.msg}", "INVALID_STRING")
+        return "\r\n".join(decoded)
 
     def _int(self, token: Token) -> int:
         try:

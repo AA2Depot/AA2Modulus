@@ -1,5 +1,8 @@
 module "Receiver Calls" {
-  description "Card built-ins are members of the card they act on: variables, built-in receivers, properties and card storage";
+  description """
+    Card built-ins are members of the card they act on:
+    variables, built-in receivers, properties and card storage.
+    """;
 
   trigger "On Card Added" {
     on CARD_ADDED;

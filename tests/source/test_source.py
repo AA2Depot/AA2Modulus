@@ -28,6 +28,7 @@ def test_formatted_source_preserves_module_defaults_globals_and_dependencies():
     assert restored.dependencies == ("DependencyA",)
 
 
+# Edge patterns, then two ordinary values whose decimal spelling must keep the binary32 bits.
 @pytest.mark.parametrize(
     "bits", (0x80000000, 0x00000001, 0x7F800000, 0x7FC00001, 0x7FA00001, 0x60AD78EC, 0x1E3CE508)
 )
@@ -66,3 +67,25 @@ def test_branch_syntax_errors_report_the_offending_line_and_column():
         3,
         10,
     )
+
+
+def test_named_constant_expression_projects_to_ir_by_constant_id():
+    module = parse_module(
+        'module "M" { trigger "T" { let x: int = Constants.Relationship.LOVE; } }'
+    )
+    expression = module.triggers[0].variables[0].default_expression
+    assert expression.to_ir() == {"return_type": 1, "id": 3, "named_constant_id": 1}
+
+
+def test_float_constants_project_to_ir_by_bits_when_unusual_and_by_value_otherwise():
+    patterns = (0x80000000, 0x00000001, 0x7F800000, 0x7FC00001, 0x7FA00001)
+    declarations = " ".join(
+        f"global g{index}: float = float_bits(0x{bits:08x});" for index, bits in enumerate(patterns)
+    )
+
+    module = parse_module(f'module "M" {{ {declarations} global plain: float = 1.5; }}')
+
+    assert [item.default_value.to_ir() for item in module.globals] == [
+        *({"type": 3, "value": None, "float_bits": bits} for bits in patterns),
+        {"type": 3, "value": 1.5},
+    ]

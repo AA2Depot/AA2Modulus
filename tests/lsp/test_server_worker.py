@@ -9,6 +9,7 @@ from lsprotocol import types
 
 from aa2modulus.lsp.server import worker
 from aa2modulus.lsp.server.run import create_server
+from tests.support.lsp_workspace import notification_text
 
 
 def test_running_analysis_cannot_publish_an_older_buffer_or_dependency(monkeypatch, tmp_path):
@@ -45,13 +46,7 @@ def test_running_analysis_cannot_publish_an_older_buffer_or_dependency(monkeypat
             snapshot = await asyncio.wait_for(server.current_snapshot(root_uri), timeout=5)
             assert snapshot.document.version == 2
             assert snapshot.analysis.module.name == "new"
-            assert (
-                snapshot.analysis.module.triggers[0]
-                .gui_actions[0]
-                .action.parameters[0]
-                .constant.value
-                == "buffer"
-            )
+            assert notification_text(snapshot) == "buffer"
             assert all(not item.diagnostics for item in publications)
             assert all(
                 item.version != 1

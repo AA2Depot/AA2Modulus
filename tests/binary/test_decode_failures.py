@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import struct
 
 import pytest
@@ -23,6 +24,14 @@ from aa2modulus.model.records import (
 )
 from aa2modulus.model.types import EXPR_CONSTANT, EXPR_NAMEDCONSTANT, EXPR_VAR, ValueType
 from aa2modulus.model.values import Value
+from tests.support.wire import pack_string
+
+# Where a cut falls decides which reader check notices it first.
+_TRUNCATION_MESSAGE = re.compile(
+    r"unexpected end of input; need \d+ bytes"
+    r"|truncated UTF-16LE string of \d+ code units"
+    r"|vector length \d+ cannot fit in the remaining input"
+)
 
 TEXT = st.text(max_size=8)
 TYPE = st.sampled_from(
@@ -138,16 +147,23 @@ def modules(draw):
     )
 
 
-def _string(value: str) -> bytes:
-    encoded = value.encode("utf-16-le", errors="surrogatepass")
-    return struct.pack("<I", len(encoded) // 2) + encoded
-
-
 def _empty_module() -> bytes:
-    return _string("") + _string("") + struct.pack("<III", 0, 0, 0)
+    return pack_string("") + pack_string("") + struct.pack("<III", 0, 0, 0)
 
 
+def _unusual_float_module() -> Module:
+    # Negative zero and a subnormal need explicit bit syntax, which hypothesis
+    # draws only by chance.
+    negative_zero = Value.floating(-0.0)
+    subnormal = Value.floating(1e-45)
+    return Module(
+        "floats", globals=(GlobalVariable(ValueType.FLOAT, "x", negative_zero, subnormal),)
+    )
+
+
+@settings(deadline=None)
 @given(modules())
+@example(_unusual_float_module())
 def test_bounded_model_binary_round_trip(module):
     encoded = encode_module(module)
     decoded = decode_module(encoded, reject_trailing=True).module
@@ -155,13 +171,17 @@ def test_bounded_model_binary_round_trip(module):
     assert decoded.to_ir() == module.to_ir()
 
 
-@given(st.binary(max_size=19))
-def test_inputs_shorter_than_the_minimum_module_layout_are_rejected(data):
-    # Even an empty module needs five four-byte string/vector lengths.
-    with pytest.raises(DecodeError) as raised:
-        decode_module(data)
-    assert 0 <= raised.value.offset <= len(data)
-    assert raised.value.path[0] == "module"
+def test_inputs_shorter_than_the_minimum_module_layout_are_rejected():
+    # Even an empty module needs five four-byte string/vector lengths. Try every
+    # shorter size over zero lengths (an empty module's prefix), oversized
+    # lengths and the prefix of a module whose name has one character.
+    named = pack_string("A") + pack_string("") + struct.pack("<III", 0, 0, 0)
+    for size in range(20):
+        for data in (b"\x00" * size, b"\xff" * size, named[:size]):
+            with pytest.raises(DecodeError) as raised:
+                decode_module(data)
+            assert 0 <= raised.value.offset <= size, (size, data)
+            assert raised.value.path[0] == "module", (size, data)
 
 
 def test_truncated_input_reports_exact_boundary_and_path():
@@ -182,10 +202,10 @@ def test_trailing_bytes_are_reported_or_rejected():
 
 def test_reader_limits_and_unknown_value_types_are_checked_before_allocation():
     with pytest.raises(DecodeError, match="length 3") as string_error:
-        decode_module(_string("abc"), limits=ReaderLimits(max_string_code_units=2))
+        decode_module(pack_string("abc"), limits=ReaderLimits(max_string_code_units=2))
     assert string_error.value.path == ("module", "name")
 
-    too_many_triggers = _string("") + _string("") + struct.pack("<I", 2)
+    too_many_triggers = pack_string("") + pack_string("") + struct.pack("<I", 2)
     with pytest.raises(DecodeError, match="vector length 2"):
         decode_module(too_many_triggers, limits=ReaderLimits(max_vector_elements=1))
 
@@ -194,11 +214,11 @@ def test_reader_limits_and_unknown_value_types_are_checked_before_allocation():
 
     # Module fields then one global whose default value has unknown type 5.
     bad_value = (
-        _string("")
-        + _string("")
+        pack_string("")
+        + pack_string("")
         + struct.pack("<II", 0, 1)
         + struct.pack("<i", 1)
-        + _string("bad")
+        + pack_string("bad")
         + struct.pack("<i", 5)
     )
     with pytest.raises(DecodeError, match="unknown Value type id 5"):
@@ -208,8 +228,14 @@ def test_reader_limits_and_unknown_value_types_are_checked_before_allocation():
 def test_reader_recursion_and_node_limits_stop_nested_decoding():
     child = struct.pack("<i", 2) + struct.pack("<II", 0, 0)
     root = struct.pack("<i", 1) + struct.pack("<I", 0) + struct.pack("<I", 1) + child
-    trigger = _string("T") + struct.pack("<II", 0, 0) + struct.pack("<I", 1) + root
-    data = _string("") + _string("") + struct.pack("<I", 1) + trigger + struct.pack("<II", 0, 0)
+    trigger = pack_string("T") + struct.pack("<II", 0, 0) + struct.pack("<I", 1) + root
+    data = (
+        pack_string("")
+        + pack_string("")
+        + struct.pack("<I", 1)
+        + trigger
+        + struct.pack("<II", 0, 0)
+    )
     with pytest.raises(DecodeError, match="recursion depth"):
         decode_module(data, limits=ReaderLimits(max_recursion_depth=1))
     with pytest.raises(DecodeError, match="decoded node limit"):
@@ -321,4 +347,4 @@ def test_structured_binary_mutations_report_bounded_errors(kind, name, number, c
         assert message in raised.value.message
     else:
         assert raised.value.path[0] == "module"
-        assert "input" in raised.value.message or "truncated" in raised.value.message
+        assert _TRUNCATION_MESSAGE.fullmatch(raised.value.message), raised.value.message

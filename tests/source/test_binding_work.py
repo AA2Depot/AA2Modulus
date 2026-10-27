@@ -16,4 +16,5 @@ def test_binding_work_limit_fails_at_the_public_validation_boundary():
     assert [item.code for item in result.errors] == ["SOURCE_BINDING_WORK_LIMIT"]
     diagnostic = result.errors[0]
     assert diagnostic.filename == "binding-work.aa2m"
-    assert diagnostic.source_span is not None
+    # The limit is crossed at the literal operand, the last node bound.
+    assert (diagnostic.line, diagnostic.column) == (1, source.rindex("1") + 1)

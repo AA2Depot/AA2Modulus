@@ -242,10 +242,24 @@ color it without configuration:
 | `const` | `variable` | `readonly`, plus `declaration` at the name |
 | macro, trigger template | `macro`, `class` | `declaration` at the name |
 
-Quoted names (`variable("coach")`, `const("Tag")`, `param "text"`) are one
-token over the quoted string. Unresolved names, raw forms, keywords, literals,
-module and trigger names get no token, so a client's lexical colors remain; a
-typo keeps its lexical color while its diagnostic reports it. While a file has
+A lexical scan of the text colors the rest, so a file with syntax errors is
+colored too:
+
+| Text | Token type |
+| --- | --- |
+| keywords and raw forms (`module`, `import.trigger`, `raw_action`, `constant`, `variable`), `true`, `false`, `float_bits`, `invalid` after `default`, `current` or `constant` | `keyword` |
+| types and `Card` (`int`, `card`, `type`, `invalid` elsewhere) | `type` |
+| operators and `=` (a sign before a number included) | `operator` |
+| `@allow` | `decorator` |
+| codes inside `@allow( … )` | `enumMember` |
+| integers, floats, hex digits | `number` |
+| strings, module and trigger names | `string` |
+| `//` and `/* */` comments, one token per line | `comment` |
+
+Lexical tokens have no modifiers. A name token wins over an overlapping lexical
+token: quoted names (`variable("coach")`, `const("Tag")`, `param "text"`) are
+one name token over the quoted string. Other punctuation and unresolved names
+get no token; a typo stays uncolored while its diagnostic reports it. While a file has
 errors the editor view's selections are used, as for hover. A request waits for
 the analysis of the current text, so tokens never come from an older version.
 When an import changes under an unchanged document the server sends
@@ -373,7 +387,7 @@ trust, UI) belongs to the client.
   URIs. Command file arguments are local `file:` URIs on the server's host.
 - **Initialize result:** `serverInfo` carries `name` and `version`.
   `capabilities.experimental.aa2modulus` is
-  `{ "contractVersion": 2, "builtinCatalog": true, "completionSnippets": true }`.
+  `{ "contractVersion": 2, "builtinCatalog": true, "completionSnippets": true, "lexicalTokens": true }`.
   A client gates features
   on these fields, not on `serverInfo.version`.
   `contractVersion` increments only on a breaking wire change. An additive
@@ -387,6 +401,9 @@ trust, UI) belongs to the client.
   contract. `completionSnippets` means keyword snippets and the
   empty-document starters (see [authoring behavior](#authoring-behavior)); it
   appears only when the client advertises `completionItem.snippetSupport`.
+  `lexicalTokens` means semantic tokens also color keywords, types, operators,
+  numbers, strings and comments (see [semantic highlighting](#semantic-highlighting));
+  it is always present.
   `syntax` is always present:
   `{ "version": <policy language_version>, "fingerprint": "<64 hex>" }`. The
   fingerprint is the SHA-256 of the grammar's lexicon, the same value
@@ -396,7 +413,8 @@ trust, UI) belongs to the client.
 - **Release manifest:** each release publishes `aa2modulus-manifest.json`
   beside its zips, so a client can judge a release before it downloads one:
   `{ "schema": "aa2modulus.release-manifest.v1", "version", "contractVersion",
-  "syntax", "features": { "builtinCatalog": true, "completionSnippets": true },
+  "syntax", "features": { "builtinCatalog": true, "completionSnippets": true,
+  "lexicalTokens": true },
   "platforms": [...] }`.
   `version` equals `serverInfo.version`; `contractVersion` and `syntax` equal
   the initialize result's. `features` lists every flag the server can offer;

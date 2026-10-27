@@ -1,102 +1,93 @@
-"""Real stdio authoring: server built-in pages, the built-in list, prose from policy."""
+"""Built-in pages and symbols over stdio: offered only to a client that supports them."""
 
 from __future__ import annotations
 
-from aa2modulus.app.editor_catalog.document import editor_catalog
-from aa2modulus.app.editor_catalog.pages import page
+import re
+
 from aa2modulus.app.editor_manifest import editor_manifest
-from aa2modulus.syntax.lexicon import source_lexicon
-from tests.support.lsp_client import Client
-
-_CONTENT_SUPPORT = {"workspace": {"textDocumentContent": {"dynamicRegistration": True}}}
 
 
-def test_stdio_builtin_hover_completion_and_page_definition(context):
-    client = Client(snippet_support=True, capabilities=_CONTENT_SUPPORT)
-    try:
-        capabilities = client.initialized["capabilities"]
-        features = capabilities["experimental"]["aa2modulus"]
-        manifest = editor_manifest()
-        # A client supporting every offered feature receives exactly the manifest's flags.
-        assert features == {
-            "contractVersion": manifest["contractVersion"],
-            "syntax": manifest["syntax"],
-            **manifest["features"],
-        }
-        assert features["syntax"]["fingerprint"] == source_lexicon().fingerprint
-        assert capabilities["workspace"]["textDocumentContent"] == {"schemes": ["aa2m-builtin"]}
-        description = context.metadata.action(108).description
-        uri = "untitled:Builtins"
-        source = 'module "M" { trigger "T" { Notification("hello"); Noti'
-        client.open(uri, source)
-        point = {"line": 0, "character": source.index("Notification") + 3}
-        params = {"textDocument": {"uri": uri}, "position": point}
-        hover = client.request("textDocument/hover", params)
-        assert description in hover["contents"]["value"]
-        assert (
-            "Notification(text: string, isImportant: bool = false)" in (hover["contents"]["value"])
-        )
-        (target,) = client.request("textDocument/definition", params)
-        assert target["uri"] == "aa2m-builtin:/action-108.md"
-        assert target["range"]["start"] == {"line": 0, "character": 0}
+def test_initialize_offers_every_feature_the_client_supports(full_client, context):
+    capabilities = full_client.initialized["capabilities"]
+    syntax = capabilities["experimental"]["aa2modulus"]["syntax"]
 
-        completion_params = {
-            "textDocument": {"uri": uri},
-            "position": {"line": 0, "character": len(source)},
-        }
-        items = client.request("textDocument/completion", completion_params)
-        item = next(item for item in items if item["label"] == "Notification")
-        assert item["insertTextFormat"] == 2
-        assert item["textEdit"]["newText"] == 'Notification(${1:""});$0'
-        assert description in item["documentation"]["value"]
-        assert "command" not in item  # Parameter hints belong to the editor adapter.
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
-
-
-def test_stdio_serves_builtin_pages_and_ranked_builtin_symbols():
-    document, _ = editor_catalog()
-    notification = next(item for item in document["entries"] if item["id"] == "action-108")
-    client = Client(capabilities=_CONTENT_SUPPORT)
-    try:
-        content = client.request(
-            "workspace/textDocumentContent", {"uri": "aa2m-builtin:/action-108.md"}
-        )
-        assert content == {"text": page(notification, website=None)}
-        unknown = client.request("workspace/textDocumentContent", {"uri": "aa2m-builtin:/nope.md"})
-        assert unknown["text"].startswith("# Unknown built-in\n")
-
-        symbols = client.request("workspace/symbol", {"query": "notification"})
-        assert symbols[0] == {
-            "name": "Notification",
-            "kind": 12,
-            "containerName": "Notification",
-            "location": {
-                "uri": "aa2m-builtin:/action-108.md",
-                "range": {
-                    "start": {"line": 0, "character": 0},
-                    "end": {"line": 0, "character": 0},
-                },
+    assert re.fullmatch(r"[0-9a-f]{64}", syntax["fingerprint"])
+    assert capabilities["experimental"] == {
+        "aa2modulus": {
+            "contractVersion": 2,
+            "syntax": {
+                "version": context.source_policy.language_version,
+                "fingerprint": syntax["fingerprint"],
             },
+            "lexicalTokens": True,
+            "builtinCatalog": True,
+            "completionSnippets": True,
         }
-        everything = client.request("workspace/symbol", {"query": ""})
-        assert len(everything) == 200
-        assert all(item["location"]["uri"].startswith("aa2m-builtin:/") for item in everything)
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
+    }
+    assert capabilities["workspace"]["textDocumentContent"] == {"schemes": ["aa2m-builtin"]}
 
 
-def test_stdio_without_content_support_has_no_builtin_targets(client):
+def test_release_manifest_agrees_with_what_a_fully_capable_client_receives(full_client):
+    manifest = editor_manifest()
+    initialized = full_client.initialized
+
+    assert initialized["serverInfo"]["version"] == manifest["version"]
+    assert initialized["capabilities"]["experimental"]["aa2modulus"] == {
+        "contractVersion": manifest["contractVersion"],
+        "syntax": manifest["syntax"],
+        **manifest["features"],
+    }
+
+
+def test_builtin_definition_points_at_a_page_the_server_serves(full_client):
     uri = "untitled:Builtins"
+    source = 'module "M" { trigger "T" { Notification("hello"); } }'
+    full_client.open(uri, source)
+    point = {"line": 0, "character": source.index("Notification") + 3}
+
+    (target,) = full_client.request(
+        "textDocument/definition", {"textDocument": {"uri": uri}, "position": point}
+    )
+    assert target["uri"] == "aa2m-builtin:/action-108.md"
+    assert target["range"]["start"] == {"line": 0, "character": 0}
+
+    content = full_client.request("workspace/textDocumentContent", {"uri": target["uri"]})
+    assert content["text"].startswith(
+        "# Notification\n\n```aa2m\nNotification(text: string, isImportant: bool = false)\n```\n"
+    )
+    assert content["text"].endswith("Native name: Notification (General). ID: `action-108`\n")
+    unknown = full_client.request("workspace/textDocumentContent", {"uri": "aa2m-builtin:/nope.md"})
+    assert unknown["text"].startswith("# Unknown built-in\n")
+
+
+def test_builtin_symbols_are_ranked_by_name_and_located_at_their_page(full_client):
+    symbols = full_client.request("workspace/symbol", {"query": "notification"})
+    builtins = [item for item in symbols if item["location"]["uri"].startswith("aa2m-builtin:")]
+
+    assert builtins[0] == {
+        "name": "Notification",
+        "kind": 12,
+        "containerName": "Notification",
+        "location": {
+            "uri": "aa2m-builtin:/action-108.md",
+            "range": {
+                "start": {"line": 0, "character": 0},
+                "end": {"line": 0, "character": 0},
+            },
+        },
+    }
+
+
+def test_without_content_support_there_are_no_builtin_targets(client):
+    uri = "untitled:BuiltinsPlain"
     source = 'module "M" { trigger "T" { Notification("hello"); } }'
     client.open(uri, source)
     point = {"line": 0, "character": source.index("Notification")}
-    params = {"textDocument": {"uri": uri}, "position": point}
-    assert client.request("textDocument/definition", params) == []
-    assert client.request("workspace/symbol", {"query": "notification"}) == []
+
+    assert (
+        client.request("textDocument/definition", {"textDocument": {"uri": uri}, "position": point})
+        == []
+    )
+    for query in ("notification", ""):
+        symbols = client.request("workspace/symbol", {"query": query})
+        assert not [item for item in symbols if item["location"]["uri"].startswith("aa2m-builtin:")]

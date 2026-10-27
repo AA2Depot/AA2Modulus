@@ -1,14 +1,16 @@
-"""Semantic tokens from binder selections and authored declaration names.
+"""Semantic tokens from binder selections, authored declaration names and the lexical scan.
 
-A token says what a name *is*: the binder's selected target for a use, or the
-declaration kind for an authored declaration name. Qualified built-in names
+A name token says what a name *is*: the binder's selected target for a use, or
+the declaration kind for an authored declaration name. Qualified built-in names
 split at their dots into ``namespace`` tokens and one token for the last
-segment. Unresolved names and raw forms get no token, so the client's lexical
-colors remain for them.
+segment. The lexical scan adds keywords, types, operators, attributes, numbers,
+strings and comments wherever no name token overlaps them. Unresolved names get
+no token.
 """
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass
 
 from lsprotocol import types
@@ -18,6 +20,7 @@ from ...hir.symbols import BoundReference
 from ...language.values import SourceValue
 from ...model.native import ActionMetadata, EventMetadata, ExpressionMetadata, NamedConstantMetadata
 from ...syntax import ast
+from ...syntax.scanner import LexicalToken, scan_lexical
 from ...syntax.walk import walk_ast
 from ..protocol.positions import position_codec
 from ..workspace.documents import Snapshot
@@ -34,6 +37,13 @@ TOKEN_TYPES = (
     "parameter",
     "macro",
     "class",
+    "keyword",
+    "type",
+    "number",
+    "string",
+    "comment",
+    "operator",
+    "decorator",
 )
 TOKEN_MODIFIERS = ("declaration", "readonly", "defaultLibrary", "modification")
 LEGEND = types.SemanticTokensLegend(
@@ -42,6 +52,16 @@ LEGEND = types.SemanticTokensLegend(
 
 _TYPES = {name: index for index, name in enumerate(TOKEN_TYPES)}
 _MODIFIERS = {name: 1 << index for index, name in enumerate(TOKEN_MODIFIERS)}
+_LEXICAL_TYPES = {
+    "keyword": "keyword",
+    "type": "type",
+    "operator": "operator",
+    "attribute": "decorator",
+    "attributeCode": "enumMember",
+    "number": "number",
+    "string": "string",
+    "comment": "comment",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,7 +177,22 @@ def collect_tokens(snapshot: Snapshot) -> list[_Token]:
     for _, token in ordered:
         if token.end > token.start and (not tokens or token.start >= tokens[-1].end):
             tokens.append(token)
-    return tokens
+    return _merge(tokens, scan_lexical(document.text))
+
+
+def _merge(names: list[_Token], lexical: tuple[LexicalToken, ...]) -> list[_Token]:
+    """The name tokens plus every lexical token that overlaps none of them."""
+
+    starts = [token.start for token in names]
+    merged = list(names)
+    for token in lexical:
+        index = bisect_right(starts, token.start)
+        if index and names[index - 1].end > token.start:
+            continue
+        if index < len(names) and names[index].start < token.end:
+            continue
+        merged.append(_Token(token.start, token.end, _LEXICAL_TYPES[token.category]))
+    return sorted(merged, key=lambda token: token.start)
 
 
 def semantic_tokens(snapshot: Snapshot, encoding: str) -> types.SemanticTokens:

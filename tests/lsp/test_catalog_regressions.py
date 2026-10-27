@@ -13,19 +13,10 @@ from lsprotocol.types import CompletionItemKind
 
 from aa2modulus.lsp.completion.dispatch import completions
 from aa2modulus.lsp.signature.help import signature_help
+from aa2modulus.model.native import ExpressionMetadata, NamedConstantMetadata
 from aa2modulus.model.types import ValueType
 from aa2modulus.pipeline.analysis import analyze_source
 from tests.support.lsp_workspace import apply_text_edit
-
-
-def _selected_reference(analysis, authored_name):
-    assert analysis.bound is not None
-    return next(
-        reference
-        for reference in analysis.bound.references
-        if reference.name == authored_name and reference.metadata is not None
-    )
-
 
 _KEYPRESS_GETTER_LABELS = {"Context.KeyPress"}
 _KEYPRESS_CONSTANT_LABELS = {"Constants.EventType.KEY_PRESS"}
@@ -52,7 +43,7 @@ def _assert_keypress_completions_bind_to(context, kind, labels, expected_class, 
         analysis = analyze_source(apply_text_edit(source, item), context=context)
         assert analysis.result.is_valid
         (selected,) = _completion_references(analysis)
-        assert type(selected.metadata).__name__ == expected_class
+        assert isinstance(selected.metadata, expected_class)
         assert selected.metadata.id == expected_id
 
 
@@ -61,7 +52,7 @@ def test_keypress_getter_completion_edits_bind_to_getter_int_102(context):
         context,
         CompletionItemKind.Property,
         _KEYPRESS_GETTER_LABELS,
-        "ExpressionMetadata",
+        ExpressionMetadata,
         102,
     )
 
@@ -71,7 +62,7 @@ def test_keypress_constant_completion_edits_bind_to_named_constant_int_301(conte
         context,
         CompletionItemKind.Constant,
         _KEYPRESS_CONSTANT_LABELS,
-        "NamedConstantMetadata",
+        NamedConstantMetadata,
         301,
     )
 

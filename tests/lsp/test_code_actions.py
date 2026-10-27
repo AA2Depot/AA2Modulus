@@ -1,114 +1,163 @@
-"""Quick fixes from published diagnostic data, applied through a protocol session."""
+"""Quick fixes: published diagnostic data becomes code actions, filtered by kind and version."""
 
 from __future__ import annotations
 
 import pytest
 from lsprotocol import types
 
-from aa2modulus.lsp.protocol.positions import PositionCodec
-from tests.support.lsp_client import Client
+from aa2modulus.lsp.protocol.diagnostics import quick_fixes
+from aa2modulus.lsp.workspace.documents import SourceWorkspace
+from tests.support.lsp_workspace import apply_edits, published_diagnostics
 
 FLAT = 'module "M" { trigger "T" { on CARD_ADDED;\n  SetVirtue(ThisCard, 3);\n} }\n'
 FIXED = 'module "M" { trigger "T" { on CARD_ADDED;\n  ThisCard.SetVirtue(3);\n} }\n'
 
+# Two syntax errors: only the first, a mistaken `=`, has an exact rewrite.
+SYNTAX = (
+    'module "M" {\n  trigger "T" {\n    on CARD_ADDED;\n    let y: int = 1;\n'
+    "    if y = 3 { }\n    y = ;\n  }\n}\n"
+)
+# A decompiled read of a variable the module never declares.
+RECOVERED = (
+    'module "Receiver" {\n  depends_on "Provider";\n\n  trigger "T" {\n    on CARD_ADDED;\n'
+    '    raw_action 1(raw_expression int 2 { variable "counter"; }, 1);\n  }\n}\n'
+)
+RESERVED = 'module "M" {\n  trigger "T" {\n    on CARD_ADDED;\n    let import: int = 1;\n  }\n}\n'
+CARD = (
+    'module "Cards" { trigger "T" { on CARD_ADDED; let amount: int = 4; '
+    "let coach: card = ThisCard; coach.AddLike(amount, coach); } }"
+)
+# A quoted global that collides with a constant makes the bare name ambiguous.
+AMBIGUOUS = (
+    'module "M" { global "K": int = 0; const K: int = 7; '
+    'trigger "T" { on CARD_ADDED; WriteLog(ToString(K)); } }'
+)
 
-def _apply(source: str, edits: list[dict]) -> str:
-    codec = PositionCodec(source)
-    for edit in sorted(
-        edits, key=lambda item: codec.offset(_position(item["range"]["start"])), reverse=True
-    ):
-        start = codec.offset(_position(edit["range"]["start"]))
-        end = codec.offset(_position(edit["range"]["end"]))
-        source = source[:start] + edit["newText"] + source[end:]
-    return source
-
-
-def _position(value: dict) -> types.Position:
-    return types.Position(value["line"], value["character"])
-
-
-def _actions(client: Client, uri: str, diagnostics: list[dict], **context) -> list[dict]:
-    return client.request(
-        "textDocument/codeAction",
-        {
-            "textDocument": {"uri": uri},
-            "range": diagnostics[0]["range"] if diagnostics else _zero(),
-            "context": {"diagnostics": diagnostics, **context},
-        },
-    )
+URI = "untitled:Fixes"
 
 
-def _zero() -> dict:
-    return {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 0}}
+def _actions(context, source, *, version=1, document_changes=False):
+    """The code actions for every diagnostic of ``source``, as a client echoes them."""
+
+    workspace = SourceWorkspace()
+    workspace.open(URI, source, 1)
+    diagnostics = published_diagnostics(workspace, URI, context)
+    return diagnostics, quick_fixes(URI, version, diagnostics, document_changes=document_changes)
 
 
-@pytest.mark.parametrize("document_changes", (False, True))
-def test_preferred_fix_rewrites_a_flat_call_and_clears_the_error(tmp_path, document_changes):
-    capabilities = (
-        {"workspace": {"workspaceEdit": {"documentChanges": True}}} if document_changes else None
-    )
-    client = Client(capabilities=capabilities)
-    try:
-        provider = client.initialized["capabilities"]["codeActionProvider"]
-        assert provider == {"codeActionKinds": ["quickfix"]}
-        uri = (tmp_path / "root.aa2m").as_uri()
-        client.open(uri, FLAT)
-        (diagnostic,) = client.diagnostics(uri, bool, version=1)
-        assert diagnostic["code"] == "UNKNOWN_ACTION_NAME"
-        assert "help: use 'ThisCard.SetVirtue(3)'" in diagnostic["message"]
-
-        (action,) = _actions(client, uri, [diagnostic])
-        assert action["title"] == "Write 'ThisCard.SetVirtue(3)'"
-        assert action["kind"] == "quickfix"
-        assert action["isPreferred"] is True
-        assert action["diagnostics"] == [diagnostic]
-        if document_changes:
-            (change,) = action["edit"]["documentChanges"]
-            assert change["textDocument"] == {"uri": uri, "version": 1}
-            edits = change["edits"]
-        else:
-            edits = action["edit"]["changes"][uri]
-        assert _apply(FLAT, edits) == FIXED
-
-        # Only quick fixes are offered, and only for the version they were computed for.
-        assert _actions(client, uri, [diagnostic], only=["refactor"]) == []
-        client.change(uri, FIXED, 2)
-        assert client.diagnostics(uri, version=2) == []
-        assert _actions(client, uri, [diagnostic]) == []
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
-
-
-def test_fixes_cover_roots_protected_names_and_none_for_advice(client, tmp_path):
-    uri = (tmp_path / "fixes.aa2m").as_uri()
-    cases = (
+@pytest.mark.parametrize(
+    ("source", "titles", "fixed"),
+    [
+        (FLAT, ["Write 'ThisCard.SetVirtue(3)'"], FIXED),
         (
             'module "M" { trigger "T" { on CARD_ADDED; let a: int = globals.CurrentDay; } }',
             ["Change 'globals' to 'Globals'"],
             'module "M" { trigger "T" { on CARD_ADDED; let a: int = Globals.CurrentDay; } }',
         ),
         (
-            'module "M" { global "ThisCard": int = 0; trigger "T" { on CARD_ADDED; ThisCard = 3; '
-            "} }",
+            'module "M" { global "ThisCard": int = 0; '
+            'trigger "T" { on CARD_ADDED; ThisCard = 3; } }',
             ['Write variable("ThisCard")'],
-            (
-                'module "M" { global "ThisCard": int = 0; '
-                'trigger "T" { on CARD_ADDED; variable("ThisCard") = 3; } }'
-            ),
+            'module "M" { global "ThisCard": int = 0; '
+            'trigger "T" { on CARD_ADDED; variable("ThisCard") = 3; } }',
         ),
         ('module "M" { trigger "T" { on CARD_ADDED; Missing(); } }', [], None),
+        (
+            SYNTAX,
+            ["Use '=='"],
+            SYNTAX.replace("if y = 3", "if y == 3"),
+        ),
+        (
+            RECOVERED,
+            ["Declare global 'counter'", "Declare global 'counter'"],
+            RECOVERED.replace('  trigger "T"', '  global counter: int = 0;\n\n  trigger "T"'),
+        ),
+        (RESERVED, ["Write '\"import\"'"], RESERVED.replace("let import", 'let "import"')),
+        (CARD, ["Write Card(amount)"], CARD.replace("(amount, coach)", "(Card(amount), coach)")),
+        (
+            AMBIGUOUS,
+            ['Write const("K")', 'Write variable("K")'],
+            AMBIGUOUS.replace("ToString(K)", 'ToString(const("K"))'),
+        ),
+    ],
+)
+def test_diagnostic_fixes_become_quick_fix_actions(context, source, titles, fixed):
+    diagnostics, actions = _actions(context, source)
+
+    assert [action.title for action in actions] == titles
+    assert {action.kind for action in actions} <= {types.CodeActionKind.QuickFix}
+    assert all(action.diagnostics[0] in diagnostics for action in actions)
+    if fixed is None:
+        assert all(diagnostic.data is None for diagnostic in diagnostics)
+    else:
+        assert apply_edits(source, actions[0].edit.changes[URI]) == fixed
+
+
+def test_a_lone_fix_is_preferred_and_alternatives_are_not(context):
+    _, lone = _actions(context, FLAT)
+    _, alternatives = _actions(context, AMBIGUOUS)
+
+    assert [action.is_preferred for action in lone] == [True]
+    assert [action.is_preferred for action in alternatives] == [None, None]
+
+
+def test_document_change_clients_get_edits_for_the_open_version(context):
+    _, (action,) = _actions(context, FLAT, document_changes=True)
+
+    assert action.edit.changes is None
+    (change,) = action.edit.document_changes
+    assert (change.text_document.uri, change.text_document.version) == (URI, 1)
+    assert apply_edits(FLAT, change.edits) == FIXED
+
+
+def test_fixes_computed_for_an_older_version_are_not_offered(context):
+    diagnostics, actions = _actions(context, FLAT, version=2)
+
+    assert diagnostics[0].data is not None
+    assert actions == []
+
+
+def _request(connection, uri, diagnostics, **extra):
+    return connection.request(
+        "textDocument/codeAction",
+        {
+            "textDocument": {"uri": uri},
+            "range": diagnostics[0]["range"],
+            "context": {"diagnostics": diagnostics, **extra},
+        },
     )
-    for version, (source, titles, fixed) in enumerate(cases, 1):
-        if version == 1:
-            client.open(uri, source)
-        else:
-            client.change(uri, source, version)
-        (diagnostic,) = client.diagnostics(uri, bool, version=version)
-        assert ("data" in diagnostic) == bool(titles)
-        actions = _actions(client, uri, [diagnostic])
-        assert [item["title"] for item in actions] == titles
-        if fixed is not None:
-            assert _apply(source, actions[0]["edit"]["changes"][uri]) == fixed
+
+
+_EDIT = {
+    "range": {"start": {"line": 1, "character": 2}, "end": {"line": 1, "character": 25}},
+    "newText": "ThisCard.SetVirtue(3);",
+}
+
+
+@pytest.mark.parametrize("fixture", ["client", "full_client"])
+def test_code_action_request_answers_with_the_json_shape_the_client_negotiated(
+    request, tmp_path, fixture
+):
+    connection = request.getfixturevalue(fixture)
+    uri = (tmp_path / "root.aa2m").as_uri()
+    connection.open(uri, FLAT)
+    (diagnostic,) = connection.diagnostics(uri, bool, version=1)
+
+    edit = (
+        {"changes": {uri: [_EDIT]}}
+        if fixture == "client"
+        else {"documentChanges": [{"textDocument": {"uri": uri, "version": 1}, "edits": [_EDIT]}]}
+    )
+    assert _request(connection, uri, [diagnostic]) == [
+        {
+            "title": "Write 'ThisCard.SetVirtue(3)'",
+            "kind": "quickfix",
+            "diagnostics": [diagnostic],
+            "isPreferred": True,
+            "edit": edit,
+        }
+    ]
+    # Only quick fixes are offered, and only for the version they were computed for.
+    assert _request(connection, uri, [diagnostic], only=["refactor"]) == []
+    connection.change(uri, FIXED, 2)
+    assert _request(connection, uri, [diagnostic]) == []

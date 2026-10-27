@@ -8,11 +8,22 @@ import subprocess
 import sys
 import threading
 import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from pathlib import Path
 
 from tests.support.paths import ROOT
 
 
+def _frame(message: dict) -> bytes:
+    payload = json.dumps(message).encode("utf-8")
+    return f"Content-Length: {len(payload)}\r\n\r\n".encode("ascii") + payload
+
+
 class Client:
+    #: The answered ``client/registerCapability`` request, when the owner of the client kept it.
+    registration: dict | None = None
+
     def __init__(
         self,
         encodings=None,
@@ -80,12 +91,24 @@ class Client:
         if request:
             self.next_id += 1
             message["id"] = self.next_id
-        payload = json.dumps(message).encode("utf-8")
-        self.process.stdin.write(
-            f"Content-Length: {len(payload)}\r\n\r\n".encode("ascii") + payload
-        )
+        self.process.stdin.write(_frame(message))
         self.process.stdin.flush()
         return message.get("id")
+
+    def request_canceled(self, method, params):
+        """Send a request and its ``$/cancelRequest`` in one write; return the reply.
+
+        The server reads both frames before any answer can leave, so a request
+        that needs an analysis pass is canceled while it is still waiting.
+        """
+
+        self.next_id += 1
+        identifier = self.next_id
+        request = {"jsonrpc": "2.0", "method": method, "params": params, "id": identifier}
+        cancel = {"jsonrpc": "2.0", "method": "$/cancelRequest", "params": {"id": identifier}}
+        self.process.stdin.write(_frame(request) + _frame(cancel))
+        self.process.stdin.flush()
+        return self.wait(lambda item: item.get("id") == identifier)
 
     def wait(self, predicate, timeout=10):
         for index, message in enumerate(self.saved):
@@ -116,10 +139,7 @@ class Client:
         """Answer the next server-to-client request for ``method``."""
 
         message = self.wait(lambda item: item.get("method") == method and "id" in item)
-        payload = json.dumps({"jsonrpc": "2.0", "id": message["id"], "result": result}).encode()
-        self.process.stdin.write(
-            f"Content-Length: {len(payload)}\r\n\r\n".encode("ascii") + payload
-        )
+        self.process.stdin.write(_frame({"jsonrpc": "2.0", "id": message["id"], "result": result}))
         self.process.stdin.flush()
         return message.get("params")
 
@@ -156,9 +176,48 @@ class Client:
         )
         return message["params"]["diagnostics"]
 
+    def forget(self, predicate: Callable[[dict], bool]) -> None:
+        """Drop the saved messages that match ``predicate``."""
+
+        self.saved[:] = [message for message in self.saved if not predicate(message)]
+
+    @contextmanager
+    def folder(self, path: Path, name: str = "folder") -> Iterator[None]:
+        """Add ``path`` to the workspace folders for the length of the block."""
+
+        entry = {"uri": path.as_uri(), "name": name}
+        self.send(
+            "workspace/didChangeWorkspaceFolders", {"event": {"added": [entry], "removed": []}}
+        )
+        try:
+            yield
+        finally:
+            self.send(
+                "workspace/didChangeWorkspaceFolders", {"event": {"added": [], "removed": [entry]}}
+            )
+
     def finish(self):
         self.request("shutdown", None)
         self.send("exit", None)
         self.process.wait(timeout=10)
         assert self.process.returncode == 0
         assert self.process.stderr.read() == b""
+
+    def stop(self) -> None:
+        """Terminate the server if it is still running."""
+
+        if self.process.poll() is None:
+            self.process.terminate()
+            self.process.wait(timeout=10)
+
+
+@contextmanager
+def serving(*args, **options) -> Iterator[Client]:
+    """Start a server; leaving the block shuts it down cleanly and checks its exit."""
+
+    connection = Client(*args, **options)
+    try:
+        yield connection
+        connection.finish()
+    finally:
+        connection.stop()

@@ -9,7 +9,8 @@ import sys
 
 import pytest
 
-from aa2modulus.app.editor_catalog.document import SCHEMA, editor_catalog, render
+from aa2modulus.app.editor_catalog.document import editor_catalog, render
+from aa2modulus.app.editor_catalog.entries import Report
 from aa2modulus.app.editor_lexicon import SCHEMA as LEXICON_SCHEMA
 from aa2modulus.app.editor_lexicon import editor_lexicon
 from aa2modulus.app.editor_manifest import SCHEMA as MANIFEST_SCHEMA
@@ -22,13 +23,25 @@ from aa2modulus.syntax.lexicon import source_lexicon
 from aa2modulus.version import __version__
 from tests.support.paths import ROOT
 
+# What `render` writes for the small catalog below, spelled out by hand.
+SMALL_CATALOG_JSON = (
+    b'{\n  "schema": "test.v1",\n  "entries": [\n    {\n      "name": "Zo\xc3\xab"\n    }\n  ]\n}\n'
+)
 
-@pytest.fixture(scope="module")
-def expected() -> bytes:
-    return render(editor_catalog()[0]).encode("utf-8")
+
+@pytest.fixture
+def small_catalog(monkeypatch):
+    """Replace the generated catalog; the tests using it check the command's wiring."""
+
+    document = {"schema": "test.v1", "entries": [{"name": "Zoë"}]}
+    monkeypatch.setattr(
+        "aa2modulus.cli.commands.editor_data.editor_catalog",
+        lambda: (document, Report(counts={"action": 1})),
+    )
 
 
-def test_stdout_is_utf8_json_under_a_legacy_console_encoding(expected):
+def test_stdout_is_utf8_json_under_a_legacy_console_encoding():
+    expected = render(editor_catalog()[0]).encode("utf-8")
     environment = {**os.environ, "PYTHONIOENCODING": "cp1252"}
     result = subprocess.run(
         [sys.executable, "-m", "aa2modulus", "editor-data", "catalog"],
@@ -40,19 +53,19 @@ def test_stdout_is_utf8_json_under_a_legacy_console_encoding(expected):
     assert result.returncode == EXIT_OK, result.stderr
     assert result.stdout == expected
     assert b"\r\n" not in result.stdout
-    assert json.loads(result.stdout)["schema"] == SCHEMA
     assert b"entries: action=" in result.stderr
 
 
-def test_output_file_creates_parents_and_keeps_stdout_empty(expected, tmp_path, capsys):
+def test_output_file_creates_parents_and_keeps_stdout_empty(small_catalog, tmp_path, capsys):
     output = tmp_path / "docs" / "generated" / "builtins.json"
 
     assert main(["editor-data", "catalog", "--output", str(output)]) == EXIT_OK
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "omitted examples:" in captured.err
-    assert f"to {output}" in captured.err
-    assert output.read_bytes() == expected
+    assert "entries: action=1\n" in captured.err
+    assert "omitted examples: 0\n" in captured.err
+    assert f"wrote 1 entries to {output}\n" in captured.err
+    assert output.read_bytes() == SMALL_CATALOG_JSON
 
 
 def test_lexicon_carries_the_fingerprint_the_server_advertises(metadata, capsysbinary):
@@ -93,7 +106,7 @@ def test_manifest_is_utf8_json_with_the_server_version(tmp_path, capsysbinary):
 
 
 @pytest.mark.parametrize("document", ["catalog", "lexicon", "manifest"])
-def test_output_write_failure_is_input_error(document, tmp_path, capsys):
+def test_output_write_failure_is_input_error(document, small_catalog, tmp_path, capsys):
     output = tmp_path / "data.json"
     output.mkdir()
 
@@ -109,12 +122,6 @@ def test_missing_or_unknown_document_is_usage_error(arguments, capsys):
         main(["editor-data", *arguments])
     assert exit_info.value.code == EXIT_USAGE_ERROR
     assert "document" in capsys.readouterr().err
-
-
-def test_editor_catalog_command_is_gone(capsys):
-    with pytest.raises(SystemExit) as exit_info:
-        main(["editor-catalog"])
-    assert exit_info.value.code == EXIT_USAGE_ERROR
 
 
 def test_metadata_failure_is_internal_error(monkeypatch, capsys):

@@ -11,6 +11,9 @@ from textwrap import dedent
 
 from ..protocol.positions import position_codec
 
+# An unclosed block string runs to the end of the text, as in the lexical scanner.
+_BLOCK_STRING = re.compile(r'"""(?:[^"\\]|\\[\s\S]|"(?!""))*(?:"""|\Z)')
+
 
 @dataclass(frozen=True, slots=True)
 class _Comment:
@@ -21,14 +24,17 @@ class _Comment:
 
 @lru_cache(maxsize=8)
 def _comments(source: str) -> tuple[tuple[_Comment, ...], tuple[int, ...]]:
-    """Locate comments outside JSON strings; cache only a bounded set of texts."""
+    """Locate comments outside strings and block strings; cache only a bounded set of texts."""
 
     result: list[_Comment] = []
     index = 0
     code_on_line = False
     while index < len(source):
         char = source[index]
-        if char == '"':
+        if block := _BLOCK_STRING.match(source, index):
+            code_on_line = True
+            index = block.end()
+        elif char == '"':
             code_on_line = True
             index += 1
             while index < len(source):

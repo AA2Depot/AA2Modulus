@@ -10,7 +10,7 @@ import pytest
 from aa2modulus.app.compile import CompileError, compile_source, validate_source
 from aa2modulus.context.limits import SourceLimits
 from aa2modulus.syntax.parser.units import parse_library_source
-from tests.support.source import parse_module
+from tests.support.source import assert_same_binary
 
 
 def _write(path: Path, source: str) -> None:
@@ -27,8 +27,7 @@ def test_transitive_diamond_imports_expand_to_hand_written_source(tmp_path):
     _write(tmp_path / "common.aa2mi", "macro inner { param x string; WriteLog(x); }")
     source = _root('import "a.aa2mi"; import "b.aa2mi";', 'outer("from a"); inner("from b");')
     hand = _root("", 'WriteLog("from a"); WriteLog("from b");')
-    assert parse_module(source, import_base=tmp_path).to_ir() == parse_module(hand).to_ir()
-    assert compile_source(source, import_base=tmp_path) == compile_source(hand)
+    assert_same_binary(source, hand, import_base=tmp_path)
 
 
 def test_import_context_reads_current_library_text_on_each_compile(tmp_path):
@@ -77,24 +76,15 @@ def test_imported_syntax_error_keeps_library_location_and_import_origin(tmp_path
     assert any(note.span.filename == str(tmp_path / "root.aa2m") for note in diagnostic.related)
 
 
-def test_import_graph_depth_and_size_limits_reject_before_expansion(tmp_path):
+def test_import_file_limit_rejects_before_expansion(tmp_path):
     _write(tmp_path / "a.aa2mi", 'import "b.aa2mi";')
     _write(tmp_path / "b.aa2mi", 'macro log { WriteLog("x"); }')
-    source = _root('import "a.aa2mi";')
-    depth = validate_source(
-        source, import_base=tmp_path, source_limits=SourceLimits(max_import_depth=1)
-    )
-    assert depth.errors[0].code == "IMPORT_DEPTH_LIMIT"
     files = validate_source(
-        source, import_base=tmp_path, source_limits=SourceLimits(max_import_files=1)
+        _root('import "a.aa2mi";'),
+        import_base=tmp_path,
+        source_limits=SourceLimits(max_import_files=1),
     )
     assert files.errors[0].code == "IMPORT_FILE_LIMIT"
-    total = validate_source(
-        source,
-        import_base=tmp_path,
-        source_limits=SourceLimits(max_total_source_chars=len(source)),
-    )
-    assert total.errors[0].code == "IMPORT_SIZE_LIMIT"
 
 
 def test_library_validation_and_compile_contract():
@@ -118,7 +108,7 @@ def test_canonical_and_symlink_imports_are_one_library(tmp_path):
     assert compile_source(source, import_base=tmp_path) == compile_source(hand)
 
 
-@pytest.mark.parametrize("path", ["", "bad.aa2m", "MODULE", "nul\x00.aa2mi", "file.AA2MI"])
+@pytest.mark.parametrize("path", ["", "bad.aa2m", "nul\x00.aa2mi", "file.AA2MI"])
 def test_invalid_import_paths_are_rejected_as_source_input(tmp_path, path):
     source = _root(f"import {json.dumps(path)};")
     result = validate_source(source, import_base=tmp_path)

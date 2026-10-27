@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..language.catalog.build import build_language_catalog
+from ..language.catalog.build import language_catalog
 from ..language.catalog.model import LanguageCatalog
 from ..language.loader import load_language_policy
 from ..language.policy import LanguagePolicy
@@ -46,7 +46,7 @@ class SourceContext:
             or self._catalog.policy is not self.source_policy
         ):
             object.__setattr__(
-                self, "_catalog", build_language_catalog(self.metadata, self.source_policy)
+                self, "_catalog", language_catalog(self.metadata, self.source_policy)
             )
 
     @classmethod

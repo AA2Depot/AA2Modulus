@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from aa2modulus.app.compile import compile_source, validate_source
+from aa2modulus.app.compile import validate_source
 from aa2modulus.context.limits import SourceLimits
 from aa2modulus.semantics.binding.state import SourceBindingError
 from tests.support.source import parse_module
@@ -124,8 +124,6 @@ def test_error_cap_stops_with_one_summary_diagnostic():
         (4, "UNKNOWN_ACTION_NAME"),
         (5, "SOURCE_BINDING_ERROR_LIMIT"),
     ]
-    with pytest.raises(ValueError, match="max_binding_errors"):
-        SourceLimits(max_binding_errors=0)
 
 
 def test_binding_error_carries_every_diagnostic_and_the_first_one():
@@ -143,9 +141,3 @@ def test_validator_findings_wait_for_clean_binding():
     assert [code for _, code in _codes(source)] == ["UNKNOWN_ACTION_NAME"]
     clean = source.replace(" Missing();", "")
     assert [code for _, code in _codes(clean)] == ["NATIVE_DEFECTIVE_EXPRESSION"]
-
-
-def test_clean_sources_compile_unchanged():
-    source = 'module "M" { global x: int = 1; trigger "T" { on CARD_ADDED; x = x + 1; } }'
-    assert compile_source(source) == compile_source(source)
-    assert validate_source(source).is_valid

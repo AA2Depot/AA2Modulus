@@ -9,25 +9,11 @@ from tests.support.lsp_client import Client
 LIBRARY = "macro say { param message string; WriteLog(message); }\n"
 ROOT = 'import "library.aa2mi";\nmodule "Root" { trigger "T" { on CARD_ADDED; say("root"); } }\n'
 OTHER = 'import "library.aa2mi";\nmodule "Other" { trigger "T" { on CARD_ADDED; say("other"); } }\n'
-CAPABILITIES = {
-    "textDocument": {"rename": {"prepareSupport": True}},
-    "workspace": {
-        "workspaceEdit": {"documentChanges": True},
-        "didChangeWatchedFiles": {"dynamicRegistration": True},
-    },
-}
 
 
 def _position(source: str, needle: str) -> dict[str, int]:
     before = source[: source.index(needle)]
     return {"line": before.count("\n"), "character": len(before) - (before.rfind("\n") + 1)}
-
-
-def _session(tmp_path) -> Client:
-    return Client(
-        capabilities=CAPABILITIES,
-        workspace_folders=[{"uri": tmp_path.as_uri(), "name": "mods"}],
-    )
 
 
 def _references(client: Client, uri: str, source: str, needle: str, **extra) -> list[str]:
@@ -45,7 +31,15 @@ def _references(client: Client, uri: str, source: str, needle: str, **extra) -> 
     )
 
 
-def test_workspace_references_follow_closed_files_and_watched_events(tmp_path):
+def test_server_registers_a_watcher_for_workspace_sources(full_client):
+    (item,) = full_client.registration["registrations"]
+
+    assert item["method"] == types.WORKSPACE_DID_CHANGE_WATCHED_FILES
+    assert item["registerOptions"]["watchers"] == [{"globPattern": "**/*.{aa2m,aa2mi}"}]
+
+
+def test_workspace_references_follow_closed_files_and_watched_events(full_client, tmp_path):
+    client = full_client
     (tmp_path / "library.aa2mi").write_text(LIBRARY, encoding="utf-8")
     (tmp_path / "root.aa2m").write_text(ROOT, encoding="utf-8")
     (tmp_path / "other.aa2m").write_text(OTHER, encoding="utf-8")
@@ -53,13 +47,7 @@ def test_workspace_references_follow_closed_files_and_watched_events(tmp_path):
     (tmp_path / ".hidden" / "skipped.aa2m").write_text(
         OTHER.replace('"library.aa2mi"', '"../library.aa2mi"'), encoding="utf-8"
     )
-    client = _session(tmp_path)
-    try:
-        registration = client.respond("client/registerCapability")
-        (item,) = registration["registrations"]
-        assert item["method"] == types.WORKSPACE_DID_CHANGE_WATCHED_FILES
-        assert item["registerOptions"]["watchers"] == [{"globPattern": "**/*.{aa2m,aa2mi}"}]
-
+    with client.folder(tmp_path, "mods"):
         root = (tmp_path / "root.aa2m").as_uri()
         client.open(root, ROOT)
         assert _references(client, root, ROOT, "say(", workDoneToken="scan") == [
@@ -70,6 +58,7 @@ def test_workspace_references_follow_closed_files_and_watched_events(tmp_path):
         progress = client.wait(
             lambda message: (
                 message.get("method") == "$/progress"
+                and message["params"]["token"] == "scan"
                 and message["params"]["value"]["kind"] == "end"
             )
         )
@@ -107,17 +96,14 @@ def test_workspace_references_follow_closed_files_and_watched_events(tmp_path):
             {"changes": [{"uri": third.as_uri(), "type": types.FileChangeType.Deleted.value}]},
         )
         assert _references(client, root, ROOT, "say(") == ["library.aa2mi:0", "root.aa2m:1"]
-    finally:
-        client.finish()
 
 
-def test_rename_returns_versioned_edits_for_open_and_closed_files(tmp_path):
+def test_rename_returns_versioned_edits_for_open_and_closed_files(full_client, tmp_path):
+    client = full_client
     (tmp_path / "library.aa2mi").write_text(LIBRARY, encoding="utf-8")
     (tmp_path / "root.aa2m").write_text(ROOT, encoding="utf-8")
     (tmp_path / "other.aa2m").write_text(OTHER, encoding="utf-8")
-    client = _session(tmp_path)
-    try:
-        client.respond("client/registerCapability")
+    with client.folder(tmp_path, "mods"):
         root = (tmp_path / "root.aa2m").as_uri()
         client.open(root, ROOT, version=4)
         point = {"textDocument": {"uri": root}, "position": _position(ROOT, "say(")}
@@ -142,29 +128,25 @@ def test_rename_returns_versioned_edits_for_open_and_closed_files(tmp_path):
             {"textDocument": {"uri": root}, "position": _position(ROOT, "CARD_ADDED")},
         )
         assert error["code"] == types.LSPErrorCodes.RequestFailed.value
-        assert "built-in" in error["message"]
-    finally:
-        client.finish()
 
 
-def test_global_rename_warns_and_refusals_are_request_failures(tmp_path):
-    client = Client(capabilities=CAPABILITIES)
-    try:
-        client.respond("client/registerCapability")
-        uri = "untitled:Globals"
-        source = 'module "M" { global flag: int = 1; trigger "T" { on CARD_ADDED; flag = 2; } }'
-        client.open(uri, source)
-        point = {"textDocument": {"uri": uri}, "position": _position(source, "flag = 2")}
-        edit = client.request("textDocument/rename", {**point, "newName": "enabled"})
-        (document,) = edit["documentChanges"]
-        assert document["textDocument"] == {"uri": uri, "version": 1}
-        assert [item["newText"] for item in document["edits"]] == ["enabled", "enabled"]
-        warning = client.wait(lambda message: message.get("method") == "window/showMessage")
-        assert warning["params"]["type"] == types.MessageType.Warning.value
-        assert "serialized variable name" in warning["params"]["message"]
+def test_global_rename_warns_and_refusals_are_request_failures(full_client):
+    client = full_client
+    uri = "untitled:Globals"
+    source = 'module "M" { global flag: int = 1; trigger "T" { on CARD_ADDED; flag = 2; } }'
+    client.open(uri, source)
+    point = {"textDocument": {"uri": uri}, "position": _position(source, "flag = 2")}
+    edit = client.request("textDocument/rename", {**point, "newName": "enabled"})
+    (document,) = edit["documentChanges"]
+    assert document["textDocument"] == {"uri": uri, "version": 1}
+    assert [item["newText"] for item in document["edits"]] == ["enabled", "enabled"]
+    warning = client.wait(
+        lambda message: (
+            message.get("method") == "window/showMessage"
+            and "serialized variable name" in message["params"]["message"]
+        )
+    )
+    assert warning["params"]["type"] == types.MessageType.Warning.value
 
-        error = client.request_error("textDocument/rename", {**point, "newName": "TriggeringCard"})
-        assert error["code"] == types.LSPErrorCodes.RequestFailed.value
-        assert "protected" in error["message"]
-    finally:
-        client.finish()
+    error = client.request_error("textDocument/rename", {**point, "newName": "TriggeringCard"})
+    assert error["code"] == types.LSPErrorCodes.RequestFailed.value

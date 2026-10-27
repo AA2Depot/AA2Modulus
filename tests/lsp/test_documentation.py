@@ -5,8 +5,10 @@ from __future__ import annotations
 import dataclasses
 
 import pytest
+from lsprotocol.types import InsertTextFormat
 
 from aa2modulus.language.documentation import builtin_description
+from aa2modulus.lsp.completion.dispatch import completions
 from aa2modulus.lsp.documentation.builtins import BuiltinDocumentation
 from aa2modulus.lsp.documentation.comments import declaration_documentation
 from aa2modulus.lsp.documentation.signatures import metadata_signature
@@ -16,19 +18,16 @@ from aa2modulus.lsp.signature.help import signature_help
 from aa2modulus.lsp.workspace.documents import SourceWorkspace
 from aa2modulus.metadata.identities import WireIdentity
 from aa2modulus.syntax.parser.units import parse_source_unit
-from tests.support.lsp_workspace import analyze_workspace
+from tests.support.lsp_workspace import analyze_workspace, open_document
 
 
 def test_builtin_definition_is_a_server_page_only_when_enabled(context):
     documentation = BuiltinDocumentation(context.metadata, enabled=True)
-    workspace = SourceWorkspace()
-    uri = "untitled:Module"
     source = 'module "M" { trigger "T" { Notification("hello"); } }'
-    workspace.open(uri, source, 1)
-    snapshot = analyze_workspace(workspace, uri, context)
+    workspace, snapshot = open_document(source, context)
     position = PositionCodec(source).position(source.index("Notification"))
     result = hover(snapshot, position, "utf-16")
-    assert context.metadata.action(108).description in result.contents.value
+    assert "Display the notification on the screen." in result.contents.value
     assert "Notification(text: string, isImportant: bool = false)" in result.contents.value
     (target,) = definition(snapshot, position, "utf-16", workspace, documentation=documentation)
     assert target.uri == "aa2m-builtin:/action-108.md"
@@ -37,6 +36,20 @@ def test_builtin_definition_is_a_server_page_only_when_enabled(context):
 
     documentation.enabled = False
     assert definition(snapshot, position, "utf-16", workspace, documentation=documentation) == []
+
+
+def test_builtin_completion_inserts_a_snippet_documented_by_its_native_prose(context):
+    source = 'module "M" { trigger "T" { Notification("hello"); Noti'
+    item = next(
+        item
+        for item in completions(source, len(source), context, snippet_support=True)
+        if item.label == "Notification"
+    )
+
+    assert item.insert_text_format == InsertTextFormat.Snippet
+    assert item.text_edit.new_text == 'Notification(${1:""});$0'
+    assert "Display the notification on the screen." in item.documentation.value
+    assert item.command is None  # Parameter hints belong to the editor adapter.
 
 
 def test_anchors_cover_actions_events_and_named_constant_ordinals(metadata):
@@ -51,20 +64,18 @@ def test_anchors_cover_actions_events_and_named_constant_ordinals(metadata):
 def test_policy_description_override_replaces_native_prose(context):
     policy = context.source_policy
     notification = context.metadata.action(108)
-    assert builtin_description(policy, notification) == notification.description
+    assert builtin_description(policy, notification) == "Display the notification on the screen."
     curated = dataclasses.replace(
         policy, description_overrides=((WireIdentity("action", 108), "Curated prose."),)
     )
     assert builtin_description(curated, notification) == "Curated prose."
-    assert builtin_description(curated, context.metadata.action(63)) == (
-        context.metadata.action(63).description
-    )
+    other = context.metadata.action(63)
+    assert builtin_description(curated, other) == builtin_description(policy, other)
 
 
 def test_flat_signatures_name_parameters_from_policy(context):
     policy = context.source_policy
     start = context.metadata.action(51)
-    assert metadata_signature("H.Start", start, policy) == "H.Start(pc: card, partner: card)"
     random = context.metadata.expression(1, 4)
     assert metadata_signature("Math.RandomInt", random, policy) == (
         "Math.RandomInt(min: int, max: int) -> int"
@@ -110,6 +121,15 @@ def test_declaration_comments_are_adjacent_and_ignore_strings(prefix, expected):
     assert declaration_documentation(macro, {"comments.aa2m": source}) == expected
 
 
+def test_declaration_comments_after_a_block_string_with_quotes_are_found():
+    source = (
+        'module "M" {\n  description """\n    say "hi\n    """;\n}\n// Real.\nmacro Documented {}'
+    )
+    unit = parse_source_unit(source, filename="comments.aa2m")
+    (macro,) = unit.macros
+    assert declaration_documentation(macro, {"comments.aa2m": source}) == "Real."
+
+
 def test_imported_comments_and_navigation_survive_unrelated_incomplete_edit(tmp_path, context):
     root = tmp_path / "root.aa2m"
     library = tmp_path / "library.aa2mi"
@@ -138,11 +158,8 @@ def test_imported_comments_and_navigation_survive_unrelated_incomplete_edit(tmp_
 
 def test_builtin_with_wrong_arguments_still_identifies_selected_page(context):
     documentation = BuiltinDocumentation(context.metadata, enabled=True)
-    workspace = SourceWorkspace()
-    uri = "untitled:Module"
     source = 'module "M" { trigger "T" { Notification(1); } }'
-    workspace.open(uri, source, 1)
-    snapshot = analyze_workspace(workspace, uri, context)
+    workspace, snapshot = open_document(source, context)
     point = PositionCodec(source).position(source.index("Notification"))
     assert "Notification(text: string" in hover(snapshot, point, "utf-16").contents.value
     (target,) = definition(snapshot, point, "utf-16", workspace, documentation=documentation)

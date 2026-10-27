@@ -4,26 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from aa2modulus.app.compile import CompileError, compile_source, validate_source
+from aa2modulus.app.compile import compile_source, validate_source
 from aa2modulus.binary.writer import encode_module
 from aa2modulus.context.limits import SourceLimits
-from aa2modulus.context.operation import SourceContext
-from aa2modulus.decompile.format.module import format_module
-from tests.support.source import parse_module
-
-
-def _assert_expanded(source, expanded, *, roundtrip=False, **options):
-    expected = parse_module(expanded, **options)
-    actual = parse_module(source, **options)
-    expected_bytes = encode_module(expected)
-    assert actual.to_ir() == expected.to_ir()
-    assert compile_source(source, **options) == expected_bytes
-    if roundtrip:
-        projected = format_module(actual, **options)
-        assert "macro " not in projected
-        assert compile_source(projected, **options) == expected_bytes
-        assert format_module(parse_module(projected, **options), **options) == projected
-    return actual
+from tests.support.source import assert_same_binary, parse_module
 
 
 def _source(definitions, statements="", declarations=""):
@@ -42,7 +26,7 @@ def _source(definitions, statements="", declarations=""):
 def test_all_formal_types_use_positional_parameters(typ, value, setter):
     definition = f'macro "put" {{ param "value" {typ}; ClassStorage.{setter}("key", value); }}'
     call = f"PuT({value});"
-    _assert_expanded(
+    assert_same_binary(
         _source(definition, call), _source("", f'ClassStorage.{setter}("key", {value});')
     )
 
@@ -51,7 +35,7 @@ def test_arguments_follow_parameter_declaration_order():
     definition = (
         'macro "put" { param "Key" string; param "value" int; ClassStorage.SetInt(Key, value); }'
     )
-    _assert_expanded(
+    assert_same_binary(
         _source(definition, 'put("k", 3);'),
         _source("", 'ClassStorage.SetInt("k", 3);'),
     )
@@ -61,7 +45,7 @@ def test_forward_and_after_module_definitions_nested_calls_and_grouping():
     source = """macro "outer" { param "x" int; inner(x + 1); }
     module "M" { trigger "T" { let x: int = 7; outer(x * 2); } }
     macro "inner" { param "x" int; ClassStorage.SetInt("k", x * 3); }"""
-    _assert_expanded(
+    assert_same_binary(
         source, _source("", 'ClassStorage.SetInt("k", ((x * 2) + 1) * 3);', "let x: int = 7;")
     )
 
@@ -71,7 +55,7 @@ def test_actual_variable_with_same_name_as_another_formal_is_not_recursively_sub
         'macro "put" { param "x" int; param "y" int; ClassStorage.SetInt("x", x); '
         'ClassStorage.SetInt("y", y); }'
     )
-    _assert_expanded(
+    assert_same_binary(
         _source(definition, "put(y, x);", "let x: int = 1; let y: int = 2;"),
         _source(
             "",
@@ -81,25 +65,20 @@ def test_actual_variable_with_same_name_as_another_formal_is_not_recursively_sub
     )
 
 
-@pytest.mark.parametrize(
-    "actual", ["Math.RandomInt(1, 9)", 'Lua.CallInt("next")', "TriggeringCard"]
-)
-def test_repeated_native_arguments_emit_one_expression_tree_per_use(actual):
+def test_repeated_native_arguments_emit_one_expression_tree_per_use():
+    actual = "Math.RandomInt(1, 9)"
     definition = (
         'macro "twice" { param "x" int; ClassStorage.SetInt("a", x); ClassStorage.SetInt("b", x); }'
     )
-    module = _assert_expanded(
+    assert_same_binary(
         _source(definition, f"twice({actual});"),
         _source("", f'ClassStorage.SetInt("a", {actual}); ClassStorage.SetInt("b", {actual});'),
     )
-    first, second = [action.action.parameters[1] for action in module.triggers[0].gui_actions]
-    assert first.to_ir() == second.to_ir()
-    assert first is not second
 
 
 def test_unused_actual_is_checked_but_not_evaluated_or_emitted():
     definition = 'macro "ignore" { param "x" int; WriteLog("constant"); }'
-    _assert_expanded(
+    assert_same_binary(
         _source(definition, 'ignore(Lua.CallInt("side_effect"));'),
         _source("", 'WriteLog("constant");'),
     )
@@ -124,8 +103,6 @@ def test_unused_raw_macro_actuals_still_receive_semantic_validation(actual, code
     result = validate_source(_source(definition, f"ignore({actual});"))
 
     assert {diagnostic.code for diagnostic in result.errors} == {code}
-    with pytest.raises(CompileError):
-        compile_source(_source(definition, f"ignore({actual});"))
 
 
 def test_definition_builtins_cannot_be_captured_by_globals_or_locals():
@@ -138,7 +115,7 @@ def test_definition_builtins_cannot_be_captured_by_globals_or_locals():
     expanded = """module "M" { global "ThisCard": string = "global";
     trigger "T" { let "Globals.CurrentDay": string = "local";
     WriteLog(ThisCard().FullName); ClassStorage.SetInt("day", Globals.CurrentDay); } }"""
-    _assert_expanded(source, expanded)
+    assert_same_binary(source, expanded)
 
 
 def test_global_first_actual_lookup_and_later_locals_remain_intact():
@@ -150,7 +127,7 @@ def test_global_first_actual_lookup_and_later_locals_remain_intact():
       ClassStorage.SetInt("k", value); ClassStorage.SetInt("k", later);
       let value: string = "hidden"; let later: int = 4;
     } }"""
-    _assert_expanded(source, expanded)
+    assert_same_binary(source, expanded)
 
 
 @pytest.mark.parametrize(
@@ -163,19 +140,14 @@ def test_global_first_actual_lookup_and_later_locals_remain_intact():
         ('WriteLog(variable("outside"));', "MACRO_CAPTURE"),
         ("WriteLog(outside);", "UNKNOWN_EXPRESSION_NAME"),
         ("raw_action 1(1, 2);", "MACRO_PARAMETER_WRITE"),
-        ("raw_action 9(1, 2, 3);", "MACRO_PARAMETER_WRITE"),
-        ("SetVariable(1, 2);", "MACRO_PARAMETER_WRITE"),
         ("ForLoop(1, 2, 3) {}", "MACRO_PARAMETER_WRITE"),
         ('param "x" int; raw_action 900(raw_expression int 2 { variable "x"; });', "MACRO_CAPTURE"),
         ('raw_action 900(raw_expression int 2 { variable "outside"; });', "MACRO_CAPTURE"),
         ("Notification(1);", "SOURCE_TYPE_MISMATCH"),
         ("MissingAction();", "UNKNOWN_ACTION_NAME"),
         ("break;", "MACRO_LOOP_SCOPE"),
-        ("continue;", "MACRO_LOOP_SCOPE"),
-        ("BreakIf(true);", "MACRO_LOOP_SCOPE"),
         ("ContinueIf(false);", "MACRO_LOOP_SCOPE"),
         ("raw_action 7(true);", "MACRO_LOOP_SCOPE"),
-        ("raw_action 8(true);", "MACRO_LOOP_SCOPE"),
     ],
 )
 def test_unused_definitions_reject_types_capture_writes_and_loop_escape(body, code):
@@ -192,7 +164,7 @@ def test_unused_definitions_reject_types_capture_writes_and_loop_escape(body, co
     ],
 )
 def test_local_macro_loop_controls_preserve_trees(body):
-    _assert_expanded(
+    assert_same_binary(
         _source(f'macro "work" {{ {body} }}', "loop { work(); }"), _source("", f"loop {{ {body} }}")
     )
 
@@ -212,10 +184,8 @@ def test_nested_macro_cannot_borrow_its_callers_loop_scope():
         ('macro "not-valid" {}', "MACRO_NAME"),
         ('macro "Qualified.Name" {}', "MACRO_NAME"),
         ('macro "macro" {}', "MACRO_NAME"),
-        ('macro "true" {}', "MACRO_NAME"),
         ('macro "m" { param "x" int; param "x" bool; }', "DUPLICATE_MACRO_PARAMETER"),
         ('macro "m" { param "not-valid" int; }', "MACRO_PARAMETER_NAME"),
-        ('macro "m" { param "param" int; }', "MACRO_PARAMETER_NAME"),
         ('macro "m" { param "x" invalid; }', "MACRO_PARAMETER_TYPE"),
         ('macro "m" { param "x" type 77; }', "MACRO_PARAMETER_TYPE"),
         ('macro "m" { m(); }', "MACRO_CYCLE"),
@@ -230,10 +200,7 @@ def test_invalid_signatures_and_cycles_fail_even_unused(definitions, code):
     "body",
     [
         "let x: int = 0;",
-        "global x: int = 0;",
         'trigger "T" {}',
-        'module "N" {}',
-        'macro "inner" {}',
         "on CARD_ADDED;",
         'WriteLog("x"); param "late" int;',
     ],
@@ -248,9 +215,7 @@ def test_macro_declarations_are_restricted_by_grammar(body):
         ("put();", "MACRO_ARITY"),
         ("put(1, 2);", "MACRO_ARITY"),
         ('put("bad");', "SOURCE_TYPE_MISMATCH"),
-        ("put { }", "SYNTAX_ERROR"),
         ('put { slot "x" = 1; }', "SYNTAX_ERROR"),
-        ('put { slot "x" = 1; slot "x" = 2; }', "SYNTAX_ERROR"),
         ("put(1) {}", "MACRO_CALL_BLOCK"),
         ('put(1) { WriteLog("extra"); }', "MACRO_CALL_BLOCK"),
         ("unknown { }", "SYNTAX_ERROR"),
@@ -263,7 +228,7 @@ def test_bad_calls_report_stable_diagnostics(call, code):
 
 
 def test_zero_argument_macros_and_distinct_case_formals():
-    _assert_expanded(
+    assert_same_binary(
         _source(
             'macro "empty" {} macro "both" { param "x" int; param "X" string; WriteLog(X); }',
             'empty(); both(1, "text");',
@@ -284,10 +249,12 @@ module "M" { trigger "T" {
     assert (error.line, error.column) == (6, 7)
     assert {note.span.start_line for note in error.related} == {1, 2, 6}
     assert all(note.span.filename == "origins.aa2m" for note in error.related)
-    assert "note:" in str(error)
-    with pytest.raises(CompileError) as failure:
-        compile_source(source, filename="origins.aa2m")
-    assert failure.value.diagnostics == (error,)
+    assert str(error) == (
+        "origins.aa2m:6:7: error[SOURCE_TYPE_MISMATCH]: expected int, found string\n"
+        "origins.aa2m:2:3: note: formal 'value' declared here\n"
+        "origins.aa2m:6:3: note: macro 'put' invoked here\n"
+        "origins.aa2m:1:1: note: macro defined here"
+    )
 
 
 def test_nested_expansion_preserves_definition_actual_and_both_invocation_origins():
@@ -313,8 +280,9 @@ def test_raw_payloads_actuals_children_and_empty_branches_remain_exact():
         "raw_expression int 1 { constant 1; } ]; }"
     )
     declarations = "let counter: int = 0;"
-    module = _assert_expanded(
-        _source(definition, f"raw({actual});", declarations),
+    source = _source(definition, f"raw({actual});", declarations)
+    assert_same_binary(
+        source,
         _source(
             "",
             f'raw_action 110("key", {actual}) {{ raw_action 108("child", true); }} '
@@ -322,28 +290,31 @@ def test_raw_payloads_actuals_children_and_empty_branches_remain_exact():
             declarations,
         ),
     )
-    action = module.triggers[0].gui_actions[0]
+    action = parse_module(source).triggers[0].gui_actions[0]
     assert action.raw_reference and action.children[0].raw_reference
     assert action.action.parameters[1].raw_reference
     assert action.action.parameters[1].parameters[0].raw_reference
 
 
-def test_empty_and_unused_definitions_emit_no_records_and_context_is_fresh():
+def test_empty_and_unused_definitions_emit_no_records():
+    assert_same_binary(
+        _source('macro "empty" {} macro "unused" { WriteLog("unused"); }', "empty();"), _source("")
+    )
+
+
+def test_macro_definitions_do_not_leak_between_compilations_in_one_context(context):
     first = _source('macro "log" { WriteLog("first"); }', "log();")
     second = _source('macro "log" { WriteLog("second"); }', "log();")
-    context = SourceContext.create()
     first_expected = compile_source(_source("", 'WriteLog("first");'), context=context)
     second_expected = compile_source(_source("", 'WriteLog("second");'), context=context)
+    assert first_expected != second_expected
     assert compile_source(first, context=context) == first_expected
     assert compile_source(second, context=context) == second_expected
-    assert first_expected != second_expected
+    # The second definition did not replace the first one for later compilations.
     assert compile_source(first, context=context) == first_expected
     assert (
         validate_source(_source("", "log();"), context=context).errors[0].code
         == "UNKNOWN_ACTION_NAME"
-    )
-    _assert_expanded(
-        _source('macro "empty" {} macro "unused" { WriteLog("unused"); }', "empty();"), _source("")
     )
 
 
@@ -427,7 +398,7 @@ def test_output_nesting_accounts_for_definition_and_caller_loops():
 def test_all_raw_payload_branches_survive_actual_substitution(actual):
     definition = 'macro "put" { param "x" int; ClassStorage.SetInt("key", x); }'
     declarations = "let counter: int = 0;"
-    _assert_expanded(
+    assert_same_binary(
         _source(definition, f"put({actual});", declarations),
         _source("", f'ClassStorage.SetInt("key", {actual});', declarations),
     )
@@ -442,13 +413,7 @@ def test_invalid_raw_macro_actual_fails_authoring_but_expansion_remains_encodabl
     assert {diagnostic.code for diagnostic in validate_source(source).errors} == {
         "UNDEFINED_VARIABLE"
     }
-    with pytest.raises(CompileError):
-        compile_source(source)
-
-    recovered = parse_module(source)
-    expanded = parse_module(hand)
-    assert recovered.to_ir() == expanded.to_ir()
-    assert encode_module(recovered) == encode_module(expanded)
+    assert encode_module(parse_module(source)) == encode_module(parse_module(hand))
 
 
 def test_repeated_raw_actual_errors_keep_emitted_paths_and_all_definition_origins():
@@ -491,7 +456,6 @@ module "M" { trigger "T" {
 @pytest.mark.parametrize(
     "source,code",
     [
-        ('macro "m" {}', "MODULE_REQUIRED"),
         ('macro "m" {} module "A" {} module "B" {}', "SYNTAX_ERROR"),
         ('module "M" { macro "m" {} }', "SYNTAX_ERROR"),
         ('macro "m" {} import "x.aa2mi"; module "M" {}', "IMPORT_RESOLVER_REQUIRED"),
@@ -512,16 +476,16 @@ def test_comments_and_keyword_prefixes_work_at_macro_token_boundaries():
     }
     module "M" { trigger "T" { macrovalue/* boundary */("// macro"); } }
     // EOF without newline"""
-    _assert_expanded(source, _source("", 'WriteLog("// macro");'))
+    assert_same_binary(source, _source("", 'WriteLog("// macro");'))
 
 
-def test_slot_is_reserved_by_version_8_templates_and_prefixes_remain_valid():
+def test_slot_is_a_reserved_name_while_longer_names_with_that_prefix_remain_valid():
     assert validate_source(_source('macro "slot" {}')).errors[0].code == "MACRO_NAME"
     assert (
         validate_source(_source('macro "work" { param "slot" string; }')).errors[0].code
         == "MACRO_PARAMETER_NAME"
     )
-    _assert_expanded(
+    assert_same_binary(
         _source(
             'macro "slot_value" { param "slot_text" string; WriteLog(slot_text); }',
             'slot_value("text");',

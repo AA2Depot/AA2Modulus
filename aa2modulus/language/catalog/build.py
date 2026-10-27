@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from threading import Lock
 from types import MappingProxyType
 from typing import Literal
 
@@ -17,6 +18,32 @@ from ..policy import LanguagePolicy
 from ..values import MemberForm
 from .forms import target_forms
 from .model import ConstantRow, LanguageCatalog, NativeTarget, SemanticSignature, SourceForm
+
+_CATALOG_LIMIT = 8
+_catalogs: dict[tuple[int, int], LanguageCatalog] = {}
+_catalogs_lock = Lock()
+
+
+def language_catalog(metadata: MetadataSnapshot, policy: LanguagePolicy) -> LanguageCatalog:
+    """Return the catalog of ``metadata`` and ``policy``, built once per pair and process."""
+
+    catalog = _cached_catalog(metadata, policy)
+    if catalog is None:
+        with _catalogs_lock:
+            catalog = _cached_catalog(metadata, policy)
+            if catalog is None:
+                catalog = build_language_catalog(metadata, policy)
+                if len(_catalogs) >= _CATALOG_LIMIT:
+                    _catalogs.clear()
+                _catalogs[id(metadata), id(policy)] = catalog
+    return catalog
+
+
+def _cached_catalog(metadata: MetadataSnapshot, policy: LanguagePolicy) -> LanguageCatalog | None:
+    catalog = _catalogs.get((id(metadata), id(policy)))
+    if catalog is not None and catalog.metadata is metadata and catalog.policy is policy:
+        return catalog
+    return None
 
 
 def build_language_catalog(metadata: MetadataSnapshot, policy: LanguagePolicy) -> LanguageCatalog:

@@ -14,7 +14,12 @@ from pygls.exceptions import JsonRpcContentModified
 from pygls.lsp.server import LanguageServer
 from pygls.protocol import LanguageServerProtocol, lsp_method
 
-from ...app.editor_manifest import BUILTIN_CATALOG, COMPLETION_SNIPPETS, server_features
+from ...app.editor_manifest import (
+    BUILTIN_CATALOG,
+    COMPLETION_SNIPPETS,
+    LEXICAL_TOKENS,
+    server_features,
+)
 from ...context.operation import SourceContext
 from ...version import __version__
 from ..documentation.builtins import SCHEME, BuiltinDocumentation
@@ -38,6 +43,7 @@ class AA2LanguageServerProtocol(LanguageServerProtocol):
         result = yield from super().lsp_initialize(params)
         server = cast(AA2LanguageServer, self._server)
         features = server_features(context=server.context)
+        features[LEXICAL_TOKENS] = True
         if server.documentation.enabled:
             # pygls fills no textDocumentContent option, so the scheme is declared here.
             workspace = result.capabilities.workspace or types.WorkspaceOptions()

@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from typing import Literal
 
 from ...core.diagnostics import ValidationResult
-from ...language.catalog.build import build_language_catalog
+from ...language.catalog.build import language_catalog
 from ...language.catalog.model import LanguageCatalog
 from ...language.loader import load_language_policy
 from ...metadata.loader import load_metadata
@@ -22,22 +22,6 @@ from .scope import VariableBinding
 from .state import ValidatorState
 from .statements import validate_action, validate_event, validate_gui_action
 from .value_types import check_declared_type
-
-_VALIDATION_CATALOGS: dict[int, tuple[MetadataSnapshot, LanguageCatalog]] = {}
-
-
-def _validation_catalog(metadata: MetadataSnapshot) -> LanguageCatalog:
-    """Reuse the shipped-policy catalog for repeated validation of one snapshot."""
-
-    key = id(metadata)
-    cached = _VALIDATION_CATALOGS.get(key)
-    if cached is not None and cached[0] is metadata:
-        return cached[1]
-    catalog = build_language_catalog(metadata, load_language_policy(metadata=metadata))
-    if len(_VALIDATION_CATALOGS) >= 8:
-        _VALIDATION_CATALOGS.clear()
-    _VALIDATION_CATALOGS[key] = (metadata, catalog)
-    return catalog
 
 
 def validate_expression_in_scope(
@@ -89,7 +73,7 @@ def validate_module(
     if catalog is None:
         # The shipped policy supplies source spellings for messages and its
         # defect table; reviewed native facts are policy-independent.
-        catalog = _validation_catalog(metadata)
+        catalog = language_catalog(metadata, load_language_policy(metadata=metadata))
     state = ValidatorState(metadata, Reporter(filename), profile, catalog)
     return _validate(state, module)
 

@@ -112,7 +112,10 @@ class DeclarationsMixin(TransformerBase):
         )
 
     def description(self, meta: Meta, children: list[object]) -> Description:
-        return Description(self._string(as_token(children[0])))
+        token = as_token(children[0])
+        if token.type == "BLOCK_STRING":
+            return Description(self._block_string(token))
+        return Description(self._string(token))
 
     def depends_on(self, meta: Meta, children: list[object]) -> Dependency:
         return Dependency(self._string(as_token(children[0])))

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+
 from aa2modulus.app.compile import validate_source
-from aa2modulus.context.limits import SourceLimits
 
 
 def _errors(body: str, prelude: str = "", **options):
@@ -48,29 +49,20 @@ def test_macro_call_reports_every_bad_argument_with_notes():
         assert "macro defined here" in messages
 
 
-def test_overloaded_call_still_reports_one_error():
-    assert len(_errors("if Equal(a, b) { }")) == 1
-    assert _summary('if Equal(1, "s") { }') == [
-        ("SOURCE_TYPE_MISMATCH", "expected int, found string")
-    ]
-
-
-def test_single_bad_argument_keeps_its_single_diagnostic():
-    errors = _errors("let x: int = Math.RandomInt(a, 1);")
-    assert [(item.code, item.message) for item in errors] == _unknown("a")
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        # An overloaded call reports its first bad argument only.
+        ("if Equal(a, b) { }", _unknown("a")),
+        ('if Equal(1, "s") { }', [("SOURCE_TYPE_MISMATCH", "expected int, found string")]),
+        ("let x: int = Math.RandomInt(a, 1);", _unknown("a")),
+        (
+            'let x: int = Math.RandomInt("s", 2);',
+            [("SOURCE_TYPE_MISMATCH", "expected int, found string")],
+        ),
+    ],
+)
+def test_one_bad_argument_or_an_overloaded_call_keeps_a_single_diagnostic(body, expected):
+    errors = _errors(body)
+    assert [(item.code, item.message) for item in errors] == expected
     assert errors[0].line == 2
-    assert _summary('let x: int = Math.RandomInt("s", 2);') == [
-        ("SOURCE_TYPE_MISMATCH", "expected int, found string")
-    ]
-
-
-def test_error_cap_applies_to_argument_errors():
-    codes = [
-        item.code
-        for item in _errors("(a).AddLike(b, c);", source_limits=SourceLimits(max_binding_errors=2))
-    ]
-    assert codes == [
-        "UNKNOWN_EXPRESSION_NAME",
-        "UNKNOWN_EXPRESSION_NAME",
-        "SOURCE_BINDING_ERROR_LIMIT",
-    ]

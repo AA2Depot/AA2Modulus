@@ -20,11 +20,10 @@ from aa2modulus.cli.render.terminal import (
 )
 from aa2modulus.core.diagnostics import Diagnostic
 from aa2modulus.core.locations import RelatedLocation, SourceSpan
-from aa2modulus.metadata.loader import load_metadata
-from aa2modulus.model.records import ActionCall, Expression, GuiAction, Module, Trigger
+from aa2modulus.model.records import ActionCall, Expression, GuiAction, Module, Trigger, Variable
 from aa2modulus.model.types import EXPR_CONSTANT, ValueType
 from aa2modulus.model.values import Value
-from tests.support.cli import run_cli
+from tests.support.cli import invoke_cli
 
 PLAIN = RenderOptions()
 
@@ -200,8 +199,8 @@ def test_binary_only_diagnostic_shows_a_breadcrumb_and_hex_offset():
     assert "return type" in render_diagnostic(diagnostic, options=PLAIN)
 
 
-def test_breadcrumb_names_actions_with_metadata_and_falls_back_to_fields():
-    resolved = load_metadata().resolve_module(binary_module())
+def test_breadcrumb_names_actions_with_metadata_and_falls_back_to_fields(metadata):
+    resolved = metadata.resolve_module(binary_module())
     named = breadcrumb(BINARY_PATH, module=resolved)
     assert named.startswith('trigger "NPC Flag" › ')
     assert named.endswith("› return type")
@@ -211,6 +210,28 @@ def test_breadcrumb_names_actions_with_metadata_and_falls_back_to_fields():
         "trigger 1 > action 1 > parameter 1 > return type"
     )
     assert breadcrumb(("module", "globals", 2, "name")) == "global 3 › name"
+    declared = Module(
+        "M",
+        dependencies=("Provider",),
+        triggers=(
+            Trigger(
+                "T",
+                variables=(
+                    Variable(
+                        ValueType.INT,
+                        "x",
+                        Expression(ValueType.INT, EXPR_CONSTANT, constant=Value.integer(1)),
+                    ),
+                ),
+            ),
+        ),
+    )
+    assert breadcrumb(("module", "dependencies", 0), module=declared) == 'dependency "Provider"'
+    assert breadcrumb(("module", "dependencies", 0)) == "dependency 1"
+    assert breadcrumb(("module", "triggers", 0, "variables", 0), module=declared) == (
+        'trigger "T" › local "x"'
+    )
+    assert breadcrumb(("module", "triggers", 0, "variables", 0)) == "trigger 1 › local 1"
     assert breadcrumb(("triggers", 9, "unknown_part", 4), module=binary_module()) == (
         "trigger 10 › unknown part 5"
     )
@@ -301,15 +322,17 @@ def test_source_texts_prefer_supplied_text_over_disk(tmp_path: Path):
     assert SourceTexts().lines("bad\0name") is None
 
 
-def test_cli_output_is_plain_when_piped_and_colored_on_request(tmp_path: Path):
+def test_cli_output_is_plain_when_piped_and_colored_on_request(tmp_path: Path, capsys):
     source = tmp_path / "bad.aa2m"
     source.write_text(
         'module "M" { trigger "T" { let x: string = ThisCard(); } }', encoding="utf-8"
     )
 
-    piped = run_cli("validate", str(source))
-    colored = run_cli("validate", str(source), "--color", "always")
-    never = run_cli("validate", str(source), "--color", "never", "--diagnostic-format", "short")
+    piped = invoke_cli(capsys, "validate", str(source))
+    colored = invoke_cli(capsys, "validate", str(source), "--color", "always")
+    never = invoke_cli(
+        capsys, "validate", str(source), "--color", "never", "--diagnostic-format", "short"
+    )
 
     assert piped.returncode == colored.returncode == never.returncode == 1
     assert "\x1b" not in piped.stderr and "\x1b" not in never.stderr
@@ -320,12 +343,12 @@ def test_cli_output_is_plain_when_piped_and_colored_on_request(tmp_path: Path):
     assert "^" not in never.stderr
 
 
-def test_decompile_reports_trailing_bytes_as_a_binary_warning(tmp_path: Path):
+def test_decompile_reports_trailing_bytes_as_a_binary_warning(tmp_path: Path, capsys):
     module = tmp_path / "trailing"
     data = encode_module(Module("M"))
     module.write_bytes(data + b"\xaa\xbb")
 
-    result = run_cli("decompile", str(module), "-o", str(tmp_path / "out.aa2m"))
+    result = invoke_cli(capsys, "decompile", str(module), "-o", str(tmp_path / "out.aa2m"))
 
     assert result.returncode == 0
     assert "warning[TRAILING_BYTES]" in result.stderr
@@ -333,22 +356,22 @@ def test_decompile_reports_trailing_bytes_as_a_binary_warning(tmp_path: Path):
     assert "with 1 warning" in result.stderr
 
 
-def test_binary_decode_errors_use_the_breadcrumb_form(tmp_path: Path):
+def test_binary_decode_errors_use_the_breadcrumb_form(tmp_path: Path, capsys):
     module = tmp_path / "broken"
     module.write_bytes(b"\x01\x02")
 
     for command in ("inspect", "decompile"):
-        result = run_cli(command, str(module))
+        result = invoke_cli(capsys, command, str(module))
         assert result.returncode == 1
         assert result.stdout == ""
         assert "error[DECODE_ERROR]" in result.stderr
         assert f"--> {module} (offset 0x" in result.stderr
 
-    short = run_cli("inspect", str(module), "--diagnostic-format", "short")
+    short = invoke_cli(capsys, "inspect", str(module), "--diagnostic-format", "short")
     assert f"{module}@0x" in short.stderr
 
 
-def test_inspect_prints_diagnostics_as_readable_breadcrumbs(tmp_path: Path):
+def test_inspect_prints_diagnostics_as_readable_breadcrumbs(tmp_path: Path, capsys):
     module = tmp_path / "undefined"
     module.write_bytes(
         encode_module(
@@ -370,8 +393,8 @@ def test_inspect_prints_diagnostics_as_readable_breadcrumbs(tmp_path: Path):
         )
     )
 
-    result = run_cli("inspect", str(module))
-    verbose = run_cli("inspect", str(module), "--verbose")
+    result = invoke_cli(capsys, "inspect", str(module))
+    verbose = invoke_cli(capsys, "inspect", str(module), "--verbose")
 
     assert "error[UNKNOWN_ACTION]" in result.stdout
     assert 'at trigger "Reader" › action 1 › id, offset 0x' in result.stdout

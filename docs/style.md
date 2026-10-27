@@ -125,14 +125,37 @@ doesn't cover something, do what the surrounding code does.
 - Tests are plain `test_…` functions, not classes, and live in the directory
   for their area: `source`, `binary`, `metadata`, `cli` or `lsp`. Shared
   helpers live in `tests/support/`. A helper that only one module uses is a
-  private `_` function in that module.
+  private `_` function in that module. Never import from another test module.
 - Each test module starts with a docstring that says what behaviour it
   protects. Name each test after that behaviour, written as a phrase, like
   `test_nested_calls_report_all_arguments`.
-- Test through the CLI, LSP or app entry points, and assert on results you
-  can observe (see
-  [what the suite protects](development.md#what-the-suite-protects)). Use
-  `pytest.mark.parametrize` for tables of cases.
+- Assert on results you can observe (see
+  [what the suite protects](development.md#what-the-suite-protects)): exact
+  codes, spans, bytes and text. Don't assert only that a result is truthy or
+  not `None`, accept one of several outcomes, or inspect private names,
+  caches or internal records.
+- Write expected values by hand. Never compute them with the code under test,
+  or with the registry, policy or catalog that code reads.
+- Each behaviour has one owner test, at the lowest layer that shows it.
+  Before you add a test, search `tests/` for its diagnostic code, built-in or
+  fixture. A test at a higher layer checks only that layer's own work, such
+  as exit codes, rendering or the wire format.
+- Test in-process: the app functions, the CLI through `main(argv)` with
+  `capsys`, and LSP features through `SourceWorkspace` or the shared `client`
+  fixture. Start a process only for what needs one: interpreter startup,
+  stream encoding, import isolation, runtime independence, and LSP wire
+  behaviour such as capabilities, notification order, server requests and
+  cancellation.
+- Use the session `context` and `metadata` fixtures. For a variant, use
+  `dataclasses.replace(context, ...)`.
+- Use `pytest.mark.parametrize` for tables of cases. Add a row only when it
+  reaches a different branch, vary one thing at a time, and give each table
+  to one test.
+- Keep tests independent: never change parametrize values or shared state,
+  and write files only under `tmp_path`. The suite runs in parallel, one file
+  per worker.
+- A test that takes more than 1 s says why in its docstring. Check new tests
+  with `mise run test <file> --durations=5`.
 - Test functions don't need annotations. Helpers can have them.
 
 ## Tools

@@ -23,7 +23,6 @@ from aa2modulus.lsp.commands import compile as commands
 from aa2modulus.lsp.commands import decompile, results
 from aa2modulus.lsp.server.run import create_server
 from aa2modulus.model.records import ActionCall, GuiAction, Module, Trigger
-from tests.support.lsp_client import Client
 from tests.support.paths import MODULE_FIXTURES
 from tests.support.source import parse_module
 
@@ -534,8 +533,8 @@ def test_decompile_retains_raw_recovery_semantic_errors_and_trailing_warning(mon
                 ),
             }
             assert result["unlocated"] == [trailing]
-            assert result["errors"] >= 1
-            assert result["warnings"] >= 1
+            assert result["errors"] == 1
+            assert result["warnings"] == 1
             assert logs[-1].message == f"decompile: {trailing['message']}"
             assert len(logs) == result["errors"] + result["warnings"]
 
@@ -746,7 +745,10 @@ def test_decompile_validates_wire_arguments(monkeypatch, value):
     asyncio.run(run())
 
 
-def test_standard_execute_command_advertisement_and_wire_results(tmp_path):
+def test_execute_command_answers_wire_results_and_asks_the_client_to_show_the_output(
+    full_client, tmp_path
+):
+    client = full_client
     root = tmp_path / "root.aa2m"
     library = tmp_path / "lib.aa2mi"
     output = tmp_path / "binary"
@@ -754,37 +756,27 @@ def test_standard_execute_command_advertisement_and_wire_results(tmp_path):
     root.write_text(source, encoding="utf-8")
     library.write_text('macro emit { Notification("saved"); }', encoding="utf-8")
     recovered = tmp_path / "binary.aa2m"
-    client = Client(capabilities={"window": {"showDocument": {"support": True}}})
-    try:
-        supported = client.initialized["capabilities"]["executeCommandProvider"]["commands"]
-        assert {results.COMPILE_DOCUMENT, results.DECOMPILE_MODULE} <= set(supported)
-        assert "aa2modulus.prepareCompile" not in supported
-        client.open(root.as_uri(), source)
-        client.open(library.as_uri(), 'macro emit { Notification("unsaved"); }', 1, "aa2mi")
-        result = client.request(
-            "workspace/executeCommand",
-            {"command": results.COMPILE_DOCUMENT, "arguments": [_request(root, output)]},
-        )
-        assert result == _compiled(output)
-        identifier = client.send(
-            "workspace/executeCommand",
-            {"command": results.DECOMPILE_MODULE, "arguments": [{"inputUri": output.as_uri()}]},
-            request=True,
-        )
-        shown = client.respond("window/showDocument", {"success": True})
-        assert shown == {"uri": recovered.resolve().as_uri(), "takeFocus": True}
-        decompiled = client.wait(lambda item: item.get("id") == identifier)["result"]
-        assert decompiled == {
-            "outputUri": shown["uri"],
-            "errors": 0,
-            "warnings": 0,
-            "unlocated": [],
-        }
-        source = recovered.read_text(encoding="utf-8")
-        assert '"unsaved"' in source
-        assert compile_source(source) == output.read_bytes()
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
+    client.open(root.as_uri(), source)
+    client.open(library.as_uri(), 'macro emit { Notification("unsaved"); }', 1, "aa2mi")
+    result = client.request(
+        "workspace/executeCommand",
+        {"command": results.COMPILE_DOCUMENT, "arguments": [_request(root, output)]},
+    )
+    assert result == _compiled(output)
+    identifier = client.send(
+        "workspace/executeCommand",
+        {"command": results.DECOMPILE_MODULE, "arguments": [{"inputUri": output.as_uri()}]},
+        request=True,
+    )
+    shown = client.respond("window/showDocument", {"success": True})
+    assert shown == {"uri": recovered.resolve().as_uri(), "takeFocus": True}
+    decompiled = client.wait(lambda item: item.get("id") == identifier)["result"]
+    assert decompiled == {
+        "outputUri": shown["uri"],
+        "errors": 0,
+        "warnings": 0,
+        "unlocated": [],
+    }
+    source = recovered.read_text(encoding="utf-8")
+    assert '"unsaved"' in source
+    assert compile_source(source) == output.read_bytes()

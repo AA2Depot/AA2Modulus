@@ -1,4 +1,4 @@
-"""CLI limit failures share diagnostics and preserve requested outputs."""
+"""CLI limit options reject input with shared, located diagnostics."""
 
 from __future__ import annotations
 
@@ -28,19 +28,28 @@ from aa2modulus.cli.main import main
             ["--max-source-nesting", "1"],
             "SOURCE_NESTING_LIMIT",
         ),
+        (
+            'macro "log" { WriteLog("x"); } module "M" { trigger "T" { log(); } }',
+            ["--max-macro-nodes", "1"],
+            "MACRO_EXPANSION_LIMIT",
+        ),
+        (
+            'macro "log" { WriteLog("x"); } module "M" { trigger "T" { log(); } }',
+            ["--max-macro-depth", "0"],
+            "MACRO_DEPTH_LIMIT",
+        ),
     ],
+    ids=["chars", "nodes", "binding-work", "syntax-depth", "nesting", "macro-nodes", "macro-depth"],
 )
 @pytest.mark.parametrize("command", ("validate", "compile"))
-def test_source_limit_diagnostics_and_compile_output_preservation(
+def test_source_limit_options_reject_input_with_located_diagnostics(
     source_text, options, code, command, tmp_path, capsys
 ):
     source = tmp_path / "limited.aa2m"
     source.write_text(source_text, encoding="utf-8")
-    output = tmp_path / "module"
-    output.write_bytes(b"preserve existing output")
     arguments = [command, str(source), *options]
     if command == "compile":
-        arguments.extend(("--output", str(output)))
+        arguments.extend(("--output", str(tmp_path / "module")))
 
     result = main(arguments)
 
@@ -49,8 +58,6 @@ def test_source_limit_diagnostics_and_compile_output_preservation(
     assert code in captured.out + captured.err
     assert f"{source}:1:" in captured.err
     assert captured.out == ""
-    if command == "compile":
-        assert output.read_bytes() == b"preserve existing output"
 
 
 @pytest.mark.parametrize(

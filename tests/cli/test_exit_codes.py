@@ -30,7 +30,7 @@ def arguments_for(tmp_path: Path, command: str) -> tuple[list[str], Path]:
 
 @pytest.mark.parametrize("command", ("inspect", "validate", "compile", "decompile"))
 def test_registry_configuration_failure_is_internal_error(command, tmp_path, monkeypatch, capsys):
-    arguments, output = arguments_for(tmp_path, command)
+    arguments, _ = arguments_for(tmp_path, command)
 
     def broken_registry():
         raise MetadataError("broken registry")
@@ -45,12 +45,11 @@ def test_registry_configuration_failure_is_internal_error(command, tmp_path, mon
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "metadata error: broken registry" in captured.err
-    assert not output.exists()
 
 
 @pytest.mark.parametrize("command", ("validate", "compile", "decompile"))
 def test_policy_configuration_failure_is_internal_error(command, tmp_path, monkeypatch, capsys):
-    arguments, output = arguments_for(tmp_path, command)
+    arguments, _ = arguments_for(tmp_path, command)
     policy = tmp_path / "policy.toml"
     policy.write_text('language_version = "wrong"\n', encoding="utf-8")
     monkeypatch.setattr(policy_loader, "language_policy_path", lambda: policy)
@@ -59,25 +58,67 @@ def test_policy_configuration_failure_is_internal_error(command, tmp_path, monke
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "metadata error:" in captured.err and str(policy) in captured.err
-    assert not output.exists()
 
 
-def test_unsupported_decompilation_is_input_error(tmp_path, capsys):
-    model = Module(
+UNSUPPORTED_BINARY = encode_module(
+    Module(
         "Mismatch",
         globals=(GlobalVariable(ValueType.INT, "x", Value.boolean(True), Value.integer(0)),),
     )
-    binary = tmp_path / "INPUT"
-    binary.write_bytes(encode_module(model))
-    output = tmp_path / "recovered.aa2m"
+)
 
-    result = main(["decompile", str(binary), "--output", str(output)])
+
+@pytest.mark.parametrize(
+    ("command", "files", "target", "message"),
+    [
+        ("compile", {"input.aa2m": b'module "M" {'}, "input.aa2m", "error[SYNTAX_ERROR]"),
+        (
+            "compile",
+            {"input.aa2m": b'module "M" { trigger "T" { let x: string = ThisCard(); } }'},
+            "input.aa2m",
+            "error[SOURCE_TYPE_MISMATCH]",
+        ),
+        (
+            "compile",
+            {"input.aa2m": b'import "lib.aa2mi"; module "M" {}', "lib.aa2mi": b"\xff"},
+            "input.aa2m",
+            "error[IMPORT_ENCODING]",
+        ),
+        (
+            "compile",
+            {"lib.aa2mi": b'macro work {} module "M" {}'},
+            "lib.aa2mi",
+            "error[LIBRARY_COMPILE]",
+        ),
+        ("compile", {"input.aa2m": b"\xff"}, "input.aa2m", "source is not valid UTF-8: {target}"),
+        ("decompile", {"INPUT": b"\x01\x02"}, "INPUT", "error[DECODE_ERROR]"),
+        ("decompile", {"INPUT": UNSUPPORTED_BINARY}, "INPUT", "cannot preserve"),
+    ],
+    ids=[
+        "syntax-error",
+        "binding-error",
+        "import-encoding",
+        "library-compile",
+        "source-not-utf8",
+        "binary-decode-error",
+        "unsupported-decompilation",
+    ],
+)
+def test_failed_command_is_input_error_and_keeps_existing_output(
+    command, files, target, message, tmp_path, capsys
+):
+    for name, content in files.items():
+        (tmp_path / name).write_bytes(content)
+    output = tmp_path / "output"
+    output.write_bytes(b"preserve existing output")
+    path = tmp_path / target
+
+    assert main([command, str(path), "--output", str(output)]) == EXIT_INPUT_ERROR
 
     captured = capsys.readouterr()
-    assert result == EXIT_INPUT_ERROR
     assert captured.out == ""
-    assert "cannot preserve" in captured.err
-    assert not output.exists()
+    assert message.format(target=path) in captured.err
+    assert output.read_bytes() == b"preserve existing output"
 
 
 def test_unexpected_cli_programming_errors_propagate(tmp_path, monkeypatch):
@@ -94,9 +135,8 @@ def test_unexpected_cli_programming_errors_propagate(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("command", ("inspect", "compile", "decompile"))
-def test_unreadable_input_does_not_replace_output(command, tmp_path, monkeypatch, capsys):
-    arguments, output = arguments_for(tmp_path, command)
-    output.write_bytes(b"preserve")
+def test_unreadable_input_is_input_error(command, tmp_path, monkeypatch, capsys):
+    arguments, _ = arguments_for(tmp_path, command)
     unreadable = Path(arguments[1])
     original_open = Path.open
 
@@ -110,20 +150,6 @@ def test_unreadable_input_does_not_replace_output(command, tmp_path, monkeypatch
     captured = capsys.readouterr()
     assert captured.out == ""
     assert str(unreadable) in captured.err and "access denied" in captured.err
-    assert output.read_bytes() == b"preserve"
-
-
-def test_invalid_utf8_source_does_not_replace_compile_output(tmp_path, capsys):
-    arguments, output = arguments_for(tmp_path, "compile")
-    Path(arguments[1]).write_bytes(b"\xff")
-    output.write_bytes(b"preserve")
-
-    assert main(arguments) == EXIT_INPUT_ERROR
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert "source is not valid UTF-8" in captured.err
-    assert arguments[1] in captured.err
-    assert output.read_bytes() == b"preserve"
 
 
 @pytest.mark.parametrize("command,description", (("compile", "module"), ("decompile", "source")))

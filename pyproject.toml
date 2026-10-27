@@ -1,6 +1,6 @@
 [project]
 name = "aa2modulus"
-version = "0.2.0"
+version = "0.2.1"
 description = "Cross-platform AAUnlimited module reader, compiler, decompiler, and DSL tooling"
 requires-python = ">=3.13"
 license = "GPL-3.0-only"
@@ -74,6 +74,7 @@ dev = [
     "mypy>=1.14",
     "pytest>=8.3",
     "pytest-cov>=6",
+    "pytest-xdist>=3.6",
     "ruff>=0.16.8",
 ]
 docs = [

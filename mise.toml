@@ -32,12 +32,12 @@ run = [
 ]
 
 [tasks.test]
-description = "Run the test suite (pytest arguments are forwarded)"
-run = "uv run --locked python -m pytest"
+description = "Run the test suite in parallel (pytest arguments are forwarded; -n 0 runs serially)"
+run = "uv run --locked python -m pytest -n auto --dist loadfile"
 
 [tasks.coverage]
 description = "Run the test suite with branch coverage and the 85% floor"
-run = "uv run --locked python -m pytest --cov=aa2modulus --cov-report=term-missing --cov-report=xml"
+run = "uv run --locked python -m pytest -n auto --dist loadfile --cov=aa2modulus --cov-report=term-missing --cov-report=xml"
 
 [tasks.verify]
 description = "Run lint and the test suite; run this before handing over work"
