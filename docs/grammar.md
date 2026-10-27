@@ -37,6 +37,7 @@ builtin-name := identifier ('.' identifier)*
 integer    := [-+]?[0-9]+
 float      := [-+]?(digits '.' digits? | '.' digits) exponent? [fF]?
 string     := JSON double-quoted string, including `\uXXXX` escapes
+block      := `"""` line-break line* `"""`, for `description` only
 boolean    := true | false
 float_bits := `float_bits(0xHHHHHHHH)` for an exact IEEE-754 binary32 value
 ```
@@ -56,8 +57,19 @@ words, each segment of `import.trigger` included, in any letter case.
 A bare reserved word cannot name or assign a variable or constant: quote it,
 or write `variable("...")` or `const("...")`.
 `aa2modulus editor-data lexicon` prints this lexical surface (words by group,
-operators, punctuation, literal patterns and comments) as JSON with its
-fingerprint, for editor grammars to test against.
+operators, punctuation, literal patterns, strings, block strings and comments)
+as JSON with its fingerprint, for editor grammars to test against.
+
+A block string spans lines. Only spaces or tabs may follow the opening `"""`
+on its line. The closing `"""` stands on its own line, and its indentation is
+removed from every content line; a line indented less is an error, and a
+blank line may be shorter. Content lines join with CRLF whatever line breaks
+the file uses, so LF and CRLF files compile alike. Each line takes JSON
+escapes, so `\n` and `\r` give a lone LF or CR; a raw control character or a
+`\` at the end of a line is an error. `"` and `""` need no escape, and the
+first unescaped `"""` ends the string. The decompiler writes a description
+that contains CRLF as a block, escaping a quote that would end it (`""\"`) and
+a trailing space (`\u0020`).
 
 Built-in names may be qualified, for example `ClassStorage.GetInt` or
 `Globals.CurrentDay`. Every segment must be a non-keyword identifier. Dots
@@ -87,7 +99,7 @@ allowed-module := allow* module
 allowed-template := allow* trigger-template
 
 module-item :=
-    "description" string ";"
+    "description" (string | block) ";"
   | "depends_on" string ";"
   | const
   | "global" name ":" source-type "=" const-value ";"
@@ -566,7 +578,7 @@ and global declarations are checked once per module, before trigger checks.
 input failure. `compile_module` does the same under strict model semantics.
 Validation alone does not check every writer width or resource limit.
 
-Invalid JSON escapes use `INVALID_STRING`; numeric conversion failures use
+Invalid JSON escapes and malformed block strings use `INVALID_STRING`; numeric conversion failures use
 `INVALID_NUMBER`; incorrect raw payload branches use `PAYLOAD_MISMATCH`.
 Known names/calls with the wrong result type use `SOURCE_TYPE_MISMATCH`, while
 incorrect call argument counts use `EXPRESSION_ARITY`. Nested argument failures

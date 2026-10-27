@@ -18,7 +18,7 @@ from .context import (
 from .expressions import expression_text
 from .inference import CardInference, CardKey
 from .statements import action_sequence_lines, event_line
-from .text import FormatError, declaration_type, literal, quote, raw_value
+from .text import FormatError, declaration_type, description, literal, quote, raw_value
 
 
 def format_module_with_diagnostics(
@@ -53,7 +53,7 @@ def format_module_with_diagnostics(
     lines = format_context.allow_lines((resolved,), 0)
     lines.append(f"module {quote(resolved.name)} {{")
     if resolved.description:
-        lines.append(f"  description {quote(resolved.description)};")
+        lines.append(f"  description {description(resolved.description)};")
     for dependency in resolved.dependencies:
         lines.append(f"  depends_on {quote(dependency)};")
     for global_variable in resolved.globals:

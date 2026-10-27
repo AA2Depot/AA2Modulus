@@ -121,6 +121,15 @@ def test_declaration_comments_are_adjacent_and_ignore_strings(prefix, expected):
     assert declaration_documentation(macro, {"comments.aa2m": source}) == expected
 
 
+def test_declaration_comments_after_a_block_string_with_quotes_are_found():
+    source = (
+        'module "M" {\n  description """\n    say "hi\n    """;\n}\n// Real.\nmacro Documented {}'
+    )
+    unit = parse_source_unit(source, filename="comments.aa2m")
+    (macro,) = unit.macros
+    assert declaration_documentation(macro, {"comments.aa2m": source}) == "Real."
+
+
 def test_imported_comments_and_navigation_survive_unrelated_incomplete_edit(tmp_path, context):
     root = tmp_path / "root.aa2m"
     library = tmp_path / "library.aa2mi"

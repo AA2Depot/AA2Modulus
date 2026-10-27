@@ -135,7 +135,12 @@ def lex_tokens(
             if record is not None:
                 record.append((start, unexpected_error(exc, context.filename, source)))
             end = start + 1
-            if masked[start] == '"':
+            if masked[start - 2 : start + 1] == '"""':
+                # An unclosed block string swallows the rest of the text.
+                start, end = start - 2, len(masked)
+                if cursor:
+                    raise unexpected_error(exc, context.filename, source) from exc
+            elif masked[start] == '"':
                 # Unterminated strings cannot contain a following declaration
                 # on the next physical line in the production grammar.
                 newline = masked.find("\n", start)

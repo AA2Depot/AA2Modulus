@@ -17,6 +17,25 @@ def quote(value: str) -> str:
     return json.dumps(value, ensure_ascii=True)
 
 
+def description(value: str) -> str:
+    """``value`` quoted, or as a ``\"\"\"`` block indented for a module item when it has CRLF."""
+
+    if "\r\n" not in value:
+        return quote(value)
+    lines = (_block_line(line) for line in value.split("\r\n"))
+    body = "".join(f"\n    {line}" if line else "\n" for line in lines)
+    return f'"""{body}\n    """'
+
+
+def _block_line(line: str) -> str:
+    """One escaped block line; a trailing space is escaped so trimming editors keep it."""
+
+    text = quote(line)[1:-1].replace('\\"', '"').replace('"""', '""\\"')
+    if text.endswith(" "):
+        return text[:-1] + "\\u0020"
+    return text
+
+
 def type_name(value: TypeId) -> str:
     try:
         return {

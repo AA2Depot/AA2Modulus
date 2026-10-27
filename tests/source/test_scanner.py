@@ -162,6 +162,16 @@ def test_strings_keep_escapes_and_end_at_a_line_break():
     ]
 
 
+def test_block_strings_split_per_line_and_an_open_one_runs_to_the_end():
+    assert _scan('"""\r\n  a "" // b\n  """; int') == [
+        ('"""', "string"),
+        ('  a "" // b', "string"),
+        ('  """', "string"),
+        ("int", "type"),
+    ]
+    assert _scan('"""\n a\nint') == [('"""', "string"), (" a", "string"), ("int", "string")]
+
+
 def test_comments_split_at_every_protocol_line_break():
     block = _scan("/* one\r\ntwo\n\nthree */")
     assert block == [("/* one", "comment"), ("two", "comment"), ("three */", "comment")]

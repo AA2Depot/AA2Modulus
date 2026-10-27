@@ -77,6 +77,12 @@ def test_groups_patterns_and_comments_match_the_grammar():
     }
     assert data["patterns"]["identifier"] == "[A-Za-z_][A-Za-z0-9_]*"
     assert data["strings"] == "json"
+    assert data["blockStrings"] == {
+        "delimiter": '"""',
+        "contexts": ["description"],
+        "lineBreak": "\r\n",
+        "escapes": "json",
+    }
     assert data["comments"] == {"line": "//", "block": ["/*", "*/"]}
 
 

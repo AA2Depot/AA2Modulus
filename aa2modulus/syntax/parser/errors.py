@@ -170,7 +170,11 @@ def unexpected_error(error: UnexpectedInput, filename: str, source: str) -> Sour
         character = getattr(error, "char", None)
         if position is None:
             position = len(source)
-        if character == '"':
+        if character == '"' and source[position - 2 : position + 1] == '"""':
+            # The lexer reads an unclosed `"""` as the empty string `""` and a `"`.
+            message = 'unterminated block string; close it with `"""` on its own line'
+            position -= 2
+        elif character == '"':
             message = "unterminated string literal"
         else:
             shown = repr(character)[1:-1] if character else "input"

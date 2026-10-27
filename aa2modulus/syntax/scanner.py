@@ -3,8 +3,8 @@
 The scan reads the text alone, so a file with syntax errors is still fully
 categorized. Its word sets come from the lexicon, and building a scanner raises
 when the lexicon's groups or literal patterns no longer match its table, so a
-grammar change cannot skip it. Comment tokens never cross a line: they break at
-``\\r\\n``, ``\\r`` and ``\\n``, like LSP positions.
+grammar change cannot skip it. Comment and block-string tokens never cross a
+line: they break at ``\\r\\n``, ``\\r`` and ``\\n``, like LSP positions.
 """
 
 from __future__ import annotations
@@ -61,8 +61,8 @@ class LexicalScanner:
     Only an exact lexicon word gets a token, and a dotted name only when it is
     one (``import.trigger``). A word after ``.`` is a member name and gets
     none. Identifiers inside ``@allow( … )`` are ``attributeCode``. An open
-    string ends at its line end and an open block comment at the end of the
-    text; an unknown character is skipped.
+    string ends at its line end, and an open block string or block comment at
+    the end of the text; an unknown character is skipped.
     """
 
     def __init__(self, lexicon: Lexicon) -> None:
@@ -98,6 +98,7 @@ class LexicalScanner:
                 (
                     r"(?P<space>\s+)",
                     r"(?P<comment>//[^\n]*|/\*(?:[\s\S]*?\*/|[\s\S]*))",
+                    r'(?P<block>"""(?:[^"\\]|\\[\s\S]|"(?!""))*(?:"""|\Z))',
                     r'(?P<string>"(?:[^"\\\r\n]|\\[^\r\n]?)*"?)',
                     f"(?P<number>{'|'.join(_NUMBER_PATTERNS.values())})",
                     f"(?P<word>{word.pattern})",
@@ -124,7 +125,11 @@ class LexicalScanner:
             if kind == "space":
                 continue
             if kind == "comment":
-                tokens.extend(_line_tokens(text, start, offset))
+                tokens.extend(_line_tokens(text, start, offset, "comment"))
+                continue
+            if kind == "block":
+                tokens.extend(_line_tokens(text, start, offset, "string"))
+                previous, in_codes = value, False
                 continue
             category = self._category(kind, value, previous, in_codes=in_codes)
             if category is not None:
@@ -153,15 +158,15 @@ class LexicalScanner:
         return None
 
 
-def _line_tokens(text: str, start: int, end: int) -> Iterator[LexicalToken]:
-    """One ``comment`` token per non-empty line of ``text[start:end]``."""
+def _line_tokens(text: str, start: int, end: int, category: str) -> Iterator[LexicalToken]:
+    """One ``category`` token per non-empty line of ``text[start:end]``."""
 
     for line_break in _LINE_BREAK.finditer(text, start, end):
         if line_break.start() > start:
-            yield LexicalToken(start, line_break.start(), "comment")
+            yield LexicalToken(start, line_break.start(), category)
         start = line_break.end()
     if end > start:
-        yield LexicalToken(start, end, "comment")
+        yield LexicalToken(start, end, category)
 
 
 _scanner: LexicalScanner | None = None

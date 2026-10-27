@@ -68,7 +68,7 @@ _PATTERNS = {
 }
 # Strings decode with ``json.loads`` (``transform/base.py``); comments do not nest.
 # Lark stores the grammar's ``\n`` escape as a newline character.
-_STRING_TERMINAL = "ESCAPED_STRING"
+_STRING_TERMINALS = frozenset({"ESCAPED_STRING", "BLOCK_STRING"})
 _COMMENT_PATTERNS = frozenset({"\\/\\/[^\n]*", r"\/\*[\s\S]*?\*\/"})
 
 _WORD_BOUNDARY = "(?![A-Za-z0-9_])"
@@ -89,6 +89,12 @@ class Lexicon:
             **{name: list(literals) for name, literals in self.groups},
             "patterns": dict(self.patterns),
             "strings": "json",
+            "blockStrings": {
+                "delimiter": '"""',
+                "contexts": ["description"],
+                "lineBreak": "\r\n",
+                "escapes": "json",
+            },
             "comments": {"line": "//", "block": ["/*", "*/"]},
         }
 
@@ -132,7 +138,7 @@ def build_lexicon(terminals: Iterable[TerminalDef], *, ignored: Iterable[str]) -
         elif terminal.name in ignored_names:
             if terminal.name != "WS":
                 comments.add(str(terminal.pattern.value))
-        elif terminal.name != _STRING_TERMINAL:
+        elif terminal.name not in _STRING_TERMINALS:
             raise ValueError(f"unclassified grammar terminal {terminal.name!r}")
     classified = frozenset[str]().union(*_GROUPS.values())
     if len(classified) != sum(len(group) for group in _GROUPS.values()):

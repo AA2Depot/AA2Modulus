@@ -78,8 +78,20 @@ def test_skipped_if_block_does_not_close_the_trigger():
         ('module "m" {\n trigger "t" {\n on CARD_ADDED\n }\n}\n', (3, 15), "unexpected `}`"),
         (multiline_module("y = 1 ` 2;"), (5, 11), "unexpected character ```"),
         (multiline_module('WriteLog("abc);'), (5, 14), "unterminated string literal"),
+        (
+            'module "m" {\n description """\n  a\n trigger "t" {\n on CARD_ADDED;\n }\n}\n',
+            (2, 14),
+            'unterminated block string; close it with `"""` on its own line',
+        ),
     ],
-    ids=["missing-semicolon", "eof-without-brace", "unexpected-brace", "bad-char", "unterminated"],
+    ids=[
+        "missing-semicolon",
+        "eof-without-brace",
+        "unexpected-brace",
+        "bad-char",
+        "unterminated",
+        "unterminated-block",
+    ],
 )
 def test_single_syntax_error_is_reported_once_without_cascades(source, position, message):
     (diagnostic,) = _diagnostics(source)

@@ -23,7 +23,7 @@ const_ref: "const" "(" ESCAPED_STRING ")"
 module: "module" ESCAPED_STRING "{" module_item* "}"
 ?module_item: description | depends_on | const_decl | global_decl | global_state_decl | trigger | trigger_import | allowed_trigger
 allowed_trigger: module_allow_attr+ (trigger | trigger_import)
-description: "description" ESCAPED_STRING ";"
+description: "description" (ESCAPED_STRING | BLOCK_STRING) ";"
 depends_on: "depends_on" ESCAPED_STRING ";"
 global_decl: "global" name_ref ":" source_type_ref "=" const_value ";"
 global_state_decl: "global" name_ref ":" source_type_ref "{" "default" raw_value ";" "current" raw_value ";" "initialized" BOOLEAN ";" "}"
@@ -143,6 +143,8 @@ IDENT: /[A-Za-z_][A-Za-z0-9_]*/
 SIGNED_INT: /[+-]?[0-9]+/
 SIGNED_FLOAT: /[+-]?(?:[0-9]+\.[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?[fF]?/
 HEX_INT.2: /0[xX][0-9A-Fa-f]{1,8}/
+// A higher priority than ESCAPED_STRING, which would match the empty `""` first.
+BLOCK_STRING.2: /"""(?:[^"\\]|\\[\s\S]|"(?!""))*"""/
 
 %import common.ESCAPED_STRING
 %import common.WS

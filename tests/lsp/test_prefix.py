@@ -189,6 +189,13 @@ def test_authored_completion_preserves_case_distinct_names(context):
     assert {"X", "x"} <= names
 
 
+def test_block_strings_get_no_completion_until_closed(context):
+    inside = 'module "M" {\n  description """\n    tri'
+    assert completions(inside, len(inside), context) == []
+    after = inside + '\n    """;\n  tri'
+    assert [item.label for item in completions(after, len(after), context)] == ["trigger"]
+
+
 def test_incomplete_prefixes_and_resource_limits_return_no_items(context):
     assert completions('module "M" { trigger "T" { @', 30, context) == []
 

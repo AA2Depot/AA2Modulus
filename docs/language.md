@@ -28,6 +28,17 @@ The second `Notification` argument defaults to `false` and is inserted during
 binding, so Bound HIR and SIR both contain the explicit argument. Write it
 explicitly when it is `true`.
 
+A description that spans lines is a `"""` block; the closing `"""` sets the
+indentation that is removed (see [lexical forms](grammar.md#lexical-forms)):
+
+```text
+  description """
+    First line.
+
+    Second paragraph.
+    """;
+```
+
 ## Dependency Metadata
 
 Each `depends_on "Provider";` declaration appends one native dependency string.
