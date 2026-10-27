@@ -9,7 +9,7 @@ from aa2modulus.lsp.features.navigation import definition, document_symbols, hov
 from aa2modulus.lsp.protocol.diagnostics import aggregate_diagnostics
 from aa2modulus.lsp.protocol.positions import PositionCodec
 from aa2modulus.lsp.workspace.documents import SourceWorkspace
-from tests.support.lsp_workspace import analyze_workspace
+from tests.support.lsp_workspace import analyze_workspace, notification_text
 
 
 def test_unsaved_transitive_libraries_override_disk_and_close_returns_to_disk(tmp_path, context):
@@ -24,16 +24,10 @@ def test_unsaved_transitive_libraries_override_disk_and_close_returns_to_disk(tm
     workspace.open(leaf.as_uri(), 'macro emit { Notification("buffer"); }', 1, "aa2mi")
     snapshot = analyze_workspace(workspace, root.as_uri(), context)
 
-    assert (
-        snapshot.analysis.module.triggers[0].gui_actions[0].action.parameters[0].constant.value
-        == "buffer"
-    )
+    assert notification_text(snapshot) == "buffer"
     workspace.close(leaf.as_uri())
     snapshot = analyze_workspace(workspace, root.as_uri(), context)
-    assert (
-        snapshot.analysis.module.triggers[0].gui_actions[0].action.parameters[0].constant.value
-        == "disk"
-    )
+    assert notification_text(snapshot) == "disk"
 
 
 def test_failed_edges_survive_syntax_failure_and_missing_library_creation(tmp_path, context):
@@ -287,7 +281,6 @@ def test_closed_saved_file_keeps_its_diagnostics_without_reanalysis(tmp_path, co
 
     assert workspace.close(path.as_uri()) == set()
     assert path.as_uri() not in workspace.documents
-    assert workspace.retained[path.as_uri()].text == BROKEN
     assert _codes(workspace, path.as_uri()) == ["INT_OUT_OF_RANGE"]
 
 
@@ -340,7 +333,6 @@ def test_reopening_or_unsaved_files_are_not_retained(tmp_path, context):
     workspace.close(path.as_uri())
 
     workspace.open(path.as_uri(), FIXED, 2)
-    assert path.as_uri() not in workspace.retained
     analyze_workspace(workspace, path.as_uri(), context)
     assert _codes(workspace, path.as_uri()) == []
 

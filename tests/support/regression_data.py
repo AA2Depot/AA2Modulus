@@ -9,7 +9,6 @@ from __future__ import annotations
 from aa2modulus.model.records import (
     ActionCall,
     Expression,
-    GlobalVariable,
     GuiAction,
     Module,
     Trigger,
@@ -61,11 +60,6 @@ def undefined_variables_module() -> Module:
     )
 
 
-def card_provider_module() -> Module:
-    value = Value.integer(3)
-    return Module("Provider", globals=(GlobalVariable(ValueType.INT, "external", value, value),))
-
-
 def card_receiver_module() -> Module:
     return Module(
         "Receiver",
@@ -86,34 +80,6 @@ def type_mismatch_module() -> Module:
                 variables=(Variable(ValueType.FLOAT, "weight", _constant(Value.floating(0.0))),),
                 gui_actions=(
                     GuiAction(ActionCall(1, (_reference("weight"), _constant(Value.integer(1))))),
-                ),
-            ),
-        ),
-    )
-
-
-def discarded_control_module() -> Module:
-    """Conditional children lose enclosing loop state before name resolution."""
-
-    return Module(
-        "Discarded control",
-        triggers=(
-            Trigger(
-                "T",
-                gui_actions=(
-                    GuiAction(
-                        ActionCall(6),
-                        (
-                            GuiAction(
-                                ActionCall(2, (_constant(Value.boolean(True)),)),
-                                (
-                                    GuiAction(
-                                        ActionCall(8, (_reference("missing", ValueType.BOOL),))
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
                 ),
             ),
         ),

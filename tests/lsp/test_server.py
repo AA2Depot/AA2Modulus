@@ -2,45 +2,83 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
-from aa2modulus.app.editor_manifest import editor_manifest
 from aa2modulus.version import __version__
-from tests.support.lsp_client import Client
 
 
-def test_stdio_capabilities_navigation_and_diagnostic_parity(client):
+def test_initialize_result_advertises_the_server_features(client, context):
     assert client.initialized["serverInfo"] == {"name": "aa2modulus", "version": __version__}
     capabilities = client.initialized["capabilities"]
     assert capabilities["positionEncoding"] == "utf-16"
-    assert capabilities["textDocumentSync"]["change"] == 2
+    assert capabilities["textDocumentSync"] == {
+        "openClose": True,
+        "change": 2,
+        "save": {"includeText": False},
+    }
+    assert capabilities["completionProvider"] == {"triggerCharacters": ["."]}
+    assert capabilities["signatureHelpProvider"] == {"triggerCharacters": ["(", ","]}
+    assert capabilities["codeActionProvider"] == {"codeActionKinds": ["quickfix"]}
+    assert capabilities["documentLinkProvider"] == {"resolveProvider": False}
+    assert capabilities["workspaceSymbolProvider"] == {"resolveProvider": False}
+    assert capabilities["inlayHintProvider"] == {"resolveProvider": False}
+    assert capabilities["executeCommandProvider"] == {
+        "commands": ["aa2modulus.compileDocument", "aa2modulus.decompileModule"]
+    }
+    for provider in (
+        "hoverProvider",
+        "definitionProvider",
+        "referencesProvider",
+        "documentHighlightProvider",
+        "documentSymbolProvider",
+        "renameProvider",
+    ):
+        assert capabilities[provider] is True, provider
+    assert "documentFormattingProvider" not in capabilities
+    assert "range" not in capabilities["semanticTokensProvider"]
+    assert capabilities["semanticTokensProvider"]["full"] is True
+    # Earlier legend indices stay the same; new types are appended.
+    assert capabilities["semanticTokensProvider"]["legend"] == {
+        "tokenTypes": [
+            "namespace",
+            "function",
+            "method",
+            "property",
+            "enumMember",
+            "event",
+            "variable",
+            "parameter",
+            "macro",
+            "class",
+            "keyword",
+            "type",
+            "number",
+            "string",
+            "comment",
+            "operator",
+            "decorator",
+        ],
+        "tokenModifiers": ["declaration", "readonly", "defaultLibrary", "modification"],
+    }
     # Without client support there are no built-in pages or snippets; lexical tokens need none.
-    manifest = editor_manifest()
+    syntax = capabilities["experimental"]["aa2modulus"]["syntax"]
+    assert re.fullmatch(r"[0-9a-f]{64}", syntax["fingerprint"])
     assert capabilities["experimental"] == {
         "aa2modulus": {
-            "contractVersion": manifest["contractVersion"],
-            "syntax": manifest["syntax"],
+            "contractVersion": 2,
+            "syntax": {
+                "version": context.source_policy.language_version,
+                "fingerprint": syntax["fingerprint"],
+            },
             "lexicalTokens": True,
         }
     }
-    assert "textDocumentContent" not in capabilities.get("workspace", {})
-    assert all(
-        capabilities[key]
-        for key in (
-            "hoverProvider",
-            "definitionProvider",
-            "documentSymbolProvider",
-            "completionProvider",
-            "signatureHelpProvider",
-            "referencesProvider",
-            "documentHighlightProvider",
-            "renameProvider",
-            "semanticTokensProvider",
-            "inlayHintProvider",
-            "codeActionProvider",
-        )
-    )
-    assert not capabilities.get("documentFormattingProvider")
+    assert "textDocumentContent" not in capabilities["workspace"]
+
+
+def test_open_edit_and_navigation_round_trip_publishes_versioned_diagnostics(client):
     uri = "untitled:Example"
     source = 'module "M" { global x: int = 1; trigger "T" { WriteLog(x.FullName); } }'
     client.open(uri, source)
@@ -84,9 +122,7 @@ def test_incomplete_completion_signature_and_latest_version_after_cancellation(c
     source = 'module "M" { trigger "T" { Noti'
     client.open(uri, source)
     params = {"textDocument": {"uri": uri}, "position": {"line": 0, "character": len(source)}}
-    identifier = client.send("textDocument/hover", params, request=True)
-    client.send("$/cancelRequest", {"id": identifier})
-    canceled = client.wait(lambda item: item.get("id") == identifier)
+    canceled = client.request_canceled("textDocument/hover", params)
     assert canceled["error"]["code"] == -32800
     items = client.request("textDocument/completion", params)
     assert any(item["label"] == "Notification" for item in items)
@@ -105,45 +141,48 @@ def test_incomplete_completion_signature_and_latest_version_after_cancellation(c
     assert client.diagnostics(uri, lambda items: not items, version=4) == []
 
 
-@pytest.mark.parametrize("encoding,character", [("utf-8", 26), ("utf-16", 24), ("utf-32", 23)])
-def test_negotiated_positions_drive_incremental_edits(encoding, character):
-    connection = Client([encoding])
-    uri = "untitled:Unicode"
-    try:
-        assert connection.initialized["capabilities"]["positionEncoding"] == encoding
-        source = 'module "😀" { global x: int = 1; }'
-        connection.open(uri, source)
-        connection.request("textDocument/documentSymbol", {"textDocument": {"uri": uri}})
-        connection.send(
-            "textDocument/didChange",
-            {
-                "textDocument": {"uri": uri, "version": 2},
-                "contentChanges": [
-                    {
-                        "range": {
-                            "start": {"line": 0, "character": character},
-                            "end": {"line": 0, "character": character + 3},
-                        },
-                        "text": "string",
+def _edit_after_an_emoji(connection, uri, character):
+    """Retype the declared type with two ranges counted from the emoji in the module name."""
+
+    source = 'module "😀" { global x: int = 1; }'
+    connection.open(uri, source)
+    connection.request("textDocument/documentSymbol", {"textDocument": {"uri": uri}})
+    connection.send(
+        "textDocument/didChange",
+        {
+            "textDocument": {"uri": uri, "version": 2},
+            "contentChanges": [
+                {
+                    "range": {
+                        "start": {"line": 0, "character": character},
+                        "end": {"line": 0, "character": character + 3},
                     },
-                    {
-                        "range": {
-                            "start": {"line": 0, "character": character + 9},
-                            "end": {"line": 0, "character": character + 10},
-                        },
-                        "text": '"updated"',
+                    "text": "string",
+                },
+                {
+                    "range": {
+                        "start": {"line": 0, "character": character + 9},
+                        "end": {"line": 0, "character": character + 10},
                     },
-                ],
-            },
-        )
-        symbols = connection.request("textDocument/documentSymbol", {"textDocument": {"uri": uri}})
-        assert symbols[0]["children"][0]["detail"] == "x: string"
-        assert connection.diagnostics(uri, lambda items: not items, version=2) == []
-        connection.finish()
-    finally:
-        if connection.process.poll() is None:
-            connection.process.terminate()
-            connection.process.wait(timeout=10)
+                    "text": '"updated"',
+                },
+            ],
+        },
+    )
+    symbols = connection.request("textDocument/documentSymbol", {"textDocument": {"uri": uri}})
+    assert symbols[0]["children"][0]["detail"] == "x: string"
+    assert connection.diagnostics(uri, lambda items: not items, version=2) == []
+
+
+def test_default_utf16_positions_drive_incremental_edits(client):
+    _edit_after_an_emoji(client, "untitled:Unicode-utf-16", 24)
+
+
+@pytest.mark.parametrize("encoding,character", [("utf-8", 26), ("utf-32", 23)])
+def test_negotiated_positions_drive_incremental_edits(start_client, encoding, character):
+    connection = start_client([encoding])
+    assert connection.initialized["capabilities"]["positionEncoding"] == encoding
+    _edit_after_an_emoji(connection, f"untitled:Unicode-{encoding}", character)
 
 
 def test_import_owners_refresh_from_buffers_disk_and_close(client, tmp_path):
@@ -179,6 +218,7 @@ def test_import_owners_refresh_from_buffers_disk_and_close(client, tmp_path):
     client.send("textDocument/didClose", {"textDocument": {"uri": library.as_uri()}})
     assert client.diagnostics(library.as_uri(), bool)
     library.write_text('macro emit { Notification("disk fixed"); }', encoding="utf-8")
+    client.send("textDocument/didSave", {"textDocument": {"uri": roots[1]}})
     assert client.diagnostics(library.as_uri(), lambda items: not items) == []
     client.send("textDocument/didClose", {"textDocument": {"uri": roots[1]}})
     assert client.diagnostics(roots[1], lambda items: not items) == []
@@ -191,7 +231,7 @@ def test_closed_files_keep_diagnostics_until_deleted(client, tmp_path):
     uri = broken.as_uri()
     client.open(uri, source)
     (error,) = client.diagnostics(uri, bool)
-    client.saved.clear()
+    client.forget(lambda message: _is_published(message, uri))
 
     client.send("textDocument/didClose", {"textDocument": {"uri": uri}})
     assert client.diagnostics(uri) == [error]
@@ -235,13 +275,15 @@ def test_edits_keep_diagnostics_until_reanalysis(client):
     assert not _published(client, uri)
 
 
-def _published(client, uri):
-    return [
-        message
-        for message in client.saved
-        if message.get("method") == "textDocument/publishDiagnostics"
+def _is_published(message, uri):
+    return (
+        message.get("method") == "textDocument/publishDiagnostics"
         and message["params"]["uri"] == uri
-    ]
+    )
+
+
+def _published(client, uri):
+    return [message for message in client.saved if _is_published(message, uri)]
 
 
 def test_aa2mi_can_be_opened_as_an_edited_library(client, tmp_path):

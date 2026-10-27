@@ -7,7 +7,6 @@ import pytest
 from aa2modulus.app.compile import CompileError, compile_source, validate_source
 from aa2modulus.binary.reader import decode_module
 from aa2modulus.binary.writer import encode_module
-from aa2modulus.context.operation import SourceContext
 from aa2modulus.metadata.schema import MetadataError
 from aa2modulus.validation.validator.module import validate_module
 from tests.support.policy import edited_policy, policy_context
@@ -31,8 +30,7 @@ def test_text_replace_is_a_strict_error_naming_the_source_spelling():
         compile_source(SOURCE)
 
 
-def test_native_profile_warns_and_decoded_binaries_are_diagnosed():
-    context = SourceContext.create()
+def test_native_profile_warns_and_decoded_binaries_are_diagnosed(context):
     module = parse_module(SOURCE, context=context)
     checks = {"metadata": context.metadata, "catalog": context.catalog}
     (native,) = _defects(validate_module(module, profile="native", **checks))
@@ -43,9 +41,12 @@ def test_native_profile_warns_and_decoded_binaries_are_diagnosed():
 
 
 def test_the_policy_entry_is_the_only_switch(tmp_path):
-    context = policy_context(edited_policy(tmp_path, lambda document: document.pop("defects")))
-    assert context.source_policy.expression_defects == ()
-    assert compile_source(SOURCE, context=context)
+    without_defects = policy_context(
+        edited_policy(tmp_path, lambda document: document.pop("defects"))
+    )
+    result = validate_source(SOURCE, context=without_defects)
+    assert result.is_valid
+    assert _defects(result) == []
 
 
 @pytest.mark.parametrize(

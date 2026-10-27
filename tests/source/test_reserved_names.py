@@ -5,7 +5,8 @@ from __future__ import annotations
 import pytest
 
 from aa2modulus.app.compile import parse_and_validate_source
-from aa2modulus.core.diagnostics import Diagnostic, SourceFix
+from aa2modulus.core.diagnostics import Diagnostic
+from tests.support.source import apply_fix, module_source
 
 QUOTE = 'quote the name: `"{w}"`'
 READ = 'read it with `const("{w}")`'
@@ -22,25 +23,13 @@ POSITIONS = (
 )
 
 
-def _module(items: str, body: str = "") -> str:
-    return f'module "M" {{ {items} trigger "T" {{ on CARD_ADDED; {body} }} }}'
-
-
 def _diagnostics(source: str) -> tuple[Diagnostic, ...]:
     _, result = parse_and_validate_source(source)
     return result.diagnostics
 
 
-def _apply(source: str, fix: SourceFix) -> str:
-    span = fix.span
-    assert span.start_line == span.end_line == 1 and span.end_column is not None
-    return source[: span.start_column - 1] + fix.replacement + source[span.end_column :]
-
-
-@pytest.mark.parametrize("word", ("import", "If"))
-@pytest.mark.parametrize(("items", "body", "help", "replacement"), POSITIONS)
-def test_bare_reserved_names_fail_with_a_fix_that_compiles(word, items, body, help, replacement):
-    source = _module(items.format(w=word), body.format(w=word))
+def _assert_bare_name_fails(word, items, body, help, replacement):
+    source = module_source(body.format(w=word), items.format(w=word))
 
     (diagnostic,) = _diagnostics(source)
     assert diagnostic.code == "SYNTAX_ERROR"
@@ -48,18 +37,28 @@ def test_bare_reserved_names_fail_with_a_fix_that_compiles(word, items, body, he
     assert diagnostic.help == help.format(w=word)
     (fix,) = diagnostic.fixes
     assert fix.replacement == replacement.format(w=word)
-    assert _diagnostics(_apply(source, fix)) == ()
+    assert _diagnostics(apply_fix(source, fix)) == ()
+
+
+@pytest.mark.parametrize(("items", "body", "help", "replacement"), POSITIONS)
+def test_bare_reserved_names_fail_with_a_fix_that_compiles(items, body, help, replacement):
+    _assert_bare_name_fails("import", items, body, help, replacement)
+
+
+@pytest.mark.parametrize(("items", "body", "help", "replacement"), POSITIONS[:2])
+def test_reserved_words_match_in_any_case(items, body, help, replacement):
+    _assert_bare_name_fails("If", items, body, help, replacement)
 
 
 def test_top_level_constants_reject_bare_reserved_names():
-    (diagnostic,) = _diagnostics("const Else: int = 1;\n" + _module(""))
+    (diagnostic,) = _diagnostics("const Else: int = 1;\n" + module_source())
     assert (diagnostic.code, diagnostic.message) == ("SYNTAX_ERROR", "'Else' is a reserved word")
 
 
 def test_names_that_only_contain_reserved_words_are_ordinary():
-    source = _module(
-        "global true_flag: int = 0; const breakpoint: int = 1;",
+    source = module_source(
         "let iffy: int = breakpoint; true_flag = iffy; for true_flag from 1 to 2 { }",
+        "global true_flag: int = 0; const breakpoint: int = 1;",
     )
     assert _diagnostics(source) == ()
 

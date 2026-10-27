@@ -21,23 +21,11 @@ from aa2modulus.model.records import (
 )
 from aa2modulus.model.types import EXPR_CONSTANT, EXPR_NAMEDCONSTANT, ValueType
 from aa2modulus.model.values import Value
-
-
-def pack_string(value: str) -> bytes:
-    raw = value.encode("utf-16-le", errors="surrogatepass")
-    return struct.pack("<I", len(raw) // 2) + raw
-
-
-def pack_vector(*items: bytes) -> bytes:
-    return struct.pack("<I", len(items)) + b"".join(items)
+from tests.support.wire import pack_expression, pack_string, pack_vector
 
 
 def pack_value(value_type: int, payload: bytes = b"") -> bytes:
     return struct.pack("<i", value_type) + payload
-
-
-def pack_expression(return_type: int, identifier: int, payload: bytes = b"") -> bytes:
-    return struct.pack("<ii", return_type, identifier) + payload
 
 
 def pack_global(

@@ -91,15 +91,16 @@ def test_reserved_words_are_the_grammar_words_in_any_case():
     assert words == SOURCE_RESERVED
 
 
-@pytest.mark.parametrize("name", ["var", "event", "compile", "validate"])
-def test_former_reserved_words_are_ordinary_names(name):
-    source = (
-        f'module "M" {{ trigger "T" {{ on CARD_ADDED; let {name}: int = 1; '
-        f'{name} = {name} + 1; ClassStorage.SetInt("k", {name}); }} }}'
+def test_former_reserved_words_are_ordinary_names():
+    names = ["var", "event", "compile", "validate"]
+    body = " ".join(
+        f'let {name}: int = 1; {name} = {name} + 1; ClassStorage.SetInt("{name}", {name});'
+        for name in names
     )
-    binary = compile_source(source)
+    binary = compile_source(f'module "M" {{ trigger "T" {{ on CARD_ADDED; {body} }} }}')
     decompiled = decompile_module(binary, reject_trailing=True).source
-    assert f"let {name}: int" in decompiled
+    for name in names:
+        assert f"let {name}: int" in decompiled
     assert compile_source(decompiled) == binary
 
 
@@ -121,8 +122,7 @@ def test_vanished_grammar_word_fails():
         _build(terminals)
 
 
-def test_fingerprint_ignores_the_language_version():
-    context = SourceContext.create()
+def test_fingerprint_ignores_the_language_version(context):
     policy = dataclasses.replace(
         context.source_policy, language_version=context.source_policy.language_version + 1
     )

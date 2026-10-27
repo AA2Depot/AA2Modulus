@@ -6,9 +6,7 @@ from lsprotocol import types
 
 from aa2modulus.lsp.features.semantic_tokens import TOKEN_MODIFIERS, TOKEN_TYPES, semantic_tokens
 from aa2modulus.lsp.protocol.positions import PositionCodec
-from aa2modulus.lsp.workspace.documents import SourceWorkspace
-from tests.support.lsp_client import Client
-from tests.support.lsp_workspace import analyze_workspace
+from tests.support.lsp_workspace import open_document
 
 GREET = """trigger "Greet" {
   slot "who" string;
@@ -59,9 +57,10 @@ def _decode(source: str, data: list[int], encoding: str) -> list[tuple[str, str,
 def _data(tmp_path, context, source: str, encoding: str, name: str = "root.aa2m") -> list[int]:
     (tmp_path / "greet.aa2mi").write_text(GREET, encoding="utf-8")
     uri = (tmp_path / name).as_uri()
-    workspace = SourceWorkspace()
-    workspace.open(uri, source, 1, "aa2mi" if name.endswith(".aa2mi") else "aa2m")
-    return semantic_tokens(analyze_workspace(workspace, uri, context), encoding).data
+    _, snapshot = open_document(
+        source, context, uri, "aa2mi" if name.endswith(".aa2mi") else "aa2m"
+    )
+    return semantic_tokens(snapshot, encoding).data
 
 
 def _tokens(tmp_path, context, source: str = SOURCE, encoding: str = "utf-16", **extra):
@@ -219,51 +218,27 @@ LIBRARY_TEXT = "macro say { param message string; WriteLog(message); }\n"
 ROOT_TEXT = 'import "library.aa2mi";\nmodule "Root" { trigger "T" { on CARD_ADDED; say("x"); } }\n'
 
 
-def test_session_advertises_the_legend_and_refreshes_after_an_import_changes(tmp_path):
+def test_session_refreshes_tokens_after_an_import_changes(full_client, tmp_path):
     library = tmp_path / "library.aa2mi"
     root = tmp_path / "root.aa2m"
     library.write_text(LIBRARY_TEXT, encoding="utf-8")
     root.write_text(ROOT_TEXT, encoding="utf-8")
-    client = Client(capabilities={"workspace": {"semanticTokens": {"refreshSupport": True}}})
-    try:
-        provider = client.initialized["capabilities"]["semanticTokensProvider"]
-        # Earlier legend indices stay the same; new types are appended.
-        assert TOKEN_TYPES[:10] == (
-            "namespace",
-            "function",
-            "method",
-            "property",
-            "enumMember",
-            "event",
-            "variable",
-            "parameter",
-            "macro",
-            "class",
-        )
-        assert provider["legend"] == {
-            "tokenTypes": list(TOKEN_TYPES),
-            "tokenModifiers": list(TOKEN_MODIFIERS),
-        }
-        assert provider["full"] is True
-        assert "range" not in provider
+    client = full_client
 
-        client.open(root.as_uri(), ROOT_TEXT)
-        client.open(library.as_uri(), LIBRARY_TEXT, language_id="aa2mi")
-        result = client.request(
-            "textDocument/semanticTokens/full", {"textDocument": {"uri": root.as_uri()}}
-        )
-        decoded = _decode(ROOT_TEXT, result["data"], "utf-16")
-        assert ("say", "macro", frozenset()) in decoded
+    client.open(root.as_uri(), ROOT_TEXT)
+    client.open(library.as_uri(), LIBRARY_TEXT, language_id="aa2mi")
+    result = client.request(
+        "textDocument/semanticTokens/full", {"textDocument": {"uri": root.as_uri()}}
+    )
+    decoded = _decode(ROOT_TEXT, result["data"], "utf-16")
+    assert ("say", "macro", frozenset()) in decoded
 
-        # The root's text is unchanged, but its macro is gone: ask for new tokens once.
-        client.change(library.as_uri(), "// emptied\n", 2)
-        client.respond("workspace/semanticTokens/refresh")
-        result = client.request(
-            "textDocument/semanticTokens/full", {"textDocument": {"uri": root.as_uri()}}
-        )
-        assert "say" not in {name for name, _, _ in _decode(ROOT_TEXT, result["data"], "utf-16")}
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
+    # The root's text is unchanged, but its macro is gone: ask for new tokens once.
+    # The shared client may still hold a refresh that an earlier test caused.
+    client.forget(lambda message: message.get("method") == "workspace/semanticTokens/refresh")
+    client.change(library.as_uri(), "// emptied\n", 2)
+    client.respond("workspace/semanticTokens/refresh")
+    result = client.request(
+        "textDocument/semanticTokens/full", {"textDocument": {"uri": root.as_uri()}}
+    )
+    assert "say" not in {name for name, _, _ in _decode(ROOT_TEXT, result["data"], "utf-16")}

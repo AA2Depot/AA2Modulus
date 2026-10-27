@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import hashlib
 
-from aa2modulus.app.compile import compile_module, compile_source
+from aa2modulus.app.compile import compile_source, parse_and_validate_source
 from aa2modulus.app.decompile import decompile_module
 from aa2modulus.binary.reader import decode_module
 from aa2modulus.binary.writer import encode_module
 from aa2modulus.decompile.format.module import format_module
-from aa2modulus.validation.validator.module import validate_module
 from tests.support.fixture_data import FIXTURE_HASHES
 from tests.support.paths import MODULE_FIXTURES
-from tests.support.source import parse_module
 
 RACE_HUMAN_SOURCE = """module "Race-Human" {
   description "Is a human";
@@ -31,15 +29,16 @@ def test_native_fixtures_decompile_and_recompile_byte_identically(metadata, modu
     assert hashlib.sha256(data).hexdigest() == FIXTURE_HASHES[name]
     decoded = decode_module(data, reject_trailing=True).module
     assert encode_module(decoded) == data
-    validation = validate_module(decoded, metadata=metadata, filename=name)
-    assert validation.errors == ()
-    assert validation.warnings == ()
-    assert compile_module(decoded, filename=name, metadata=metadata) == data
 
+    # One decompile validates the decoded module; one parse validates its source.
     result = decompile_module(data, metadata=metadata, filename=name, reject_trailing=True)
-    parsed = parse_module(result.source, filename=f"{name}.aa2m", metadata=metadata)
+    assert result.diagnostics == ()
+    parsed, validation = parse_and_validate_source(
+        result.source, filename=f"{name}.aa2m", metadata=metadata
+    )
+    assert validation.errors == ()
     assert parsed.to_ir() == decoded.to_ir()
-    assert compile_source(result.source, filename=f"{name}.aa2m", metadata=metadata) == data
+    assert encode_module(parsed, reject_unresolved=True) == data
     assert format_module(parsed, metadata=metadata) == result.source
 
 

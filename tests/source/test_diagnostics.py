@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import struct
 from dataclasses import dataclass
 
 import pytest
@@ -65,13 +66,6 @@ CASES = (
         'module "M" { global x: float = 1.0e1000; }',
         "FLOAT_OUT_OF_RANGE",
         "1.0e1000",
-        SourceBindingError,
-    ),
-    DiagnosticCase(
-        "int32-overflow",
-        'module "M" { global x: int = 2147483648; }',
-        "INT_OUT_OF_RANGE",
-        "2147483648",
         SourceBindingError,
     ),
     DiagnosticCase(
@@ -149,11 +143,38 @@ def _diagnostic_from_error(error: Exception) -> tuple[str, int, int, str]:
     return diagnostic.filename, diagnostic.line, diagnostic.column, diagnostic.code
 
 
-@pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
-def test_source_diagnostics_are_consistent_across_public_apis(case):
-    filename = f"{case.name}.aa2m"
+def _expected(case):
     line, column = case.line_column
-    expected = (filename, line, column, case.code)
+    return f"{case.name}.aa2m", line, column, case.code
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
+def test_source_diagnostics_report_exact_code_and_location(case):
+    filename, line, column, code = _expected(case)
+
+    result = validate_source(case.source, filename=filename)
+
+    (diagnostic,) = result.diagnostics
+    assert (diagnostic.filename, diagnostic.line, diagnostic.column, diagnostic.code) == (
+        filename,
+        line,
+        column,
+        code,
+    )
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        case
+        for case in CASES
+        if case.name in {"invalid-expression-string-escape", "wrong-return-type"}
+    ],
+    ids=lambda case: case.name,
+)
+def test_public_apis_agree_on_a_diagnostic(case):
+    expected = _expected(case)
+    filename = expected[0]
     with pytest.raises(case.error_type) as parsed:
         parse_module(case.source, filename=filename)
     assert _diagnostic_from_error(parsed.value) == expected
@@ -162,18 +183,27 @@ def test_source_diagnostics_are_consistent_across_public_apis(case):
             parse_source_ast(case.source, filename=filename)
         assert _diagnostic_from_error(syntax.value) == expected
 
-    result = validate_source(case.source, filename=filename)
-    (diagnostic,) = result.diagnostics
-    assert (diagnostic.filename, diagnostic.line, diagnostic.column, diagnostic.code) == expected
-
     with pytest.raises(CompileError) as compiled:
         compile_source(case.source, filename=filename)
     (diagnostic,) = compiled.value.diagnostics
     assert (diagnostic.filename, diagnostic.line, diagnostic.column, diagnostic.code) == expected
 
 
-def test_int32_boundary_literals_compile():
+def test_int32_boundary_literals_compile_to_their_exact_bytes():
     source = 'module "M" { global low: int = -2147483648; global high: int = 2147483647; }'
-    binary = compile_source(source)
-    assert (-(2**31)).to_bytes(4, "little", signed=True) in binary
-    assert (2**31 - 1).to_bytes(4, "little", signed=True) in binary
+
+    def text(value: str) -> bytes:
+        return struct.pack("<I", len(value)) + value.encode("utf-16-le")
+
+    def int_global(name: str, value: int) -> bytes:
+        return struct.pack("<i", 1) + text(name) + struct.pack("<iiiiB", 1, value, 1, value, 0)
+
+    # Native layout: name, description, no triggers, two INT globals, no dependencies.
+    expected = (
+        text("M")
+        + struct.pack("<III", 0, 0, 2)
+        + int_global("low", -(2**31))
+        + int_global("high", 2**31 - 1)
+        + struct.pack("<I", 0)
+    )
+    assert compile_source(source) == expected

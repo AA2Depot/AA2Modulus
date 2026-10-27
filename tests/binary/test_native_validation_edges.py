@@ -11,27 +11,15 @@ from aa2modulus.binary.writer import encode_module
 from aa2modulus.decompile.format.module import format_module
 from aa2modulus.decompile.format.text import FormatError
 from aa2modulus.validation.validator.module import validate_module
-
-
-def _string(value: str) -> bytes:
-    raw = value.encode("utf-16-le")
-    return struct.pack("<I", len(raw) // 2) + raw
-
-
-def _vector(*values: bytes) -> bytes:
-    return struct.pack("<I", len(values)) + b"".join(values)
-
-
-def _expression(return_type: int, identifier: int, payload: bytes = b"") -> bytes:
-    return struct.pack("<ii", return_type, identifier) + payload
+from tests.support.wire import pack_expression, pack_string, pack_vector
 
 
 def _constant(value_type: int, payload: bytes) -> bytes:
-    return _expression(value_type, 1, struct.pack("<i", value_type) + payload)
+    return pack_expression(value_type, 1, struct.pack("<i", value_type) + payload)
 
 
 def _action(identifier: int, *parameters: bytes) -> bytes:
-    return struct.pack("<i", identifier) + _vector(*parameters) + _vector()
+    return struct.pack("<i", identifier) + pack_vector(*parameters) + pack_vector()
 
 
 def _module(
@@ -40,22 +28,26 @@ def _module(
     variables: tuple[bytes, ...] = (),
     actions: tuple[bytes, ...] = (),
 ) -> bytes:
-    trigger = _string("T") + _vector(*events) + _vector(*variables) + _vector(*actions)
-    return _string("M") + _string("") + _vector(trigger) + _vector() + _vector()
+    trigger = (
+        pack_string("T") + pack_vector(*events) + pack_vector(*variables) + pack_vector(*actions)
+    )
+    return pack_string("M") + pack_string("") + pack_vector(trigger) + pack_vector() + pack_vector()
 
 
 def _module_with_globals(*globals_: bytes) -> bytes:
-    return _string("M") + _string("") + _vector() + _vector(*globals_) + _vector()
+    return (
+        pack_string("M") + pack_string("") + pack_vector() + pack_vector(*globals_) + pack_vector()
+    )
 
 
 def _global(declared_type: int, name: str, default: bytes, current: bytes) -> bytes:
-    return struct.pack("<i", declared_type) + _string(name) + default + current + b"\x00"
+    return struct.pack("<i", declared_type) + pack_string(name) + default + current + b"\x00"
 
 
 def test_native_profile_warns_on_float_declaration_and_integer_assignment_wire():
     float_default = _constant(3, struct.pack("<f", 0.0))
-    local = struct.pack("<i", 3) + _string("x") + float_default
-    reference = _expression(1, 2, _string("x"))
+    local = struct.pack("<i", 3) + pack_string("x") + float_default
+    reference = pack_expression(1, 2, pack_string("x"))
     integer = _constant(1, struct.pack("<i", 1))
     binary = _module(variables=(local,), actions=(_action(1, reference, integer),))
     assert len(binary) == 108
@@ -120,12 +112,12 @@ def test_discarded_break_keeps_its_native_offset_and_profile_diagnostic():
 
 
 def test_native_records_report_unknown_ids_and_wrong_parameter_types_at_wire_locations():
-    unknown_event = struct.pack("<i", 999) + _vector()
+    unknown_event = struct.pack("<i", 999) + pack_vector()
     int_argument = _constant(1, struct.pack("<i", 1))
     wrong_action = _action(2, int_argument)
     unknown_action = _action(999)
-    unknown_expression = _expression(1, 999, _vector())
-    local = struct.pack("<i", 1) + _string("bad") + unknown_expression
+    unknown_expression = pack_expression(1, 999, pack_vector())
+    local = struct.pack("<i", 1) + pack_string("bad") + unknown_expression
     module = decode_module(
         _module(
             events=(unknown_event,), variables=(local,), actions=(wrong_action, unknown_action)

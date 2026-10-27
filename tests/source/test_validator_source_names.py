@@ -82,8 +82,6 @@ VALIDATOR_MESSAGES = (
     ),
 )
 
-NATIVE_LABELS = ("Npc Original Response", "Love Points", "Card Added", "Set Variable", "For Loop")
-
 
 def _source(body: str) -> str:
     return f'module "M" {{ trigger "T" {{ {body} }} }}'
@@ -95,19 +93,25 @@ def _find(diagnostics, code, headline):
     return matches[0]
 
 
-@pytest.mark.parametrize(("body", "code", "headline", "native"), VALIDATOR_MESSAGES)
-@pytest.mark.parametrize("catalog", ["source", "fallback"])
-def test_validator_headline_uses_source_name(body, code, headline, native, catalog):
-    source = _source(body)
-    if catalog == "source":
-        diagnostics = validate_source(source).diagnostics
-    else:
-        # validate_module without a catalog loads the shipped policy.
-        diagnostics = validate_module(parse_module(source)).diagnostics
+def _assert_source_headline(diagnostics, code, headline, native):
     diagnostic = _find(diagnostics, code, headline)
-    assert not any(label in diagnostic.message for label in NATIVE_LABELS)
     native_notes = [note for note in diagnostic.notes if note.startswith("native name: ")]
     assert native_notes == ([] if native is None else [f"native name: {native!r}"])
+
+
+@pytest.mark.parametrize(("body", "code", "headline", "native"), VALIDATOR_MESSAGES)
+def test_validator_headline_uses_source_name(body, code, headline, native):
+    diagnostics = validate_source(_source(body)).diagnostics
+    _assert_source_headline(diagnostics, code, headline, native)
+
+
+@pytest.mark.parametrize(
+    ("body", "code", "headline", "native"),
+    [item for item in VALIDATOR_MESSAGES if item.id in {"expression-arity", "action-arity"}],
+)
+def test_validator_without_a_catalog_loads_the_shipped_policy_names(body, code, headline, native):
+    diagnostics = validate_module(parse_module(_source(body))).diagnostics
+    _assert_source_headline(diagnostics, code, headline, native)
 
 
 @pytest.mark.parametrize(

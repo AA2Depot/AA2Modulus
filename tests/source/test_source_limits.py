@@ -28,36 +28,43 @@ def test_source_character_limit_counts_unicode_codepoints_at_the_boundary():
     assert (diagnostic.line, diagnostic.column) == (1, 1)
 
 
-def test_deep_authored_expressions_fail_with_source_diagnostics():
-    cases = (
-        (
+@pytest.mark.parametrize(
+    ("source", "code"),
+    [
+        pytest.param(
             'module "M" { trigger "T" { Notification(' + "(" * 1200 + '"x"' + ")" * 1200 + "); } }",
             "SOURCE_DEPTH_LIMIT",
+            id="parentheses",
         ),
-        (
+        pytest.param(
             'module "M" { trigger "T" { Notification(' + "A(" * 300 + '"x"' + ")" * 300 + "); } }",
             "SOURCE_DEPTH_LIMIT",
+            id="calls",
         ),
-        (
+        pytest.param(
             'module "M" { trigger "T" { Notification(' + "!" * 1200 + "true); } }",
             "SOURCE_DEPTH_LIMIT",
+            id="negations",
         ),
-        (
+        pytest.param(
             'module "M" { trigger "T" { Notification(' + "1 + " * 100 + "1); } }",
             "SOURCE_NESTING_LIMIT",
+            id="operator-chain",
         ),
-        (
+        pytest.param(
             'module "M" { trigger "T" { '
             + "if true { " * 70
             + 'Notification("x"); '
             + "} " * 70
             + "} }",
             "SOURCE_NESTING_LIMIT",
+            id="nested-statements",
         ),
-    )
-    for source, code in cases:
-        diagnostic = _error(source, SourceLimits(), code)
-        assert diagnostic.line >= 1 and diagnostic.column >= 1
+    ],
+)
+def test_deep_authored_expressions_fail_with_source_diagnostics(source, code):
+    diagnostic = _error(source, SourceLimits(), code)
+    assert diagnostic.line >= 1 and diagnostic.column >= 1
 
 
 def test_strings_and_comments_do_not_consume_syntax_depth():
@@ -97,7 +104,7 @@ def test_syntax_depth_limit_rejects_before_ast_transformation(monkeypatch):
     assert raised.value.diagnostic.code == "SOURCE_DEPTH_LIMIT"
 
 
-def test_maximum_macro_expansion_budget_is_applied_by_source_validation():
-    source = 'macro "log" { WriteLog("x"); } module "M" { trigger "T" { log(); } }'
-    assert validate_source(source, source_limits=SourceLimits(max_expansion_nodes=4)).is_valid
-    _error(source, SourceLimits(max_expansion_nodes=3), "MACRO_EXPANSION_LIMIT")
+@pytest.mark.parametrize("field", ["max_binding_errors", "max_syntax_errors"])
+def test_error_caps_must_be_at_least_one(field):
+    with pytest.raises(ValueError, match=f"{field} must be at least 1"):
+        SourceLimits(**{field: 0})

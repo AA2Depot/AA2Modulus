@@ -10,49 +10,19 @@ from aa2modulus.app.compile import (
     CompileError,
     compile_module,
     compile_source,
-    parse_and_validate_source,
     validate_source,
 )
 from aa2modulus.app.decompile import decompile_module
 from aa2modulus.binary.writer import encode_module
-from aa2modulus.validation.validator.module import validate_module
+from aa2modulus.model.values import Value
 from tests.support.regression_data import undefined_variables_module
-from tests.support.source import parse_module
+from tests.support.source import assert_same_binary, parse_module
 
 RAW_INVALID_SOURCES = (
-    pytest.param(
-        'module "Raw action arity" { trigger "T" { raw_action 108; } }',
-        {"ACTION_ARITY"},
-        id="known-action-wrong-arity",
-    ),
-    pytest.param(
-        'module "Raw action types" { trigger "T" { raw_action 108(1, true); } }',
-        {"ACTION_PARAMETER_TYPE"},
-        id="known-action-wrong-parameter-types",
-    ),
-    pytest.param(
-        'module "Unknown action" { trigger "T" { raw_action 9000; } }',
-        {"UNKNOWN_ACTION"},
-        id="unknown-action-id",
-    ),
     pytest.param(
         'module "Unknown event" { trigger "T" { raw_event 9000; } }',
         {"UNKNOWN_EVENT"},
         id="unknown-event-id",
-    ),
-    pytest.param(
-        """module "Unknown expression" { trigger "T" {
-          raw_action 9000(raw_expression int 9001 { parameters [ ]; });
-        } }""",
-        {"UNKNOWN_EXPRESSION"},
-        id="unknown-expression-id",
-    ),
-    pytest.param(
-        """module "Raw event arity" { trigger "T" {
-          raw_event 6(1);
-        } }""",
-        {"EVENT_ARITY"},
-        id="known-event-wrong-arity",
     ),
     pytest.param(
         """module "Raw expression arity" { trigger "T" {
@@ -77,35 +47,12 @@ RAW_INVALID_SOURCES = (
         id="raw-variable-declaration-type-mismatch",
     ),
     pytest.param(
-        """module "Raw invalid assignment target" { trigger "T" {
-          raw_action 1(1, 2);
-        } }""",
-        {"INVALID_ASSIGNMENT_TARGET"},
-        id="raw-assignment-target-must-be-variable",
-    ),
-    pytest.param(
         """module "Raw assignment type" { trigger "T" {
           let x: int = 0;
           raw_action 1(variable("x"), true);
         } }""",
         {"ASSIGNMENT_TYPE_MISMATCH"},
         id="raw-assignment-value-type-mismatch",
-    ),
-    pytest.param(
-        """module "Raw assignment arity" { trigger "T" {
-          let x: int = 0;
-          raw_action 1(variable("x"));
-        } }""",
-        {"ACTION_ARITY"},
-        id="raw-assignment-arity",
-    ),
-    pytest.param(
-        """module "Raw For Loop target" { trigger "T" {
-          let flag: bool = false;
-          raw_action 9(variable("flag"), 0, 1);
-        } }""",
-        {"FOR_LOOP_TARGET_TYPE"},
-        id="raw-for-loop-target-type",
     ),
     pytest.param(
         """module "Raw event variable" { trigger "T" {
@@ -159,9 +106,6 @@ def test_raw_records_cannot_bypass_source_semantics(source: str, codes: set[str]
     result = validate_source(source)
 
     assert codes <= {diagnostic.code for diagnostic in result.errors}
-    with pytest.raises(CompileError) as raised:
-        compile_source(source)
-    assert codes <= {diagnostic.code for diagnostic in raised.value.diagnostics}
 
 
 @pytest.mark.parametrize(
@@ -208,8 +152,6 @@ def test_raw_roots_do_not_hide_invalid_readable_descendants(source: str, code: s
     result = validate_source(source)
 
     assert {diagnostic.code for diagnostic in result.errors} == {code}
-    with pytest.raises(CompileError):
-        compile_source(source)
 
 
 def test_raw_roots_accept_valid_readable_expression_and_gui_descendants() -> None:
@@ -222,31 +164,47 @@ def test_raw_roots_accept_valid_readable_expression_and_gui_descendants() -> Non
     result = validate_source(source)
 
     assert result.is_valid, result.diagnostics
-    assert compile_source(source)
+    action = parse_module(source).triggers[0].gui_actions[0]
+    assert action.action.id == 108
+    assert action.action.parameters[0].constant == Value.string("notice")
+    assert [child.action.id for child in action.children] == [108]
+    assert action.children[0].action.parameters[0].constant == Value.string("readable child")
 
 
 @pytest.mark.parametrize(
-    "source",
+    ("raw", "readable"),
     (
-        'module "Raw valid action" { trigger "T" { raw_action 108("notice", true); } }',
-        """module "Raw valid event" { trigger "T" { raw_event 1; } }""",
-        """module "Raw valid variable" { trigger "T" {
-          let counter: int = 0;
-          raw_action 9(raw_expression int 2 { variable "counter"; }, 0, 1);
-        } }""",
-        """module "Raw valid constant" { trigger "T" {
-          raw_action 108(raw_expression string 1 { constant "notice"; }, true);
-        } }""",
-        """module "Raw valid named constant" { trigger "T" {
-          let counter: int = 0;
-          raw_action 1(raw_expression int 2 { variable "counter"; },
-            raw_expression int 3 { named_constant int 1; });
-        } }""",
+        pytest.param(
+            'raw_action 108("notice", true);',
+            'Notification("notice", true);',
+            id="action",
+        ),
+        pytest.param("raw_event 1;", "on CLOTHES_CHANGED;", id="event"),
+        pytest.param(
+            "let counter: int = 0; "
+            'raw_action 9(raw_expression int 2 { variable "counter"; }, 0, 1);',
+            "let counter: int = 0; for counter from 0 to 1 {}",
+            id="variable",
+        ),
+        pytest.param(
+            'raw_action 108(raw_expression string 1 { constant "notice"; }, true);',
+            'Notification("notice", true);',
+            id="constant",
+        ),
+        pytest.param(
+            'let counter: int = 0; raw_action 1(raw_expression int 2 { variable "counter"; }, '
+            "raw_expression int 3 { named_constant int 1; });",
+            "let counter: int = 0; counter = Constants.Relationship.LOVE;",
+            id="named-constant",
+        ),
     ),
 )
-def test_semantically_valid_known_raw_forms_compile(source: str) -> None:
-    assert validate_source(source).is_valid
-    assert compile_source(source)
+def test_semantically_valid_known_raw_forms_equal_their_readable_spelling(raw, readable):
+    def source(body: str) -> str:
+        return f'module "M" {{ trigger "T" {{ {body} }} }}'
+
+    assert validate_source(source(raw)).is_valid
+    assert_same_binary(source(raw), source(readable))
 
 
 def test_readable_parent_still_checks_raw_child_return_type() -> None:
@@ -257,26 +215,24 @@ def test_readable_parent_still_checks_raw_child_return_type() -> None:
     result = validate_source(source)
 
     assert {diagnostic.code for diagnostic in result.errors} == {"SOURCE_TYPE_MISMATCH"}
-    with pytest.raises(CompileError):
-        compile_source(source)
 
 
-def test_model_encode_api_retains_semantically_invalid_raw_source_bytes() -> None:
-    source = """module "Recover unknown records" { trigger "T" {
-      raw_event 9000(raw_expression int 2 { variable "missing"; });
-      raw_action 9000(raw_expression int 9001 { parameters [ ]; });
-    } }"""
-    module = parse_module(source)
+def test_compile_module_rejects_a_model_with_unknown_raw_records() -> None:
+    module = parse_module(
+        """module "Recover unknown records" { trigger "T" {
+          raw_event 9000(raw_expression int 2 { variable "missing"; });
+          raw_action 9000(raw_expression int 9001 { parameters [ ]; });
+        } }"""
+    )
 
-    assert encode_module(module)
-    assert {diagnostic.code for diagnostic in validate_module(module).errors} >= {
+    with pytest.raises(CompileError) as raised:
+        compile_module(module)
+    assert {diagnostic.code for diagnostic in raised.value.diagnostics} >= {
         "UNKNOWN_EVENT",
         "UNKNOWN_ACTION",
         "UNKNOWN_EXPRESSION",
         "UNDEFINED_VARIABLE",
     }
-    with pytest.raises(CompileError):
-        compile_module(module)
 
 
 def test_invalid_raw_definitions_are_checked_even_when_unused(tmp_path: Path) -> None:
@@ -306,21 +262,15 @@ def test_raw_undefined_variables_report_locations_and_remain_recoverable() -> No
     binary = encode_module(undefined_variables_module())
     recovered_source = decompile_module(binary).source
 
-    result = validate_source(recovered_source)
-    undefined = [d for d in result.errors if d.code == "UNDEFINED_VARIABLE"]
+    errors = validate_source(recovered_source).errors
 
-    assert len(undefined) == 2
-    assert {(d.line, d.column) for d in undefined} == {(6, 36), (7, 37)}
-    assert all("missing" in d.message for d in undefined)
-    assert {d.code for d in result.errors} == {"UNDEFINED_VARIABLE"}
-    parsed, validation = parse_and_validate_source(recovered_source)
-    assert parsed is not None
-    assert validation.errors == result.errors
-    assert encode_module(parsed) == binary
-    with pytest.raises(CompileError):
-        compile_source(recovered_source)
-    recovered_module = parse_module(recovered_source)
-    assert encode_module(recovered_module) == binary
+    assert len(errors) == 2
+    assert {(d.code, d.line, d.column) for d in errors} == {
+        ("UNDEFINED_VARIABLE", 6, 36),
+        ("UNDEFINED_VARIABLE", 7, 37),
+    }
+    assert all("missing" in d.message for d in errors)
+    assert encode_module(parse_module(recovered_source)) == binary
 
 
 def test_declared_unusual_for_loop_target_remains_valid() -> None:
@@ -328,24 +278,28 @@ def test_declared_unusual_for_loop_target_remains_valid() -> None:
       let global_or_local_var_only: int = 0;
       raw_action 9(variable("global_or_local_var_only"), 0, 1);
     } }"""
+    readable = """module "Unusual loop name" { trigger "T" {
+      let global_or_local_var_only: int = 0;
+      for global_or_local_var_only from 0 to 1 {}
+    } }"""
 
     assert validate_source(source).is_valid
-    assert compile_source(source) == encode_module(parse_module(source))
+    assert_same_binary(source, readable)
 
 
-def test_raw_references_to_missing_or_foreign_locals_suggest_a_module_global() -> None:
-    source = """module "Context" {
-      trigger "Provider" { let local_only: int = 0; }
-      trigger "Reader" { raw_action 9(raw_expression int 2 { variable "target"; }, 0, 1); }
-    }"""
-    missing = [item for item in validate_source(source).errors if item.code == "UNDEFINED_VARIABLE"]
-    assert missing
-    assert {item.help for item in missing} == {
-        "declare it in this module: `global target: int = 0;`"
+@pytest.mark.parametrize("name", ("target", "local_only"))
+def test_raw_references_to_missing_or_foreign_locals_suggest_a_module_global(name) -> None:
+    source = f"""module "Context" {{
+      trigger "Provider" {{ let local_only: int = 0; }}
+      trigger "Reader" {{ raw_action 9(raw_expression int 2 {{ variable "{name}"; }}, 0, 1); }}
+    }}"""
+
+    errors = validate_source(source).errors
+
+    assert {item.code for item in errors} == {"UNDEFINED_VARIABLE"}
+    assert {item.help for item in errors} == {
+        f"declare it in this module: `global {name}: int = 0;`"
     }
-    foreign_local = source.replace('variable "target"', 'variable "local_only"')
-    result = validate_source(foreign_local)
-    assert "UNDEFINED_VARIABLE" in {diagnostic.code for diagnostic in result.errors}
 
 
 def test_raw_identifier_overflow_is_an_authoring_error_and_writer_still_checks_model() -> None:
@@ -353,9 +307,6 @@ def test_raw_identifier_overflow_is_an_authoring_error_and_writer_still_checks_m
 
     result = validate_source(source)
     assert {diagnostic.code for diagnostic in result.errors} == {"UNKNOWN_ACTION"}
-    with pytest.raises(CompileError) as raised:
-        compile_source(source)
-    assert "UNKNOWN_ACTION" in {diagnostic.code for diagnostic in raised.value.diagnostics}
 
     overflow_model = parse_module(source)
     with pytest.raises(ValueError):

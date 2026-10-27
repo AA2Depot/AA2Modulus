@@ -1,74 +1,15 @@
-"""Framed-server regressions for completion contexts and replacement edits."""
+"""Completion over stdio: UTF-16 positions in and out, and the language ID of untitled libraries."""
 
 from __future__ import annotations
 
 
-def _completion(client, uri, source, character, version=1):
-    if version == 1:
-        client.open(uri, source)
-    else:
-        client.change(uri, source, version)
-    return client.request(
-        "textDocument/completion",
-        {
-            "textDocument": {"uri": uri},
-            "position": {"line": 0, "character": character},
-        },
-    )
-
-
-def test_stdio_completion_returns_readonly_members_and_full_midtoken_edit(client):
-    uri = "untitled:CompletionMembers"
-    source = 'module "M😀" { trigger "T" { let day: int = Globals.CurrentDay; } }'
-    start = source.index("Globals.CurrentDay")
-    cursor = start + len("Globals.Cur")
-    # LSP positions count UTF-16 code units, so the emoji adds one extra unit.
-    items = _completion(client, uri, source, cursor + 1)
-    item = next(value for value in items if value["label"] == "Globals.CurrentDay")
-
-    assert item["textEdit"]["newText"] == "Globals.CurrentDay"
-    assert item["textEdit"]["range"] == {
-        "start": {"line": 0, "character": start + 1},
-        "end": {"line": 0, "character": start + len("Globals.CurrentDay") + 1},
-    }
-
-
-def test_stdio_initial_dot_response_supports_local_prefix_refinement(client):
-    uri = "untitled:CompletionFilterText"
-    source = 'module "M" { trigger "T" { let day: int = Globals.'
-    items = _completion(client, uri, source, len(source))
-
-    assert items
-    assert all(item.get("filterText") == item["label"] for item in items)
-    refined = [
-        item
-        for item in items
-        if item.get("filterText", item["label"]).casefold().startswith("Globals.P".casefold())
-    ]
-    assert "Globals.PlayerCharacter" in {item["label"] for item in refined}
-
-
-def test_stdio_completion_inside_existing_call_keeps_arguments_and_suffix(client):
-    uri = "untitled:CompletionCall"
-    source = 'module "M" { trigger "T" { Noti("keep", true); } }'
-    start = source.index("Noti")
-    items = _completion(client, uri, source, start + 2)
-    item = next(value for value in items if value["label"] == "Notification")
-
-    assert item["textEdit"]["newText"] == "Notification"
-    assert item["textEdit"]["range"] == {
-        "start": {"line": 0, "character": start},
-        "end": {"line": 0, "character": start + len("Noti")},
-    }
-
-
-def test_framed_server_member_completion_and_signature_use_utf16_positions(snippet_client):
+def test_member_completion_and_signature_use_utf16_positions(full_client):
     uri = "untitled:ReceiverFramed"
     prefix = 'module "M😀" { trigger "T" { on CARD_ADDED; let actor: card = ThisCard; '
     source = prefix + "actor.AddLi"
-    snippet_client.open(uri, source)
+    full_client.open(uri, source)
     units = len(source) + 1
-    items = snippet_client.request(
+    items = full_client.request(
         "textDocument/completion",
         {"textDocument": {"uri": uri}, "position": {"line": 0, "character": units}},
     )
@@ -83,10 +24,23 @@ def test_framed_server_member_completion_and_signature_use_utf16_positions(snipp
     assert item["insertTextFormat"] == 2
 
     source = prefix + "actor.AddLike("
-    snippet_client.change(uri, source, 2)
-    signature = snippet_client.request(
+    full_client.change(uri, source, 2)
+    signature = full_client.request(
         "textDocument/signatureHelp",
         {"textDocument": {"uri": uri}, "position": {"line": 0, "character": len(source) + 1}},
     )
     assert signature["signatures"][0]["label"] == "AddLike(towards: card, amount: int)"
     assert signature["activeParameter"] == 0
+
+
+def test_untitled_library_gets_the_library_starter(full_client):
+    uri = "untitled:Library"
+    full_client.open(uri, "", language_id="aa2mi")
+    items = full_client.request(
+        "textDocument/completion",
+        {"textDocument": {"uri": uri}, "position": {"line": 0, "character": 0}},
+    )
+    labels = {item["label"] for item in items}
+
+    assert min(items, key=lambda item: item["sortText"])["label"] == "library"
+    assert "module" not in labels

@@ -13,8 +13,9 @@ from aa2modulus.lsp.features.rename import RenameError, StaleRename, prepare_ren
 from aa2modulus.lsp.protocol.positions import PositionCodec
 from aa2modulus.lsp.workspace.documents import SourceWorkspace
 from aa2modulus.lsp.workspace.index import WorkspaceIndex, analyze_closed, discover
-from tests.support.lsp_workspace import analyze_workspace
+from tests.support.lsp_workspace import analyze_workspace, open_document
 
+URI = "untitled:Locals"
 LOCALS = """module "M" {
   global g: int = 1;
   trigger "T" {
@@ -40,12 +41,6 @@ module "M" {
 }"""
 
 
-def _open(source: str, context, uri: str = "untitled:A"):
-    workspace = SourceWorkspace()
-    workspace.open(uri, source, 1)
-    return workspace, analyze_workspace(workspace, uri, context)
-
-
 def _at(source: str, needle: str, offset: int = 0, *, start: int = 0) -> types.Position:
     return PositionCodec(source).position(source.index(needle, start) + offset)
 
@@ -66,7 +61,7 @@ def _library_workspace(tmp_path, context):
 
 
 def test_highlights_mark_declarations_and_assignment_targets_as_writes(context):
-    _, snapshot = _open(LOCALS, context)
+    _, snapshot = open_document(LOCALS, context, URI)
     highlights = document_highlights(snapshot, _at(LOCALS, "count = count"), "utf-16")
     codec = PositionCodec(LOCALS)
     marked = {
@@ -101,7 +96,7 @@ def test_references_cover_library_uses_from_every_analysis(tmp_path, context):
 
 
 def test_prepare_rename_refuses_built_ins_and_offers_the_declared_name(context):
-    _, snapshot = _open(LOCALS, context)
+    _, snapshot = open_document(LOCALS, context, URI)
     with pytest.raises(RenameError, match="built-in"):
         prepare_rename(snapshot, _at(LOCALS, "WriteLog"), "utf-16")
     placeholder = prepare_rename(snapshot, _at(LOCALS, '"count")', 2), "utf-16")
@@ -110,37 +105,39 @@ def test_prepare_rename_refuses_built_ins_and_offers_the_declared_name(context):
 
 
 def test_rename_local_edits_every_use_form_and_nothing_in_strings_or_comments(context):
-    _, snapshot = _open(LOCALS, context)
+    _, snapshot = open_document(LOCALS, context, URI)
     target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
     plan = rename([snapshot], target, "total", context)
-    assert plan.files["untitled:A"].edited == LOCALS.replace("let count", "let total").replace(
-        "count = count", "total = total"
-    ).replace('variable("count")', 'variable("total")').replace("for count", "for total").replace(
-        "(count > 1)", "(total > 1)"
+    assert (
+        plan.files[URI].edited
+        == """module "M" {
+  global g: int = 1;
+  trigger "T" {
+    on CARD_ADDED;
+    let total: int = 0;
+    total = total + 1;
+    variable("total") = 2;
+    for total from 0 to 3 { WriteLog("count"); }
+    // count in a comment
+    if (total > 1) { WriteLog("big"); }
+  }
+}"""
     )
 
 
-def test_rename_to_a_non_identifier_quotes_declarations_and_wraps_uses(context):
-    _, snapshot = _open(LOCALS, context)
+@pytest.mark.parametrize("name", ["my count", "If"], ids=["non-identifier", "reserved-word"])
+def test_rename_to_an_unwritable_name_quotes_declarations_and_wraps_uses(context, name):
+    _, snapshot = open_document(LOCALS, context, URI)
     target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
-    edited = rename([snapshot], target, "my count", context).files["untitled:A"].edited
-    assert 'let "my count": int = 0;' in edited
-    assert 'variable("my count") = variable("my count") + 1;' in edited
-    assert 'for "my count" from 0 to 3 { WriteLog("count"); }' in edited
-    assert 'if (variable("my count") > 1)' in edited
-
-
-def test_rename_to_a_reserved_word_quotes_declarations_and_wraps_uses(context):
-    _, snapshot = _open(LOCALS, context)
-    target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
-    edited = rename([snapshot], target, "If", context).files["untitled:A"].edited
-    assert 'let "If": int = 0;' in edited
-    assert 'variable("If") = variable("If") + 1;' in edited
-    assert 'for "If" from 0 to 3' in edited
+    edited = rename([snapshot], target, name, context).files[URI].edited
+    assert f'let "{name}": int = 0;' in edited
+    assert f'variable("{name}") = variable("{name}") + 1;' in edited
+    assert f'for "{name}" from 0 to 3 {{ WriteLog("count"); }}' in edited
+    assert f'if (variable("{name}") > 1)' in edited
 
 
 def test_rename_refuses_shadowing_protected_names_and_new_errors(context):
-    _, snapshot = _open(LOCALS, context)
+    _, snapshot = open_document(LOCALS, context, URI)
     target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
     with pytest.raises(RenameError, match="refer to the global 'g'"):
         rename([snapshot], target, "g", context)
@@ -151,14 +148,14 @@ def test_rename_refuses_shadowing_protected_names_and_new_errors(context):
     duplicate = LOCALS.replace(
         "let count: int = 0;", "let count: int = 0;\n    let other: int = 0;"
     )
-    _, snapshot = _open(duplicate, context)
+    _, snapshot = open_document(duplicate, context, URI)
     target = target_at(snapshot, _at(duplicate, "count: int"), "utf-16")
     with pytest.raises(RenameError, match="would cause an error"):
         rename([snapshot], target, "other", context)
 
 
 def test_unchanged_name_produces_no_edits(context):
-    _, snapshot = _open(LOCALS, context)
+    _, snapshot = open_document(LOCALS, context, URI)
     target = target_at(snapshot, _at(LOCALS, "count: int"), "utf-16")
     assert rename([snapshot], target, "count", context).files == {}
 
@@ -285,5 +282,9 @@ def test_index_reuses_analyses_until_an_input_changes(tmp_path, context):
     assert index.cached(str(root), {str(library): LIBRARY}) is None
     library.write_text(LIBRARY + "\n", encoding="utf-8")
     assert index.cached(str(root), {}) is None
+    # A watched event drops an analysis even when its inputs are unchanged.
+    snapshot, signature = analyze_closed(str(root), context, {})
+    index.store(str(root), snapshot, signature)
+    assert index.cached(str(root), {}) is snapshot
     index.changed([types.FileEvent(root.as_uri(), types.FileChangeType.Changed)])
-    assert str(root) not in index.entries
+    assert index.cached(str(root), {}) is None

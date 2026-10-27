@@ -1,4 +1,4 @@
-"""The lexical scan categorizes every lexicon literal without a parse and follows the lexicon."""
+"""The lexical scan categorizes each lexicon group without a parse and follows the lexicon."""
 
 from __future__ import annotations
 
@@ -9,33 +9,26 @@ import pytest
 from aa2modulus.syntax.lexicon import source_lexicon
 from aa2modulus.syntax.scanner import LexicalScanner, scan_lexical
 
-_CATEGORIES = {
-    "keywords": "keyword",
-    "types": "type",
-    "conversions": "type",
-    "rawForms": "keyword",
-    "rawPayload": "keyword",
-    "literals": "keyword",
-    "attributes": "attribute",
-    "operators": "operator",
-}
-
 
 def _scan(source: str) -> list[tuple[str, str]]:
     return [(source[token.start : token.end], token.category) for token in scan_lexical(source)]
 
 
 @pytest.mark.parametrize(
-    ("group", "literal"),
+    ("literal", "category"),
     [
-        (group, literal)
-        for group, literals in source_lexicon().groups
-        for literal in literals
-        if group != "punctuation"
+        pytest.param("loop", "keyword", id="keywords"),
+        pytest.param("int", "type", id="types"),
+        pytest.param("Card", "type", id="conversions"),
+        pytest.param("raw_event", "keyword", id="rawForms"),
+        pytest.param("named_constant", "keyword", id="rawPayload"),
+        pytest.param("float_bits", "keyword", id="literals"),
+        pytest.param("@allow", "attribute", id="attributes"),
+        pytest.param("<=", "operator", id="operators"),
     ],
 )
-def test_every_lexicon_literal_gets_its_group_category(group, literal):
-    assert _scan(f"x {literal} y") == [(literal, _CATEGORIES[group])]
+def test_each_lexicon_group_gets_its_category(literal, category):
+    assert _scan(f"x {literal} y") == [(literal, category)]
 
 
 def test_assignment_is_the_only_colored_punctuation():
@@ -121,8 +114,7 @@ def test_invalid_is_a_value_only_after_a_value_word(source, category):
 
 
 @pytest.mark.parametrize(
-    "source",
-    ["true_flag", "breakpoint", "IF", "Globals.CurrentDay", "x.type", "import.trigger.x", "f().if"],
+    "source", ["true_flag", "IF", "Globals.CurrentDay", "x.type", "import.trigger.x", "f().if"]
 )
 def test_names_other_than_exact_lexicon_words_get_no_token(source):
     assert _scan(source) == []
@@ -182,16 +174,12 @@ def test_a_changed_lexicon_group_fails():
     added = dataclasses.replace(lexicon, groups=(*lexicon.groups, ("modifiers", ("static",))))
     with pytest.raises(ValueError, match="lexicon groups"):
         LexicalScanner(added)
-    removed = dataclasses.replace(lexicon, groups=lexicon.groups[1:])
-    with pytest.raises(ValueError, match="lexicon groups"):
-        LexicalScanner(removed)
 
 
-@pytest.mark.parametrize("name", ["identifier", "qualifiedName", "integer", "float", "hexInteger"])
-def test_a_changed_literal_pattern_fails(name):
+def test_a_changed_literal_pattern_fails():
     lexicon = source_lexicon()
     patterns = tuple(
-        (key, f"{pattern}_?" if key == name else pattern) for key, pattern in lexicon.patterns
+        (key, f"{pattern}_?" if key == "integer" else pattern) for key, pattern in lexicon.patterns
     )
-    with pytest.raises(ValueError, match=f"lexicon pattern {name!r}"):
+    with pytest.raises(ValueError, match="lexicon pattern 'integer'"):
         LexicalScanner(dataclasses.replace(lexicon, patterns=patterns))

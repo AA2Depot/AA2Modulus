@@ -6,9 +6,7 @@ from lsprotocol import types
 
 from aa2modulus.lsp.features.inlay_hints import inlay_hints
 from aa2modulus.lsp.protocol.positions import PositionCodec
-from aa2modulus.lsp.workspace.documents import SourceWorkspace
-from tests.support.lsp_client import Client
-from tests.support.lsp_workspace import analyze_workspace
+from tests.support.lsp_workspace import open_document
 
 SOURCE = """macro "debug" {
   param "text" string;
@@ -36,10 +34,7 @@ WHOLE = types.Range(types.Position(0, 0), types.Position(10_000, 0))
 
 
 def _snapshot(tmp_path, context, source: str = SOURCE):
-    uri = (tmp_path / "root.aa2m").as_uri()
-    workspace = SourceWorkspace()
-    workspace.open(uri, source, 1)
-    return analyze_workspace(workspace, uri, context)
+    return open_document(source, context, (tmp_path / "root.aa2m").as_uri())[1]
 
 
 def _hints(tmp_path, context, source: str = SOURCE, range_=WHOLE, encoding: str = "utf-16"):
@@ -126,31 +121,23 @@ def test_positions_follow_the_negotiated_encoding(tmp_path, context):
     assert columns["utf-16"] - columns["utf-32"] == 1
 
 
-def test_session_advertises_and_answers_inlay_hints(tmp_path):
-    client = Client()
-    try:
-        assert client.initialized["capabilities"]["inlayHintProvider"]
-        uri = (tmp_path / "root.aa2m").as_uri()
-        client.open(uri, SOURCE)
-        result = client.request(
-            "textDocument/inlayHint",
-            {
-                "textDocument": {"uri": uri},
-                "range": {
-                    "start": {"line": 11, "character": 0},
-                    "end": {"line": 12, "character": 0},
-                },
+def test_session_answers_inlay_hints_for_a_range(client, tmp_path):
+    uri = (tmp_path / "root.aa2m").as_uri()
+    client.open(uri, SOURCE)
+    result = client.request(
+        "textDocument/inlayHint",
+        {
+            "textDocument": {"uri": uri},
+            "range": {
+                "start": {"line": 11, "character": 0},
+                "end": {"line": 12, "character": 0},
             },
-        )
-        assert [item["label"] for item in result] == ["fallback:", "text:", "level:"]
-        assert result[0] == {
-            "position": {"line": 11, "character": SOURCE.splitlines()[11].index("true")},
-            "label": "fallback:",
-            "kind": 2,
-            "paddingRight": True,
-        }
-        client.finish()
-    finally:
-        if client.process.poll() is None:
-            client.process.terminate()
-            client.process.wait(timeout=10)
+        },
+    )
+    assert [item["label"] for item in result] == ["fallback:", "text:", "level:"]
+    assert result[0] == {
+        "position": {"line": 11, "character": SOURCE.splitlines()[11].index("true")},
+        "label": "fallback:",
+        "kind": 2,
+        "paddingRight": True,
+    }

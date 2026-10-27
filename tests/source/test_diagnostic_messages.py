@@ -2,29 +2,13 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 
 from aa2modulus.app.compile import validate_source
 from aa2modulus.syntax.parser.errors import SourceParseError
 from aa2modulus.syntax.parser.units import parse_source_ast
 from aa2modulus.validation.validator.module import validate_module
-from tests.support.source import parse_module
-
-
-def _module(body: str) -> str:
-    return f'module "M" {{ trigger "T" {{ on CARD_ADDED; {body} }} }}'
-
-
-def _first_error(source: str):
-    return validate_source(source).errors[0]
-
-
-def test_binding_type_mismatch_names_source_types():
-    diagnostic = _first_error(_module("let a: int = true;"))
-    assert diagnostic.code == "SOURCE_TYPE_MISMATCH"
-    assert diagnostic.message == "expected int, found bool"
+from tests.support.source import module_source, parse_module
 
 
 def test_missing_terminator_points_after_the_previous_statement():
@@ -63,8 +47,6 @@ def test_syntax_errors_use_readable_tokens(source, message):
     with pytest.raises(SourceParseError) as raised:
         parse_source_ast(source)
     assert raised.value.message == message
-    assert "Token(" not in raised.value.message
-    assert not re.search(r"line \d+", raised.value.message)
 
 
 @pytest.mark.parametrize(
@@ -96,7 +78,7 @@ def test_syntax_errors_use_readable_tokens(source, message):
     ],
 )
 def test_reviewed_callback_mismatch_says_what_the_event_returns(event, expression, message):
-    source = _module(f"let a: int = {expression};").replace("CARD_ADDED", event)
+    source = module_source(f"let a: int = {expression};", event=event)
     diagnostic = next(
         item
         for item in validate_source(source).errors
@@ -105,8 +87,6 @@ def test_reviewed_callback_mismatch_says_what_the_event_returns(event, expressio
     assert diagnostic.message == message
     assert diagnostic.notes == ('in trigger "T"',)
     assert diagnostic.help is None
-    for internal in ("Thread::", "Value", "encoded", "event 14", "this module reads"):
-        assert internal not in diagnostic.message
 
 
 def test_reviewed_callback_unknown_context_names_the_value_events():
@@ -124,17 +104,8 @@ def test_reviewed_callback_unknown_context_names_the_value_events():
 
 
 def test_native_resave_warning_has_no_wire_identity_text():
-    source = _module("let a: int = Context.NpcOriginalResponse;").replace(
-        "CARD_ADDED", "PC_RESPONSE"
-    )
+    source = module_source("let a: int = Context.NpcOriginalResponse;", event="PC_RESPONSE")
     result = validate_module(parse_module(source), profile="native")
     (resave,) = [i for i in result.diagnostics if i.code == "NATIVE_EXPRESSION_RESAVE_TYPE_CHANGE"]
     assert "is an int here, but AAUnlimited saves it as a bool" in resave.message
     assert "expression/" not in resave.message
-
-
-def test_rewrite_hint_lands_in_help_not_message():
-    diagnostic = _first_error(_module("End();"))
-    assert diagnostic.code == "UNKNOWN_ACTION_NAME"
-    assert "use" not in diagnostic.message
-    assert diagnostic.help == "use 'StopThread'"

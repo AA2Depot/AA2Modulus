@@ -9,7 +9,7 @@ from aa2modulus.lsp.completion.dispatch import completions
 from aa2modulus.lsp.features.navigation import definition, document_symbols, hover
 from aa2modulus.lsp.protocol.positions import PositionCodec
 from aa2modulus.lsp.workspace.documents import SourceWorkspace
-from tests.support.lsp_workspace import analyze_workspace, apply_text_edit
+from tests.support.lsp_workspace import analyze_workspace, apply_text_edit, open_document
 
 _SOURCE = """const Top: int = 9;
 const TopS: string = "s";
@@ -32,12 +32,6 @@ module "M" {
 """
 
 
-def _snapshot(source, context, uri="untitled:Constants"):
-    workspace = SourceWorkspace()
-    workspace.open(uri, source, 1)
-    return workspace, analyze_workspace(workspace, uri, context)
-
-
 def _at(source, text, member=None, nth=0):
     index = -1
     for _ in range(nth + 1):
@@ -46,7 +40,7 @@ def _at(source, text, member=None, nth=0):
 
 
 def test_hover_on_every_reference_form_and_declaration(context):
-    _, snapshot = _snapshot(_SOURCE, context)
+    _, snapshot = open_document(_SOURCE, context)
     cases = [
         (_at(_SOURCE, "global g: int = Limit", "Limit"), "const Limit: int = 5"),
         (_at(_SOURCE, "let a: int = Limit", "Limit"), "const Limit: int = 5"),
@@ -66,7 +60,7 @@ def test_hover_on_every_reference_form_and_declaration(context):
 
 
 def test_definition_from_every_reference_form(context):
-    workspace, snapshot = _snapshot(_SOURCE, context)
+    workspace, snapshot = open_document(_SOURCE, context)
 
     def target(position):
         (location,) = definition(snapshot, position, "utf-16", workspace)
@@ -93,7 +87,7 @@ def test_definition_from_every_reference_form(context):
 
 
 def test_document_symbols_list_constants(context):
-    _, snapshot = _snapshot(_SOURCE, context)
+    _, snapshot = open_document(_SOURCE, context)
     symbols = document_symbols(snapshot, "utf-16")
     top = next(item for item in symbols if item.name == "Top")
     assert top.kind == SymbolKind.Constant
@@ -177,7 +171,7 @@ def test_no_constant_completion_in_other_strings_or_statements(context):
 
 def test_partial_and_erroneous_source_keeps_constants_navigable(context):
     broken = _SOURCE.replace("let a: int = Limit;", "let a: int = Limit +;")
-    workspace, snapshot = _snapshot(broken, context, "untitled:Broken")
+    workspace, snapshot = open_document(broken, context, "untitled:Broken")
     result = hover(snapshot, _at(broken, "const Limit", "Limit"), "utf-16")
     assert result is not None and "const Limit: int = 5" in result.contents.value
     names = {item.name for item in document_symbols(snapshot, "utf-16")}

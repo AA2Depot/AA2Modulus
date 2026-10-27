@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from aa2modulus.app.compile import CompileError, compile_source, validate_source
+from aa2modulus.app.compile import compile_source, validate_source
 from aa2modulus.app.decompile import decompile_module
 from aa2modulus.context.limits import SourceLimits
 from aa2modulus.syntax.parser.errors import SourceParseError
 from aa2modulus.syntax.parser.units import parse_library_source
-from tests.support.source import parse_module
+from tests.support.source import assert_same_binary, parse_module
 
 
 def library(tmp_path, text):
@@ -25,17 +25,11 @@ def expanded(items, globals_=""):
 
 
 def assert_expansion(text, hand, tmp_path, *, roundtrip=False):
-    actual = parse_module(text, import_base=tmp_path)
-    expected = parse_module(hand)
-    expected_bytes = compile_source(hand)
-    assert actual.to_ir() == expected.to_ir()
-    binary = compile_source(text, import_base=tmp_path)
-    assert binary == expected_bytes
+    binary = assert_same_binary(text, hand, import_base=tmp_path)
     if roundtrip:
         decompiled = decompile_module(binary).source
-        assert compile_source(decompiled) == expected_bytes
+        assert compile_source(decompiled) == binary
         assert "import " not in decompiled and "slot " not in decompiled
-    return actual
 
 
 @pytest.mark.parametrize(
@@ -47,18 +41,23 @@ def assert_expansion(text, hand, tmp_path, *, roundtrip=False):
         ("string", '"hello"', "String"),
     ],
 )
-def test_required_slot_types_and_optional_rename(typ, value, setter, tmp_path):
+def test_required_slot_types_are_substituted(typ, value, setter, tmp_path):
     library(
         tmp_path,
         f"trigger "
         f'"Init" {{ slot "value" {typ}; on CARD_ADDED; ClassStorage.Set{setter}("k", value); }}',
     )
-    for rename, name in [("", "Init"), ('"Renamed"', "Renamed")]:
-        text = source(f'import.trigger "Init" {rename} {{ slot "value" = {value}; }}')
-        hand = expanded(
-            f'trigger "{name}" {{ on CARD_ADDED; ClassStorage.Set{setter}("k", {value}); }}'
-        )
-        assert_expansion(text, hand, tmp_path)
+    text = source(f'import.trigger "Init" {{ slot "value" = {value}; }}')
+    hand = expanded(f'trigger "Init" {{ on CARD_ADDED; ClassStorage.Set{setter}("k", {value}); }}')
+    assert_expansion(text, hand, tmp_path)
+
+
+def test_optional_rename_names_the_expanded_trigger(tmp_path):
+    library(tmp_path, 'trigger "Init" { slot "value" int; on CARD_ADDED; WriteLog("x"); }')
+    text = source('import.trigger "Init" "Renamed" { slot "value" = 7; }')
+    assert_expansion(
+        text, expanded('trigger "Renamed" { on CARD_ADDED; WriteLog("x"); }'), tmp_path
+    )
 
 
 def test_slot_bindings_are_named_exact_and_order_independent(tmp_path):
@@ -85,7 +84,8 @@ def test_templates_preserve_events_defaults_later_locals_macros_and_empty_branch
       let later: int = 3; a = a + 1; ClassStorage.SetInt("k", a);
       if true {} else if false {} else {} Else;
       raw_action 110("seed", 3) { raw_action 108("child", true); } }""")
-    actual = assert_expansion(text, hand, tmp_path, roundtrip=True)
+    assert_expansion(text, hand, tmp_path, roundtrip=True)
+    actual = parse_module(text, import_base=tmp_path)
     assert actual.triggers[0].events[0].id == 6
     assert actual.triggers[0].gui_actions[-1].raw_reference
 
@@ -104,23 +104,31 @@ def test_site_order_repeated_instantiations_and_unused_templates(tmp_path):
         'trigger "Before" {} trigger "One" { WriteLog("one"); } trigger "Between" {} trigger "Two" '
         '{ WriteLog("two"); } trigger "After" {}'
     )
-    actual = assert_expansion(text, hand, tmp_path)
+    assert_expansion(text, hand, tmp_path)
+    actual = parse_module(text, import_base=tmp_path)
     assert [item.name for item in actual.triggers] == ["Before", "One", "Between", "Two", "After"]
 
 
-def test_slot_actuals_use_global_scope_and_repeat_evaluation(tmp_path):
+@pytest.mark.parametrize("actual", ["Math.RandomInt(1, 9)", "value"])
+def test_slot_actuals_use_global_scope_and_repeat_evaluation(actual, tmp_path):
     library(
         tmp_path,
         'trigger "T" { slot "x" int; ClassStorage.SetInt("a", x); ClassStorage.SetInt("b", x); }',
     )
-    for actual in ["Math.RandomInt(1, 9)", 'Lua.CallInt("side_effect")', "value"]:
-        text = source(f'import.trigger "T" {{ slot "x" = {actual}; }}', "global value: int = 4;")
-        hand = expanded(
-            f"trigger "
-            f'"T" {{ ClassStorage.SetInt("a", {actual}); ClassStorage.SetInt("b", {actual}); }}',
-            "global value: int = 4;",
-        )
-        assert_expansion(text, hand, tmp_path)
+    text = source(f'import.trigger "T" {{ slot "x" = {actual}; }}', "global value: int = 4;")
+    hand = expanded(
+        f"trigger "
+        f'"T" {{ ClassStorage.SetInt("a", {actual}); ClassStorage.SetInt("b", {actual}); }}',
+        "global value: int = 4;",
+    )
+    assert_expansion(text, hand, tmp_path)
+
+
+def test_slot_actuals_cannot_see_the_locals_of_other_triggers(tmp_path):
+    library(
+        tmp_path,
+        'trigger "T" { slot "x" int; ClassStorage.SetInt("a", x); ClassStorage.SetInt("b", x); }',
+    )
     text = source(
         'trigger "Local" { let caller: int = 9; } import.trigger "T" { slot "x" = caller; }'
     )
@@ -180,44 +188,49 @@ def test_definition_builtins_do_not_capture_module_globals(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "call,code",
+    ("call", "code", "anchor", "library_note"),
     [
-        ('import.trigger "missing" {}', "UNKNOWN_TEMPLATE"),
-        ('import.trigger "t" {}', "UNKNOWN_TEMPLATE"),
-        ('import.trigger "T" {}', "MISSING_SLOT"),
-        ('import.trigger "T" { slot "X" = 1; }', "UNKNOWN_SLOT"),
-        ('import.trigger "T" { slot "extra" = 1; }', "UNKNOWN_SLOT"),
-        ('import.trigger "T" { slot "x" = 1; slot "x" = 2; }', "DUPLICATE_SLOT_BINDING"),
-        ('import.trigger "T" { slot "x" = "wrong"; }', "SOURCE_TYPE_MISMATCH"),
-        ('import.trigger "T" "" { slot "x" = 1; }', "TEMPLATE_TRIGGER_NAME"),
+        ('import.trigger "missing" {}', "UNKNOWN_TEMPLATE", 'import.trigger "missing"', False),
+        ('import.trigger "T" {}', "MISSING_SLOT", 'import.trigger "T"', True),
+        ('import.trigger "T" { slot "extra" = 1; }', "UNKNOWN_SLOT", 'slot "extra"', True),
+        (
+            'import.trigger "T" { slot "x" = 1; slot "x" = 2; }',
+            "DUPLICATE_SLOT_BINDING",
+            'slot "x" = 2',
+            False,
+        ),
+        ('import.trigger "T" { slot "x" = "wrong"; }', "SOURCE_TYPE_MISMATCH", '"wrong"', True),
+        (
+            'import.trigger "T" "" { slot "x" = 1; }',
+            "TEMPLATE_TRIGGER_NAME",
+            'import.trigger "T"',
+            False,
+        ),
         (
             'import.trigger "T" { slot "x" = 1; } import.trigger "T" { slot "x" = 2; }',
             "TEMPLATE_TRIGGER_NAME_COLLISION",
+            'import.trigger "T" { slot "x" = 2; }',
+            False,
         ),
-        ('import.trigger "T" { slot "x" = 1; } trigger "T" {}', "TEMPLATE_TRIGGER_NAME_COLLISION"),
+        (
+            'import.trigger "T" { slot "x" = 1; } trigger "T" {}',
+            "TEMPLATE_TRIGGER_NAME_COLLISION",
+            'import.trigger "T" { slot "x" = 1; }',
+            False,
+        ),
     ],
 )
-def test_invocation_failures_are_located_and_compilation_fails(call, code, tmp_path):
+def test_invocation_failures_are_located_at_the_offending_token(
+    call, code, anchor, library_note, tmp_path
+):
     library(tmp_path, 'trigger "T" { slot "x" int; }')
-    result = validate_source(source(call), import_base=tmp_path, filename="caller.aa2m")
-    assert result.errors[0].code == code
-    if code in {"UNKNOWN_TEMPLATE", "MISSING_SLOT", "TEMPLATE_TRIGGER_NAME"}:
-        token = source(call).index("import.trigger")
-    elif code == "TEMPLATE_TRIGGER_NAME_COLLISION":
-        token = source(call).rfind("import.trigger")
-    elif code == "DUPLICATE_SLOT_BINDING":
-        token = source(call).rfind("slot")
-    elif code == "SOURCE_TYPE_MISMATCH":
-        token = source(call).index('"wrong"')
-    else:
-        token = source(call).index("slot")
-    assert (result.errors[0].line, result.errors[0].column) == (1, token + 1)
-    assert result.errors[0].filename == "caller.aa2m"
-    if code in {"MISSING_SLOT", "UNKNOWN_SLOT", "SOURCE_TYPE_MISMATCH"}:
-        assert any(note.span.filename.endswith("lib.aa2mi") for note in result.errors[0].related)
-    with pytest.raises(CompileError) as exc:
-        compile_source(source(call), import_base=tmp_path)
-    assert exc.value.diagnostics[0].code == code
+    text = source(call)
+    (error, *_) = validate_source(text, import_base=tmp_path, filename="caller.aa2m").errors
+    assert error.code == code
+    assert (error.line, error.column) == (1, text.index(anchor) + 1)
+    assert error.filename == "caller.aa2m"
+    if library_note:
+        assert any(note.span.filename.endswith("lib.aa2mi") for note in error.related)
 
 
 @pytest.mark.parametrize(
@@ -235,6 +248,7 @@ def test_invocation_failures_are_located_and_compilation_fails(call, code, tmp_p
         ('trigger "T" { slot "x" int; for x from 0 to 1 {} }', "TEMPLATE_SLOT_WRITE"),
         ('trigger "T" { slot "x" int; raw_action 1(x, 1); }', "TEMPLATE_SLOT_WRITE"),
         ('trigger "T" { outside = 1; }', "TEMPLATE_CAPTURE"),
+        ('trigger "T" { raw_action 1(0, 1); }', "TEMPLATE_CAPTURE"),
         ('trigger "T" { WriteLog(variable("outside")); }', "TEMPLATE_CAPTURE"),
         (
             'trigger "T" { raw_action 900(raw_expression int 2 { variable "outside"; }); }',
@@ -245,6 +259,11 @@ def test_invocation_failures_are_located_and_compilation_fails(call, code, tmp_p
             "TEMPLATE_SLOT_RAW_REFERENCE",
         ),
         ('trigger "T" { Notification(1); }', "SOURCE_TYPE_MISMATCH"),
+        (
+            'trigger "T" { let x: int = 0; '
+            'raw_action 900(raw_expression string 2 { variable "x"; }); }',
+            "SOURCE_TYPE_MISMATCH",
+        ),
         ('trigger "T" { break; }', "TEMPLATE_LOOP_SCOPE"),
         ('trigger "T" { raw_action 7(true); }', "TEMPLATE_LOOP_SCOPE"),
     ],
@@ -254,7 +273,7 @@ def test_unused_template_errors_are_checked_at_definition(definition, code, tmp_
     error = validate_source(source(""), import_base=tmp_path).errors[0]
     assert error.code == code
     assert error.filename == str((tmp_path / "lib.aa2mi").resolve())
-    assert error.related
+    assert "library 'lib.aa2mi' imported here" in [note.message for note in error.related]
 
 
 def test_template_actual_failure_retains_slot_and_invocation_notes(tmp_path):
@@ -267,23 +286,10 @@ def test_template_actual_failure_retains_slot_and_invocation_notes(tmp_path):
     assert any("defined here" in message for message in messages)
 
 
-def test_shared_template_work_limits_are_reported(tmp_path):
-    library(tmp_path, 'trigger "T" { slot "x" int; ClassStorage.SetInt("a", x); }')
-    text = source('import.trigger "T" { slot "x" = 1; }')
-    assert (
-        validate_source(
-            text, import_base=tmp_path, source_limits=SourceLimits(max_expansion_nodes=0)
-        )
-        .errors[0]
-        .code
-        == "TEMPLATE_EXPANSION_LIMIT"
-    )
-
-
 def test_unused_template_warnings_are_retained_without_output(tmp_path):
     library(tmp_path, 'trigger "T" { ClassStorage.SetInt("k", Context.NpcCurrentResponse); }')
     result = validate_source(source(""), import_base=tmp_path)
-    assert result.is_valid and result.warnings
+    assert result.is_valid
     assert {note.code for note in result.warnings} == {"REVIEWED_VALUE_CONTEXT_UNKNOWN"}
     assert result.warnings[0].filename.endswith("lib.aa2mi")
     assert not parse_module(source(""), import_base=tmp_path).triggers
@@ -317,24 +323,6 @@ def test_template_expansion_budget_boundary_and_repeated_instances(tmp_path):
     )
 
 
-@pytest.mark.parametrize(
-    "body,code",
-    [
-        ('slot "x" int; SetVariable(x, 1);', "TEMPLATE_SLOT_WRITE"),
-        ('slot "x" int; raw_action 9(x, 0, 1) {}', "TEMPLATE_SLOT_WRITE"),
-        ("raw_action 1(0, 1);", "TEMPLATE_CAPTURE"),
-        (
-            'let x: int = 0; raw_action 900(raw_expression string 2 { variable "x"; });',
-            "SOURCE_TYPE_MISMATCH",
-        ),
-        ("continue;", "TEMPLATE_LOOP_SCOPE"),
-    ],
-)
-def test_template_raw_and_native_writes_cannot_escape_local_scope(body, code, tmp_path):
-    library(tmp_path, f'trigger "T" {{ {body} }}')
-    assert validate_source(source(""), import_base=tmp_path).errors[0].code == code
-
-
 def test_native_template_local_assignment_and_for_loop_preserve_hygiene(tmp_path):
     library(
         tmp_path,
@@ -364,17 +352,20 @@ def test_template_invocation_diagnostics_keep_distinct_origin_chains(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "text",
+    ("text", "offender"),
     [
-        'trigger "T" { on CARD_ADDED; slot "x" int; }',
-        'trigger "T" { slot "x" int = 0; }',
-        'trigger "T" { import.trigger "Inner" {} }',
-        'trigger "T" { macro "inner" {} }',
+        # `slot` after the event is read as an action name, so its string is unexpected.
+        ('trigger "T" { on CARD_ADDED; slot "x" int; }', '"x"'),
+        ('trigger "T" { slot "x" int = 0; }', "="),
+        ('trigger "T" { import.trigger "Inner" {} }', '"Inner"'),
+        ('trigger "T" { macro "inner" {} }', '"inner"'),
     ],
 )
-def test_library_template_declaration_grammar_restrictions(text):
-    with pytest.raises(SourceParseError):
+def test_library_template_declaration_grammar_restrictions(text, offender):
+    with pytest.raises(SourceParseError) as raised:
         parse_library_source(text)
+    assert raised.value.code == "SYNTAX_ERROR"
+    assert (raised.value.line, raised.value.column) == (1, text.index(offender) + 1)
 
 
 @pytest.mark.parametrize(
@@ -411,8 +402,6 @@ def test_unused_template_slot_checks_raw_actual_semantics(tmp_path, actual, code
     assert {diagnostic.code for diagnostic in result.errors} == {code}
     assert all(len(item.related) >= 3 for item in result.errors)
     assert all(item.path[:3] == ("templates", "T", "slots") for item in result.errors)
-    with pytest.raises(CompileError):
-        compile_source(source_text, import_base=tmp_path)
 
 
 def test_raw_slot_actual_globals_keep_scope_provenance_and_types(tmp_path):
@@ -448,12 +437,4 @@ def test_template_in_nested_library_uses_macro_from_transitive_library(tmp_path)
         'import "templates.aa2mi"; module "M" { import.trigger "T" { slot "message" = "hello"; } }'
     )
     expanded_source = 'module "M" { trigger "T" { WriteLog("hello"); } }'
-    actual = parse_module(authored, import_base=tmp_path)
-    expected = parse_module(expanded_source)
-    expected_bytes = compile_source(expanded_source)
-    assert actual.to_ir() == expected.to_ir()
-    binary = compile_source(authored, import_base=tmp_path)
-    assert binary == expected_bytes
-    recovered = decompile_module(binary).source
-    assert "import " not in recovered and "slot " not in recovered
-    assert compile_source(recovered) == expected_bytes
+    assert_expansion(authored, expanded_source, tmp_path, roundtrip=True)

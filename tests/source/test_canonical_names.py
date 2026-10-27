@@ -5,14 +5,11 @@ from __future__ import annotations
 import pytest
 
 from aa2modulus.app.compile import parse_and_validate_source
+from tests.support.source import module_source
 
 
-def _module(body: str, event: str = "CARD_ADDED") -> str:
-    return f'module "M" {{ trigger "T" {{ on {event}; {body} }} }}'
-
-
-def _diagnostics(body: str, event: str = "CARD_ADDED", **options):
-    _, result = parse_and_validate_source(_module(body, event), **options)
+def _diagnostics(body: str, event: str = "CARD_ADDED"):
+    _, result = parse_and_validate_source(module_source(body, event=event))
     return result.diagnostics
 
 
@@ -39,35 +36,10 @@ def test_native_fallback_is_rejected_with_the_canonical_hint(body, code, canonic
     assert canonical in diagnostic.help
 
 
-@pytest.mark.parametrize(
-    ("body", "code", "hint"),
-    (
-        (
-            "AddLikePoints(ThisCard, ThisCard, 3);",
-            "UNKNOWN_ACTION_NAME",
-            "use 'ThisCard.AddLike(ThisCard, 3)'",
-        ),
-        (
-            "let a: int = LovePoints(ThisCard, ThisCard);",
-            "UNKNOWN_EXPRESSION_NAME",
-            "use 'ThisCard.Love(ThisCard)'",
-        ),
-        (
-            "let a: int = LovePoints(ThisCard);",
-            "UNKNOWN_EXPRESSION_NAME",
-            "use '<card>.Love(...)'",
-        ),
-        (
-            "SetVirtue(ThisCard, 3);",
-            "UNKNOWN_ACTION_NAME",
-            "use 'ThisCard.SetVirtue(3)'",
-        ),
-    ),
-)
-def test_native_spelling_of_a_member_target_gets_the_member_hint(body, code, hint):
-    (diagnostic,) = _diagnostics(body)
-    assert diagnostic.code == code
-    assert hint in diagnostic.help
+def test_card_first_spelling_without_a_receiver_argument_gets_the_generic_member_hint():
+    (diagnostic,) = _diagnostics("let a: int = LovePoints(ThisCard);")
+    assert diagnostic.code == "UNKNOWN_EXPRESSION_NAME"
+    assert "use '<card>.Love(...)'" in diagnostic.help
     assert "Character." not in diagnostic.help
 
 

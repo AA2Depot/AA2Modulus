@@ -5,18 +5,17 @@ from __future__ import annotations
 import pytest
 
 from aa2modulus.app.compile import (
-    CompileError,
     compile_source,
     compile_source_with_warnings,
     validate_source,
 )
 from aa2modulus.app.decompile import decompile_module
 from aa2modulus.binary.writer import encode_module
-from aa2modulus.context.operation import SourceContext
+from aa2modulus.cli.common import EXIT_OK
+from aa2modulus.cli.main import main
 from aa2modulus.metadata.schema import MetadataError
 from aa2modulus.syntax.parser.errors import SourceParseError
 from aa2modulus.syntax.parser.units import parse_source_ast, parse_source_unit
-from tests.support.cli import run_cli
 from tests.support.policy import edited_policy, policy_context
 from tests.support.source import parse_module
 
@@ -89,8 +88,6 @@ def test_each_permitted_code_is_acknowledged_and_bytes_are_unchanged(
 def test_the_same_source_without_allow_is_still_a_strict_error():
     result = validate_source(_without_allows(LET))
     assert _errors(result) == {REVIEWED}
-    with pytest.raises(CompileError):
-        compile_source(_without_allows(LET))
 
 
 def test_resave_warning_next_to_an_acknowledged_finding_is_untouched():
@@ -112,31 +109,51 @@ def test_unit_records_each_attribute_with_code_and_target_spans():
 # --- target kinds -----------------------------------------------------------
 
 
-def test_statement_nested_in_loop_and_if_is_covered():
-    source = """module "M" { trigger "T" { on PC_RESPONSE; loop { if (true) {
+TARGET_KINDS = [
+    pytest.param(
+        """module "M" { trigger "T" { on PC_RESPONSE; loop { if (true) {
       @allow(REVIEWED_VALUE_TYPE_MISMATCH)
       ClassStorage.SetInt("k", Context.NpcCurrentResponse);
-      break; } } } }"""
-    result = validate_source(source)
-    assert _errors(result) == set()
-    _acknowledged(result, REVIEWED, "<source>:2:7")
-
-
-def test_trigger_attribute_covers_every_statement_inside():
-    source = """module "M" {
+      break; } } } }""",
+        "<source>:2:7",
+        id="statement-nested-in-loop-and-if",
+    ),
+    pytest.param(
+        """module "M" {
   @allow(REVIEWED_VALUE_TYPE_MISMATCH)
-  trigger "T" { on PC_RESPONSE; let a: int = Context.NpcCurrentResponse; } }"""
-    result = validate_source(source)
-    assert not _errors(result)
-    _acknowledged(result, REVIEWED, "<source>:2:3")
+  trigger "T" { on PC_RESPONSE; let a: int = Context.NpcCurrentResponse; } }""",
+        "<source>:2:3",
+        id="trigger",
+    ),
+    pytest.param(
+        """@allow(REVIEWED_VALUE_TYPE_MISMATCH)
+module "M" { trigger "T" { on PC_RESPONSE; let v: int = Context.NpcCurrentResponse; } }""",
+        "<source>:1:1",
+        id="module",
+    ),
+    pytest.param(
+        f"""macro write {{ {MACRO_BODY} }}
+module "M" {{ trigger "T" {{ on PC_RESPONSE;
+  @allow(REVIEWED_VALUE_TYPE_MISMATCH)
+  write(); }} }}""",
+        "<source>:3:3",
+        id="macro-call-site",
+    ),
+    pytest.param(
+        f"""@allow(REVIEWED_VALUE_TYPE_MISMATCH)
+macro write {{ {MACRO_BODY} }}
+module "M" {{ trigger "T" {{ on PC_RESPONSE; write(); }} }}""",
+        "<source>:1:1",
+        id="macro-definition",
+    ),
+]
 
 
-def test_module_attribute_covers_the_whole_module():
-    source = """@allow(REVIEWED_VALUE_TYPE_MISMATCH)
-module "M" { trigger "T" { on PC_RESPONSE; let v: int = Context.NpcCurrentResponse; } }"""
+@pytest.mark.parametrize(("source", "where"), TARGET_KINDS)
+def test_attribute_on_each_target_kind_acknowledges_the_finding_inside_it(source, where):
     result = validate_source(source)
     assert not _errors(result)
-    _acknowledged(result, REVIEWED, "<source>:1:1")
+    _acknowledged(result, REVIEWED, where)
 
 
 def test_stacked_attributes_each_cover_their_own_code():
@@ -179,23 +196,6 @@ module "M" { import.trigger "Template" { slot "value" = Context.NpcCurrentRespon
     assert not _errors(result)
     (finding,) = _by_code(result, REVIEWED)
     assert finding.severity == "warning"
-
-
-def test_macro_call_site_covers_event_dependent_findings():
-    source = f"""macro write {{ {MACRO_BODY} }}
-module "M" {{ trigger "T" {{ on PC_RESPONSE;
-  @allow(REVIEWED_VALUE_TYPE_MISMATCH)
-  write(); }} }}"""
-    result = validate_source(source)
-    assert not _errors(result)
-    _acknowledged(result, REVIEWED, "<source>:3:3")
-
-
-def test_macro_definition_allow_covers_event_dependent_findings():
-    source = f"""@allow(REVIEWED_VALUE_TYPE_MISMATCH)
-macro write {{ {MACRO_BODY} }}
-module "M" {{ trigger "T" {{ on PC_RESPONSE; write(); }} }}"""
-    assert not _errors(validate_source(source))
 
 
 def test_macro_definition_defect_needs_an_allow_inside_the_definition():
@@ -300,20 +300,7 @@ def test_syntax_only_ast_api_rejects_allow_attributes():
     assert raised.value.code == "ALLOW_UNIT_REQUIRED"
 
 
-def test_expected_lists_omit_the_attribute():
-    (error,) = validate_source('module "M" { } x').diagnostics
-    assert error.message == "expected `import`, `trigger`, `macro`, `const`, or `module`, found `x`"
-
-
 # --- policy -------------------------------------------------------------------
-
-
-def test_policy_lists_exactly_the_three_reviewed_hazards():
-    assert set(SourceContext.create().source_policy.acknowledgeable_codes) == {
-        REVIEWED,
-        DEFECT,
-        INT100,
-    }
 
 
 @pytest.mark.parametrize(
@@ -333,7 +320,8 @@ def test_policy_rejects_non_hazards_and_duplicates(tmp_path, codes, message):
 def test_an_emptied_policy_list_makes_every_code_not_permitted(tmp_path):
     path = edited_policy(tmp_path, lambda document: document.update(acknowledgeable=[]))
     result = validate_source(LET, context=policy_context(path))
-    assert _by_code(result, "ALLOW_NOT_PERMITTED")
+    (rejected,) = _by_code(result, "ALLOW_NOT_PERMITTED")
+    assert f"{REVIEWED} cannot be acknowledged" in rejected.message
 
 
 # --- decompiler ----------------------------------------------------------------
@@ -347,26 +335,27 @@ def _roundtrip(source):
 
 
 @pytest.mark.parametrize(
-    ("source", "codes"),
-    [(LET, [REVIEWED]), (DEFECT_SOURCE, [DEFECT]), (INT100_SOURCE, [INT100, REVIEWED])],
+    ("source", "allow", "target"),
+    [
+        (LET, f"@allow({REVIEWED})", "let value: int = Context.NpcCurrentResponse;"),
+        (DEFECT_SOURCE, f"@allow({DEFECT})", 'Notification(Text.Replace(0, 1, 2, "x"));'),
+        (
+            INT100_SOURCE,
+            f"@allow({INT100}, {REVIEWED})",
+            "let value: int = Context.NpcOriginalResponse;",
+        ),
+    ],
     ids=["reviewed", "defective", "int100"],
 )
-def test_decompiler_inserts_allow_and_recompiles_byte_identically(source, codes):
+def test_decompiler_puts_allow_on_its_own_line_and_recompiles_byte_identically(
+    source, allow, target
+):
     recovered = _roundtrip(source)
-    for code in codes:
-        assert f"@allow({code}" in recovered.source or f", {code}" in recovered.source
-        finding = _by_code(recovered, code)
-        assert finding
-        assert all(item.severity == "warning" for item in finding)
+    lines = [line.strip() for line in recovered.source.splitlines()]
+    assert lines.count(allow) == 1
+    assert lines[lines.index(allow) + 1] == target
     assert "NATIVE_HAZARD_ALLOWED" in {item.code for item in recovered.diagnostics}
-    assert not any(item.severity == "error" for item in recovered.diagnostics)
-
-
-def test_decompiler_places_allow_on_its_own_line_before_the_local():
-    lines = _roundtrip(LET).source.splitlines()
-    index = lines.index(next(line for line in lines if "@allow" in line))
-    assert lines[index].strip() == f"@allow({REVIEWED})"
-    assert lines[index + 1].strip().startswith("let value")
+    assert {item.severity for item in recovered.diagnostics} == {"warning"}
 
 
 def test_decompiler_puts_one_allow_before_a_whole_if_chain():
@@ -391,17 +380,20 @@ def test_decompiler_adds_no_allow_without_hazards():
 # --- command line --------------------------------------------------------------
 
 
-def test_cli_validate_and_compile_succeed_with_the_acknowledged_warning(tmp_path):
+def test_cli_validate_and_compile_succeed_with_the_acknowledged_warning(tmp_path, capsys):
     source = tmp_path / "input.aa2m"
     source.write_text(LET, encoding="utf-8")
-    validated = run_cli("validate", str(source))
-    assert validated.returncode == 0
-    assert "NATIVE_HAZARD_ALLOWED" in validated.stderr + validated.stdout
     output = tmp_path / "OUT"
-    compiled = run_cli("compile", str(source), "--output", str(output))
-    assert compiled.returncode == 0
-    assert "NATIVE_HAZARD_ALLOWED" in compiled.stderr + compiled.stdout
-    assert "compiled with 2 warnings" in compiled.stderr + compiled.stdout
+
+    assert main(["validate", str(source)]) == EXIT_OK
+    validated = capsys.readouterr()
+    assert "NATIVE_HAZARD_ALLOWED" in validated.err
+    assert "validation passed with 2 warnings" in validated.err
+
+    assert main(["compile", str(source), "--output", str(output)]) == EXIT_OK
+    compiled = capsys.readouterr()
+    assert "NATIVE_HAZARD_ALLOWED" in compiled.err
+    assert "compiled with 2 warnings" in compiled.err
     assert output.read_bytes() == compile_source(LET)
 
 

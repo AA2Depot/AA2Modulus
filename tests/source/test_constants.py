@@ -4,33 +4,15 @@ from __future__ import annotations
 
 import pytest
 
-from aa2modulus.app.compile import compile_source
+from aa2modulus.app.compile import validate_source
 from aa2modulus.app.decompile import decompile_module
-from aa2modulus.context.limits import SourceLimitError, SourceLimits
-from aa2modulus.semantics.binding.state import SourceBindingError
-from aa2modulus.syntax.imports import SourceImportError
-from aa2modulus.syntax.parser.errors import SourceParseError
-from tests.support.source import parse_module
-
-
-def _module(body: str, items: str = "") -> str:
-    return f'module "M" {{ {items} trigger "T" {{ on CARD_ADDED; {body} }} }}'
+from aa2modulus.context.limits import SourceLimits
+from tests.support.source import assert_same_binary, module_source, parse_module
 
 
 def _error(source: str, **kwargs):
-    with pytest.raises((SourceBindingError, SourceImportError, SourceParseError)) as caught:
-        parse_module(source, **kwargs)
-    error = caught.value
-    diagnostic = getattr(error, "diagnostic", error)
-    code = diagnostic.code
-    line = diagnostic.line
-    column = diagnostic.column
-    return code, line, column
-
-
-def _same(constants: str, literal: str, **kwargs) -> None:
-    assert parse_module(constants, **kwargs).to_ir() == parse_module(literal).to_ir()
-    assert compile_source(constants, **kwargs) == compile_source(literal)
+    error = validate_source(source, **kwargs).errors[0]
+    return error.code, error.line, error.column
 
 
 OWNER_EXAMPLE = """module "Test Module" {
@@ -61,18 +43,18 @@ OWNER_LITERALS = """module "Test Module" {
 
 
 def test_owner_example_equals_the_literal_module_byte_for_byte():
-    _same(OWNER_EXAMPLE, OWNER_LITERALS)
-    decompiled = decompile_module(compile_source(OWNER_EXAMPLE)).source
+    binary = assert_same_binary(OWNER_EXAMPLE, OWNER_LITERALS)
+    decompiled = decompile_module(binary).source
     assert "const" not in decompiled
     assert "Test Module With Spaces" in decompiled
 
 
 def test_references_chain_in_any_order_and_unused_constants_emit_nothing():
-    constants = _module(
+    constants = module_source(
         "Notification(B);",
         'const B: string = const("A"); const A: string = "hi"; const Unused: int = 3;',
     )
-    _same(constants, _module('Notification("hi");'))
+    assert_same_binary(constants, module_source('Notification("hi");'))
 
 
 @pytest.mark.parametrize(
@@ -88,41 +70,27 @@ def test_every_constant_type_substitutes_its_literal(type_name, literal):
     }[type_name]
     items = f'const K: {type_name} = {literal}; const Slot0: string = "slot";'
     plain = use.replace("K", literal).replace("Slot0", '"slot"')
-    _same(_module(use, items), _module(plain))
+    assert_same_binary(module_source(use, items), module_source(plain))
 
 
 def test_float_bits_constant_keeps_exact_bits():
     items = "const F: float = float_bits(0x7fc00001);"
     use = 'ThisCard.SetFloat("f", F);'
-    _same(_module(use, items), _module('ThisCard.SetFloat("f", float_bits(0x7fc00001));'))
+    assert_same_binary(
+        module_source(use, items), module_source('ThisCard.SetFloat("f", float_bits(0x7fc00001));')
+    )
 
 
 def test_global_initializer_accepts_constants_but_state_form_stays_literal():
     items = 'const Start: int = 7; global a: int = Start; global b: int = const("Start");'
-    _same(
-        _module("", items),
-        _module("", "global a: int = 7; global b: int = 7;"),
+    assert_same_binary(
+        module_source("", items),
+        module_source("", "global a: int = 7; global b: int = 7;"),
     )
-    with pytest.raises(SourceParseError):
-        parse_module(
-            _module(
-                "",
-                "const Start: int = 7; global a: int "
-                "{ default Start; current 1; initialized true; }",
-            )
-        )
-
-
-def test_constants_work_as_receivers():
-    items = "const LEAD: int = 0;"
-    _same(
-        _module("LEAD.SetVirtue(3); let v: int = LEAD.Virtue;", items),
-        _module("0.SetVirtue(3); let v: int = 0.Virtue;".replace("0.", "(0).")),
+    state_form = (
+        "const Start: int = 7; global a: int { default Start; current 1; initialized true; }"
     )
-    _same(
-        _module('const("LEAD").SetVirtue(3);', items),
-        _module("(0).SetVirtue(3);"),
-    )
+    assert _error(module_source("", state_form))[0] == "SYNTAX_ERROR"
 
 
 def test_quoted_keyword_like_names_and_prefix_identifiers_are_ordinary():
@@ -138,34 +106,47 @@ def test_quoted_keyword_like_names_and_prefix_identifiers_are_ordinary():
         'Notification("a"); Notification("b"); Notification("c"); Notification("d"); '
         'Notification("e");'
     )
-    _same(_module(use, items), _module(plain))
+    assert_same_binary(module_source(use, items), module_source(plain))
 
 
 def test_raw_constant_payload_and_const_prefixed_identifiers_still_parse():
-    source = _module(
+    source = module_source(
         "let constant_x: int = raw_expression int 1 { constant 4; }; let const_y: int = constant_x;"
     )
-    assert parse_module(source) is not None
+    first, second = parse_module(source).triggers[0].variables
+    assert (first.name, first.default_expression.constant.value) == ("constant_x", 4)
+    assert (second.name, second.default_expression.variable_name) == ("const_y", "constant_x")
 
 
-def test_const_is_not_an_identifier():
-    for body in ("let const: int = 1;", "const = 1;", "on const;"):
-        with pytest.raises(SourceParseError):
-            parse_module(_module(body))
-    assert _error(_module("", "global const: int = 1;"))[0] == "SYNTAX_ERROR"
+@pytest.mark.parametrize(
+    ("body", "items"),
+    [
+        ("let const: int = 1;", ""),
+        ("const = 1;", ""),
+        ("on const;", ""),
+        ("", "global const: int = 1;"),
+    ],
+)
+def test_const_is_not_an_identifier(body, items):
+    assert _error(module_source(body, items))[0] == "SYNTAX_ERROR"
 
 
-def test_global_and_trigger_names_may_still_be_quoted_const():
-    parse_module(_module('let "const": int = 1;'))
+def test_global_trigger_and_local_names_may_still_be_quoted_const():
+    module = parse_module(
+        'module "M" { global "const": int = 1; trigger "const" { let "const": int = 2; } }'
+    )
+    assert module.globals[0].name == "const"
+    assert module.triggers[0].name == "const"
+    assert module.triggers[0].variables[0].name == "const"
 
 
 def test_variable_forms_never_resolve_constants():
     items = "const K: int = 1;"
-    assert _error(_module('let x: int = variable("K");', items))[0] == "UNDEFINED_VARIABLE"
-    assert _error(_module('variable("K") = 2;', items))[0] == "UNDEFINED_VARIABLE"
+    assert _error(module_source('let x: int = variable("K");', items))[0] == "UNDEFINED_VARIABLE"
+    assert _error(module_source('variable("K") = 2;', items))[0] == "UNDEFINED_VARIABLE"
     raw = 'let x: int = raw_expression int 2 { variable "K"; };'
     # A raw variable payload names a variable only; no constant is substituted.
-    expression = parse_module(_module(raw, items)).triggers[0].variables[0].default_expression
+    expression = parse_module(module_source(raw, items)).triggers[0].variables[0].default_expression
     assert expression.raw_reference
     assert (expression.id, expression.variable_name) == (2, "K")
 
@@ -179,7 +160,7 @@ def test_type_mismatch_and_range_errors_are_located():
     assert _error(source) == ("INT_OUT_OF_RANGE", 2, 18)
     source = 'module "M" {\n  const A: bool = true;\n  const B: int = A;\n}'
     assert _error(source) == ("SOURCE_TYPE_MISMATCH", 3, 18)
-    source = _module('ThisCard.SetInt("k", K);', 'const K: string = "s";')
+    source = module_source('ThisCard.SetInt("k", K);', 'const K: string = "s";')
     assert _error(source)[0] == "SOURCE_TYPE_MISMATCH"
 
 
@@ -196,7 +177,7 @@ def test_duplicate_and_undefined_constants():
     assert _error(source) == ("DUPLICATE_CONST", 3, 3)
     source = 'module "M" {\n  const A: int = Missing;\n}'
     assert _error(source) == ("UNDEFINED_CONST", 2, 18)
-    source = _module('Notification(const("Missing"));')
+    source = module_source('Notification(const("Missing"));')
     assert _error(source)[0] == "UNDEFINED_CONST"
     source = 'module "M" {\n  global g: int = const("Nope");\n}'
     assert _error(source) == ("UNDEFINED_CONST", 2, 19)
@@ -260,8 +241,7 @@ def test_library_constants_work_in_module_macros_and_templates_with_diamonds(tmp
         '  trigger "Tpl" { on CARD_ADDED; ThisCard.SetInt("hello", 3 + 3); }\n'
         '  trigger "T" { on CARD_ADDED; Notification("hello"); Notification("hello"); }\n}'
     )
-    assert parse_module(constants, import_base=tmp_path).to_ir() == parse_module(literals).to_ir()
-    assert compile_source(constants, import_base=tmp_path) == compile_source(literals)
+    assert_same_binary(constants, literals, import_base=tmp_path)
 
 
 def test_distinct_library_definitions_with_one_name_fail_even_unused(tmp_path):
@@ -271,37 +251,29 @@ def test_distinct_library_definitions_with_one_name_fail_even_unused(tmp_path):
     assert _error(source, import_base=tmp_path)[0] == "DUPLICATE_CONST"
 
 
-def test_module_constants_are_not_visible_in_macros_or_templates_but_slots_see_them(tmp_path):
-    (tmp_path / "m.aa2mi").write_text("macro m { Notification(Local); }", encoding="utf-8")
-    (tmp_path / "t.aa2mi").write_text(
-        'trigger "tpl" { on CARD_ADDED; Notification(const("Local")); }', encoding="utf-8"
-    )
-    code, *_ = _error(
-        'import "m.aa2mi"; module "M" { const Local: string = "x"; '
-        'trigger "T" { on CARD_ADDED; m(); } }',
-        import_base=tmp_path,
-    )
-    assert code in {"UNKNOWN_EXPRESSION_NAME", "MACRO_CAPTURE"}
-    code, *_ = _error(
-        'import "t.aa2mi"; module "M" { const Local: string = "x"; import.trigger "tpl" { } }',
-        import_base=tmp_path,
-    )
-    assert code == "UNDEFINED_CONST"
-
-
-def test_hidden_module_constants_get_a_declare_at_top_level_hint(tmp_path):
-    (tmp_path / "m.aa2mi").write_text("macro m { Notification(Local); }", encoding="utf-8")
-    (tmp_path / "t.aa2mi").write_text(
-        'trigger "tpl" { on CARD_ADDED; Notification(const("Local")); }', encoding="utf-8"
-    )
-    for library, use in (("m", "m();"), ("t", 'import.trigger "tpl" { }')):
-        body = f'trigger "T" {{ on CARD_ADDED; {use} }}' if library == "m" else use
-        source = f'import "{library}.aa2mi"; module "M" {{ const Local: string = "x"; {body} }}'
-        with pytest.raises((SourceBindingError, SourceImportError)) as caught:
-            parse_module(source, import_base=tmp_path)
-        diagnostic = caught.value.diagnostic
-        assert "not visible in macros or templates" in diagnostic.message
-        assert diagnostic.help == "declare it at top level"
+@pytest.mark.parametrize(
+    ("library", "use", "code"),
+    [
+        ("macro m { Notification(Local); }", "m();", "UNKNOWN_EXPRESSION_NAME"),
+        (
+            'trigger "tpl" { on CARD_ADDED; Notification(const("Local")); }',
+            'import.trigger "tpl" { }',
+            "UNDEFINED_CONST",
+        ),
+    ],
+    ids=["macro", "template"],
+)
+def test_module_constants_are_not_visible_in_libraries_and_hint_to_declare_at_top_level(
+    library, use, code, tmp_path
+):
+    (tmp_path / "lib.aa2mi").write_text(library, encoding="utf-8")
+    body = f'trigger "T" {{ on CARD_ADDED; {use} }}' if use == "m();" else use
+    source = f'import "lib.aa2mi"; module "M" {{ const Local: string = "x"; {body} }}'
+    error = validate_source(source, import_base=tmp_path).errors[0]
+    assert error.code == code
+    assert error.filename == str((tmp_path / "lib.aa2mi").resolve())
+    assert "not visible in macros or templates" in error.message
+    assert error.help == "declare it at top level"
 
 
 def test_top_level_constant_cannot_reference_a_module_constant():
@@ -311,8 +283,7 @@ def test_top_level_constant_cannot_reference_a_module_constant():
 
 def test_constant_declarations_count_against_the_node_budget():
     source = 'module "M" { const A: int = 1; const B: int = 2; }'
-    with pytest.raises(SourceLimitError):
-        parse_module(source, source_limits=SourceLimits(max_nodes=6))
+    assert _error(source, source_limits=SourceLimits(max_nodes=6))[0] == "SOURCE_NODE_LIMIT"
 
 
 def test_module_constants_feed_trigger_import_slot_actuals(tmp_path):
@@ -325,7 +296,7 @@ def test_module_constants_feed_trigger_import_slot_actuals(tmp_path):
         "} }"
     )
     literals = 'module "M" { trigger "tpl" { on CARD_ADDED; ThisCard.SetInt("n", 5); } }'
-    assert parse_module(constants, import_base=tmp_path).to_ir() == parse_module(literals).to_ir()
+    assert_same_binary(constants, literals, import_base=tmp_path)
 
 
 # --- Reference forms: bare identifier versus const("...") ------------------------------
@@ -338,19 +309,23 @@ def test_bare_name_and_const_call_are_equivalent_for_identifier_names(declaratio
         'global g1: string = Limit; global g2: string = const("Limit");'
     )
     plain = 'global g1: string = "v"; global g2: string = "v";'
-    bare = _module("Notification(Limit); Notification(Alias);", items)
-    called = _module('Notification(const("Limit")); Notification(Alias2);', items)
-    literal = _module('Notification("v"); Notification("v");', plain)
-    _same(bare, literal)
-    _same(called, literal)
+    bare = module_source("Notification(Limit); Notification(Alias);", items)
+    called = module_source('Notification(const("Limit")); Notification(Alias2);', items)
+    literal = module_source('Notification("v"); Notification("v");', plain)
+    assert_same_binary(bare, literal)
+    assert_same_binary(called, literal)
 
 
 @pytest.mark.parametrize("declaration", ["const Lead: int = 0;", 'const "Lead": int = 0;'])
 def test_identifier_named_receiver_constants_accept_both_forms(declaration):
-    literal = _module("(0).SetVirtue(3); let v: int = (0).Virtue;")
-    _same(_module("Lead.SetVirtue(3); let v: int = Lead.Virtue;", declaration), literal)
-    _same(
-        _module('const("Lead").SetVirtue(3); let v: int = const("Lead").Virtue;', declaration),
+    literal = module_source("(0).SetVirtue(3); let v: int = (0).Virtue;")
+    assert_same_binary(
+        module_source("Lead.SetVirtue(3); let v: int = Lead.Virtue;", declaration), literal
+    )
+    assert_same_binary(
+        module_source(
+            'const("Lead").SetVirtue(3); let v: int = const("Lead").Virtue;', declaration
+        ),
         literal,
     )
 
@@ -360,20 +335,20 @@ def test_names_with_spaces_require_const_call():
         'const "With Spaces": string = "x"; const "Lead Seat": int = 0; '
         'const Alias: string = const("With Spaces"); global g: string = const("With Spaces");'
     )
-    literal = _module(
+    literal = module_source(
         'Notification("x"); Notification("x"); (0).SetVirtue(3);', 'global g: string = "x";'
     )
     use = (
         'Notification(const("With Spaces")); Notification(Alias); const("Lead Seat").SetVirtue(3);'
     )
-    _same(_module(use, items), literal)
+    assert_same_binary(module_source(use, items), literal)
     # No bare spelling exists: the lexer sees two identifiers.
-    broken = _module("Notification(With Spaces);", items)
+    broken = module_source("Notification(With Spaces);", items)
     code, line, column = _error(broken)
     assert (code, line) == ("SYNTAX_ERROR", 1)
     assert column == broken.rindex("Spaces") + 1
     # variable("...") never reaches constants.
-    code, *_ = _error(_module('Notification(variable("With Spaces"));', items))
+    code, *_ = _error(module_source('Notification(variable("With Spaces"));', items))
     assert code == "UNDEFINED_VARIABLE"
 
 
@@ -381,9 +356,9 @@ def test_keyword_named_constant_is_reachable_only_through_const_call():
     items = 'const "true": bool = false;'
     use = 'if (true) { Notification("t"); } if (const("true")) { Notification("c"); }'
     literal = 'if (true) { Notification("t"); } if (false) { Notification("c"); }'
-    _same(_module(use, items), _module(literal))
+    assert_same_binary(module_source(use, items), module_source(literal))
 
 
 def test_const_call_never_resolves_variables():
-    code, *_ = _error(_module('let X: int = 1; Notification(const("X"));'))
+    code, *_ = _error(module_source('let X: int = 1; Notification(const("X"));'))
     assert code == "UNDEFINED_CONST"

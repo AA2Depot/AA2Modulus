@@ -11,20 +11,16 @@ from aa2modulus.binary.reader import decode_module
 from aa2modulus.binary.writer import encode_module
 from aa2modulus.model.records import Module
 from aa2modulus.validation.validator.module import validate_module
-
-
-def _string(value: str) -> bytes:
-    raw = value.encode("utf-16-le")
-    return struct.pack("<I", len(raw) // 2) + raw
+from tests.support.wire import pack_string
 
 
 def _wire(dependencies: tuple[str, ...]) -> bytes:
     return (
-        _string("D")
-        + _string("")
+        pack_string("D")
+        + pack_string("")
         + struct.pack("<II", 0, 0)
         + struct.pack("<I", len(dependencies))
-        + b"".join(_string(item) for item in dependencies)
+        + b"".join(pack_string(item) for item in dependencies)
     )
 
 
