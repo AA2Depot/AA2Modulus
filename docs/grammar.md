@@ -13,7 +13,7 @@ conversion `Card(expression)` (see [cards](#cards)); both write `int`. Version 1
 adds `@allow(CODE)` attributes that acknowledge known native hazards (see
 [acknowledged hazards](#acknowledged-hazards)); they are
 source-only. Version 14 makes `ThisCard` and `TriggeringCard` unqualified,
-protected built-in names (see [protected names](language.md#protected-names)); no
+protected built-in names (see [protected names](language-contract.md#protected-names)); no
 serialized field changes. Version 13 adds compile-time `const` declarations and `const("Name")`
 references (see [constants](#compile-time-constants)); they change no
 serialized field. Version 11 added postfix receiver calls such as `actor.AddLike(target, 30)`
@@ -138,7 +138,7 @@ an empty dependency vector. They load no modules, supply no globals, and import 
 source definitions. Strict semantic validation rejects empty/self/duplicate names
 and optionally unavailable names; the native model profile reports these as
 warnings. Parsing alone retains invalid records for structural recovery. See
-[dependency metadata](language.md#dependency-metadata) for lint and context rules.
+[dependency metadata](language-contract.md#dependency-metadata) for lint and context rules.
 
 Version 8 imports `.aa2mi` libraries. Library units contain imports, macros, and
 trigger templates
@@ -146,12 +146,12 @@ without a module; module units require exactly one module. `import` is reserved.
 Imports expose one transitive definition namespace and deduplicate canonical
 identities. All definitions validate; imports add no serialized dependencies.
 Resolution requires explicit API access options and uses operation-local graph
-budgets. See [library imports](language.md#library-imports) for paths,
+budgets. See [library imports](language-contract.md#library-imports) for paths,
 visibility, standalone validation, diagnostics, and counting rules.
 `slot` is also reserved. Trigger templates are library-only. All slots are
 required typed values; bindings use exact case-sensitive slot names. Optional
 renaming and instantiation occur only as module items. See
-[trigger templates](language.md#trigger-templates) for isolated binding,
+[trigger templates](language-contract.md#trigger-templates) for isolated binding,
 local hygiene, repeated evaluation, and errors. Template slots precede every
 event, local, or statement; ordinary triggers cannot declare slots.
 
@@ -162,7 +162,7 @@ globals and duplicate locals within a trigger are semantic errors; resolution
 uses the first declaration while checking an invalid module. Other triggers'
 locals are never visible. Blocks do not introduce declaration scopes. A
 variable the module never declares is undefined; see
-[undeclared variables](language.md#undeclared-variables).
+[undeclared variables](language-contract.md#undeclared-variables).
 
 Version 3 replaces incremental local binding with complete-trigger lookup,
 matching the pinned native resolver. This defines reference visibility, not
@@ -180,7 +180,7 @@ stack and prefix the item that follows: a statement at any depth, an event, a
 local, a trigger, a trigger import, a macro, a trigger template or the module.
 Imports, constants, globals, `description`, `depends_on`, slots and parameters
 take none. Codes are diagnostic codes; which ones are accepted, and the effect,
-is in the [language reference](language.md#acknowledging-native-hazards). The
+is in the [language reference](language-contract.md#acknowledging-native-hazards). The
 parser keeps each attribute with its own and its item's span in a side table
 of the source unit; attributes never reach HIR, SIR or the binary.
 
@@ -202,7 +202,7 @@ literal initializers (`global x: int = Limit;`) accept `const-value`; the
 `default`/`current` state form stays raw. `const` is reserved, so it cannot be an
 unquoted variable, parameter or event name. Constants are not serialized. Scope,
 resolution, collisions and diagnostics are in the
-[language reference](language.md#compile-time-constants).
+[language reference](language-contract.md#compile-time-constants).
 
 ## Statements
 
@@ -388,7 +388,7 @@ card-conversion := "Card" "(" expression ")"
 
 `Card(expression)` is an expression atom and a receiver
 (`Card(seat).SetVirtue(1)`). It converts an `int` to the source type `card` and
-adds no record. Typing rules are in the [language reference](language.md#cards).
+adds no record. Typing rules are in the [language reference](language-contract.md#cards).
 
 ### Receiver Calls
 
@@ -417,7 +417,7 @@ around its dots; the binder splits it. After a postfix receiver the parser split
 a member token such as `.Target.Virtue` into chained properties. A member
 statement cannot take a block; a property used as a statement (`coach.CancelAction;`)
 is a syntax error with code `MEMBER_KIND`. A trailing dot or a literal receiver is
-a syntax error. The binder rules are in the [language reference](language.md#receiver-calls).
+a syntax error. The binder rules are in the [language reference](language-contract.md#receiver-calls).
 
 ```text
 Notification(ThisCard.FullName + " has been added to class");
@@ -512,7 +512,7 @@ semantically invalid records. `validate_module` and `compile_module` apply
 strict semantic validation by default, including to raw-marked nodes. Their
 explicit native profile checks the pinned projection before reference resolution,
 without relaxing checks based on raw provenance; see the
-[profile contract](language.md#validation-profiles).
+[profile contract](language-contract.md#validation-profiles).
 Raw markers select representation, never a permissive validation policy.
 `validate_source`, `parse_and_validate_source` and `compile_source` use strict
 semantic validation and cannot bypass it through raw syntax. Global and local declaration type mismatches
@@ -567,7 +567,7 @@ syntax depth 256, and combined statement/expression nesting 64. Positioned tree
 inspection and AST transformation are iterative; delimiters inside strings or
 comments do not contribute syntax depth. Direct AST/HIR binding/lowering use
 the same node/depth budgets. These operational bounds do not change grammar
-version; see [source resource limits](language.md#source-resource-limits)
+version; see [source resource limits](language-contract.md#source-resource-limits)
 for counting rules, supported option ceilings, and CLI flags.
 
 `validate_source` and `parse_and_validate_source` return structured diagnostics

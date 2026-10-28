@@ -160,7 +160,7 @@ them for binary modules too.
 ## AAUnlimited hazards
 
 These describe how AAUnlimited itself behaves. Some can be acknowledged with
-`@allow` (see the [language reference](../language.md#acknowledging-native-hazards)).
+`@allow` (see the [language reference](../language-contract.md#acknowledging-native-hazards)).
 
 | Code | Meaning |
 | --- | --- |

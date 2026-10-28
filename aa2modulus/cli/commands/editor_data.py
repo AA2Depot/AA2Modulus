@@ -22,7 +22,7 @@ def add_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) ->
         help="print editor client data (built-ins catalog, lexicon or manifest) as JSON",
         description=(
             "Print a document that editor clients read: 'catalog' is the built-ins "
-            "catalog (builtins.json), 'lexicon' is the lexical surface of the grammar "
+            "catalog, 'lexicon' is the lexical surface of the grammar "
             "with its fingerprint, 'manifest' is the compatibility facts the language "
             "server advertises. Reports go to stderr."
         ),

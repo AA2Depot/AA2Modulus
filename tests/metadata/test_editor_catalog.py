@@ -43,6 +43,12 @@ def test_header_and_unique_ids(
     }
 
 
+def test_doc_path_is_the_entry_anchor_on_the_builtins_page(
+    entries: dict[str, dict[str, Any]],
+) -> None:
+    assert entries["action-108"]["docPath"] == "reference/builtins/actions/general/#action-108"
+
+
 def test_flat_member_and_value_entries(entries: dict[str, dict[str, Any]]) -> None:
     start = by_name(entries, "H.Start")
     assert [item["name"] for item in start["signatures"][0]["parameters"]] == ["pc", "partner"]

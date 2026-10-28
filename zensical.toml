@@ -13,18 +13,53 @@ edit_uri = "edit/main/docs/"
 nav = [
   { "Home" = "index.md" },
   { "Get Started" = "quickstart.md" },
+  { "Tour" = [
+    "tour/index.md",
+    "tour/first-module.md",
+    "tour/this-card.md",
+    "tour/game-events.md",
+    "tour/state.md",
+    "tour/constants.md",
+    "tour/macros-and-libraries.md",
+    "tour/several-modules.md",
+    "tour/trigger-templates.md"
+  ] },
   { "User Guide" = [
-    {"CLI Usage" = "user/cli-usage.md"},
-    "user/first-module.md",
+    { "CLI Usage" = "user/cli-usage.md" },
     "user/vscode-extension.md",
-    "user/lsp-usage.md"
+    "user/lsp-usage.md",
+    "user/existing-modules.md"
+  ] },
+  { "Language" = [
+    "language/index.md",
+    "language/modules.md",
+    "language/expressions.md",
+    "language/control-flow.md",
+    "language/constants.md",
+    "language/macros.md",
+    "language/libraries.md",
+    "language/hazards.md",
+    "language/raw-forms.md",
+    "grammar.md"
   ] },
   { "Reference" = [
-    "reference/builtins.md",
-    "reference/diagnostics.md",
-    "reference/aau-natives.md"
-  ]}
+    { "Built-ins" = "reference/builtins/" },
+    "reference/diagnostics.md"
+  ] },
+  { "Developers" = [
+    "architecture.md",
+    "development.md",
+    "style.md",
+    "standalone.md",
+    "metadata.md",
+    "native-format.md",
+    { "Language Server Protocol" = "lsp.md" },
+    { "Language Contract" = "language-contract.md" }
+  ] }
 ]
+
+# Expands the Built-ins nav entry from the generated reference/builtins/SUMMARY.md.
+[project.plugins.literate-nav]
 
 # extra_css = ["stylesheets/extra.css"]
 # extra_javascript = ["javascripts/extra.js"]

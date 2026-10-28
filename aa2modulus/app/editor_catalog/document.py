@@ -1,4 +1,4 @@
-"""The ``builtins.json`` document editors read: header, entries and its JSON text."""
+"""The ``editor-data catalog`` document: header, entries and its JSON text."""
 
 from __future__ import annotations
 

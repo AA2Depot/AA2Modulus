@@ -53,6 +53,10 @@ run = "uv run --locked zensical serve"
 description = "Build the documentation website"
 run = "uv run --locked zensical build --clean --strict"
 
+[tasks."docs:builtins"]
+description = "Regenerate docs/reference/builtins/ from the editor catalog; add --check to compare only"
+run = "uv run --locked python tools/generate_builtins_pages.py"
+
 # Maintenance
 
 [tasks.registry]

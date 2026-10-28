@@ -62,7 +62,9 @@ checkout, require it at runtime, or copy it into artifacts.
    read it whole.
 4. Read only the live documents your task touches:
    - [README](README.md): setup and navigation.
-   - [Grammar](docs/grammar.md) and [language reference](docs/language.md): the source contract.
+   - [Grammar](docs/grammar.md) and [language contract](docs/language-contract.md): the source contract.
+     The user pages in `docs/tour/`, `docs/language/` and `docs/user/` explain
+     the same rules for module authors and must agree with it.
    - [Metadata](docs/metadata.md): registries and the editable language policy.
    - [Native format](docs/native-format.md): binary layout and runtime evidence.
    - [Architecture](docs/architecture.md): which code owns which rule.
@@ -96,7 +98,8 @@ checkout, require it at runtime, or copy it into artifacts.
 - The language server is implemented. Packaging (`package = false`),
   publishing and new editor features are separate tasks, started only when the
   user asks.
-- The VS Code extension lives in its own repository, `aa2modulus-extension`.
+- The VS Code extension lives in its own repository,
+  [`aa2modulus-vscode`](https://github.com/AA2Depot/aa2modulus-vscode).
   This repository owns the server side of their
   [wire contract](docs/lsp.md#client-contract).
 

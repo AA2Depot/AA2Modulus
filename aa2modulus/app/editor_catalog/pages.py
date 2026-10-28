@@ -1,8 +1,4 @@
-"""Markdown pages for built-ins, one per ``editor-data catalog`` entry.
-
-The text matches the VS Code extension's ``pages.ts`` renderer character for
-character, so a page reads the same whichever side serves it.
-"""
+"""Markdown pages for built-ins, one per ``editor-data catalog`` entry."""
 
 from __future__ import annotations
 
@@ -22,9 +18,15 @@ def escape_markdown(value: str) -> str:
 
 
 def page(entry: Mapping[str, Any], *, website: str | None) -> str:
-    parts = [f"# {escape_markdown(entry['name'])}"]
+    title = f"# {escape_markdown(entry['name'])}"
+    return "\n\n".join([title, *sections(entry, website=website)]) + "\n"
+
+
+def sections(entry: Mapping[str, Any], *, website: str | None) -> list[str]:
+    """The page's Markdown blocks after its title, so the website can add its own heading."""
+
     signatures = entry["signatures"]
-    parts.append(_fence("\n".join(item["label"] for item in signatures) or entry["name"]))
+    parts = [_fence("\n".join(item["label"] for item in signatures) or entry["name"])]
     if description := entry["description"].strip():
         parts.append(escape_markdown(description))
 
@@ -57,7 +59,7 @@ def page(entry: Mapping[str, Any], *, website: str | None) -> str:
     )
     if website:
         parts.append(f"[Full documentation]({website.rstrip('/')}/{entry['docPath']})")
-    return "\n\n".join(parts) + "\n"
+    return parts
 
 
 def page_text(entries: Mapping[str, Mapping[str, Any]], path: str, *, website: str | None) -> str:

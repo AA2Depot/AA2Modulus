@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -19,6 +20,13 @@ from ...model.native import (
 from ...model.types import ValueType
 
 DEFAULT_EVENT = "CARD_ADDED"
+# Website folder of each entry kind's category pages under reference/builtins/.
+DOC_FOLDERS = {
+    "event": "events",
+    "action": "actions",
+    "expression": "expressions",
+    "named_constant": "named-constants",
+}
 PLACEHOLDERS = {
     ValueType.INT: "0",
     ValueType.BOOL: "true",
@@ -121,18 +129,19 @@ class _Builder:
         self.seen.add(anchor)
 
         name = _name(names)
+        category = getattr(native, "category", None)
         entry = {
             "id": anchor,
             "kind": kind,
             "name": name,
             "nativeName": native.name,
             "aliases": [item for item in names["candidates"] if item != name],
-            "category": getattr(native, "category", None),
+            "category": category,
             "description": builtin_description(self.policy, native),
             "signatures": [signature],
             "valueEvents": value_events,
             "example": None,
-            "docPath": f"builtins/{anchor}",
+            "docPath": doc_path(kind, category, anchor),
         }
         self.drafts.append(Draft(entry, value_events[0] if value_events else event, body, note))
 
@@ -278,6 +287,13 @@ class _Builder:
             return None
         default = self.policy.action_default(native.id, index)
         return None if default is None else str(value_text(default.value))
+
+
+def doc_path(kind: str, category: str | None, anchor: str) -> str:
+    """The entry's website page, one per kind and native category, and its anchor there."""
+
+    page = re.sub(r"[^a-z0-9]+", "-", (category or "Other").lower()).strip("-")
+    return f"reference/builtins/{DOC_FOLDERS[kind]}/{page}/#{anchor}"
 
 
 def _name(names: dict[str, Any]) -> str:

@@ -28,7 +28,7 @@ def _entry(**fields):
         "signatures": [signature],
         "valueEvents": None,
         "example": None,
-        "docPath": "builtins/action-1",
+        "docPath": "reference/builtins/actions/general/#action-1",
     }
     return entry | fields
 
@@ -121,7 +121,9 @@ def test_prose_escapes_markdown_syntax_and_line_markers():
 
 def test_website_link_joins_doc_path_once():
     text = page(_entry(), website="https://example.test/docs//")
-    assert text.endswith("\n\n[Full documentation](https://example.test/docs/builtins/action-1)\n")
+    assert text.endswith(
+        "\n\n[Full documentation](https://example.test/docs/reference/builtins/actions/general/#action-1)\n"
+    )
 
 
 @pytest.mark.parametrize("path", ["/missing.md", "/a/b.md", "/action-108.txt", "/x`y.md"])

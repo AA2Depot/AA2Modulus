@@ -62,13 +62,16 @@ TODO: Need to expand on this.
 `aa2modulus lsp-server` speaks the Language Server Protocol over stdio, so any
 editor with an LSP client can use it. You get diagnostics as you type,
 completion, hover, go to definition, rename and a few more. There's also a
-VS Code extension, which lives in its own repository (`aa2modulus-extension`).
-Setup for other editors is in [language server](docs/lsp.md).
+VS Code extension, which lives in its own repository
+([`aa2modulus-vscode`](https://github.com/AA2Depot/aa2modulus-vscode)).
+Setup for other editors is in [other editors](docs/user/lsp-usage.md).
 
 ## Docs
 
 - [Get started](docs/quickstart.md), the same thing as above but slower
-- [Language reference](docs/language.md), everything you can write
+- [Tour](docs/tour/index.md), the language explained with real modules
+- [Language reference](docs/language/index.md), everything you can write
+- [Built-ins](docs/reference/builtins/index.md), every event, action and value from the game
 - [Grammar](docs/grammar.md), if you want the exact syntax
 - [Metadata](docs/metadata.md), names, defaults and the language policy
 - [Native format](docs/native-format.md), the binary layout and where each fact comes from

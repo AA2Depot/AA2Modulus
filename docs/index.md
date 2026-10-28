@@ -1,173 +1,95 @@
 ---
-icon: lucide/rocket
+description: Write AAUnlimited trigger modules as text, compile them to the binary format AAUnlimited loads, and decompile existing modules back to source.
 ---
 
-# Get started
+# AA2 Modulus
 
-For full documentation visit [zensical.org](https://zensical.org/docs/).
+aa2modulus is a compiler for AAUnlimited trigger modules. You write a module
+as a plain text `.aa2m` file and aa2modulus turns it into the binary file that
+AAUnlimited loads. It also works in reverse: give it a module made in AAEdit
+and you get source back that you can read, change and compile again.
 
-## Commands
+Here is a complete module. It shows a notification each time a card is added
+to the class:
 
-* [`zensical new`][new] - Create a new project
-* [`zensical serve`][serve] - Start local web server
-* [`zensical build`][build] - Build your site
+```aa2m
+module "Notification Example" {
+  description "Show a notification when a card is added to class";
 
-  [new]: https://zensical.org/docs/usage/new/
-  [serve]: https://zensical.org/docs/usage/preview/
-  [build]: https://zensical.org/docs/usage/build/
-
-## Examples
-
-### Admonitions
-
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/)
-
-!!! note
-
-    This is a **note** admonition. Use it to provide helpful information.
-
-!!! warning
-
-    This is a **warning** admonition. Be careful!
-
-### Details
-
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/#collapsible-blocks)
-
-??? info "Click to expand for more info"
-
-    This content is hidden until you click to expand it.
-    Great for FAQs or long explanations.
-
-## Code Blocks
-
-> Go to [documentation](https://zensical.org/docs/authoring/code-blocks/)
-
-``` python hl_lines="2" title="Code blocks"
-def greet(name):
-    print(f"Hello, {name}!") # (1)!
-
-greet("Python")
+  trigger "On Card Added" {
+    on CARD_ADDED;
+    Notification(ThisCard.FullName + " has been added to class");
+  }
+}
 ```
 
-1.  > Go to [documentation](https://zensical.org/docs/authoring/code-blocks/#code-annotations)
+A module holds triggers. Each trigger names the events that start it
+(`on ...`) and the actions it runs. Beyond that you get typed variables,
+`if`/`else` and loops, constants, macros and libraries you can import.
 
-    Code annotations allow to attach notes to lines of code.
+## What you can do with it
 
-Code can also be highlighted inline: `#!python print("Hello, Python!")`.
+- Keep your modules as text files, in any editor and under version control.
+- Find mistakes before the game does. Every error names the file, line and
+  column, and most come with a hint on how to fix it.
+- Open any existing module as source. Decompiled source usually compiles back
+  to the exact same bytes.
+- Get completion, hover, go to definition and rename in your editor through
+  the language server.
 
-## Content tabs
+## Install
 
-> Go to [documentation](https://zensical.org/docs/authoring/content-tabs/)
+The easiest way to start is the [VS Code extension](user/vscode-extension.md),
+which downloads the compiler for you. For the command line, download the zip
+for your system from the
+[releases page](https://github.com/AA2Depot/AA2Modulus/releases) and unzip it
+anywhere. There is one build for Windows x64 and one for Linux x64. The
+executable runs on its own, so you don't need Python or anything else
+installed.
 
-=== "Python"
+Releases are pre-releases until version 1.0.0, and the language can still
+change between them.
 
-    ``` python
-    print("Hello from Python!")
-    ```
+## Next steps
 
-=== "Rust"
+<div class="grid cards" markdown>
 
-    ``` rs
-    println!("Hello from Rust!");
-    ```
+-   __Get started__
 
-## Diagrams
+    ---
 
-> Go to [documentation](https://zensical.org/docs/authoring/diagrams/)
+    Install the tools, compile your first module and load it in the game.
 
-``` mermaid
-graph LR
-  A[Start] --> B{Error?};
-  B -->|Yes| C[Hmm...];
-  C --> D[Debug];
-  D --> B;
-  B ---->|No| E[Yay!];
-```
+    [Get started](quickstart.md)
 
-## Footnotes
+-   __Tour__
 
-> Go to [documentation](https://zensical.org/docs/authoring/footnotes/)
+    ---
 
-Here's a sentence with a footnote.[^1]
+    Learn the language from real modules, one feature at a time.
 
-Hover it, to see a tooltip.
+    [Take the tour](tour/index.md)
 
-[^1]: This is the footnote.
+-   __Language__
 
+    ---
 
-## Formatting
+    Everything you can write in a `.aa2m` module or `.aa2mi` library.
 
-> Go to [documentation](https://zensical.org/docs/authoring/formatting/)
+    [Language basics](language/index.md)
 
-- ==This was marked (highlight)==
-- ^^This was inserted (underline)^^
-- ~~This was deleted (strikethrough)~~
-- H~2~O
-- A^T^A
-- ++ctrl+alt+del++
+-   __Built-ins__
 
-## Icons, Emojis
+    ---
 
-> Go to [documentation](https://zensical.org/docs/authoring/icons-emojis/)
+    Every event, action, value and named constant from the game.
 
-* :sparkles: `:sparkles:`
-* :rocket: `:rocket:`
-* :tada: `:tada:`
-* :memo: `:memo:`
-* :eyes: `:eyes:`
+    [Built-ins](reference/builtins/index.md)
 
-## Maths
+</div>
 
-> Go to [documentation](https://zensical.org/docs/authoring/math/)
+## License
 
-$$
-\cos x=\sum_{k=0}^{\infty}\frac{(-1)^k}{(2k)!}x^{2k}
-$$
-
-!!! warning "Needs configuration"
-    Note that MathJax is included via a `script` tag on this page and is not
-    configured in the generated default configuration to avoid including it
-    in a pages that do not need it. See the documentation for details on how
-    to configure it on all your pages if they are more Maths-heavy than these
-    simple starter pages.
-
-<script id="MathJax-script" src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [["\\(", "\\)"]],
-      displayMath: [["\\[", "\\]"]],
-      processEscapes: true,
-      processEnvironments: true
-    },
-    options: {
-      ignoreHtmlClass: ".*|",
-      processHtmlClass: "arithmatex"
-    }
-  };
-
-  document$.subscribe(() => {
-    MathJax.startup.output.clearCache()
-    MathJax.typesetClear()
-    MathJax.texReset()
-    MathJax.typesetPromise()
-  })
-</script>
-
-## Task Lists
-
-> Go to [documentation](https://zensical.org/docs/authoring/lists/#using-task-lists)
-
-* [x] Install Zensical
-* [x] Configure `zensical.toml`
-* [x] Write amazing documentation
-* [ ] Deploy anywhere
-
-## Tooltips
-
-> Go to [documentation](https://zensical.org/docs/authoring/tooltips/)
-
-[Hover me][example]
-
-  [example]: https://example.com "I'm a tooltip!"
+aa2modulus is free software under the
+[GNU General Public License v3.0 only](https://github.com/AA2Depot/AA2Modulus/blob/main/LICENSE).
+The source is on [GitHub](https://github.com/AA2Depot/AA2Modulus).
