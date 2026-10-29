@@ -143,9 +143,17 @@ def test_unknown_qualified_prefix_does_not_become_a_grammar_terminal(tmp_path):
     context = SourceContext.create(filename=str(tmp_path / "module.aa2m"), import_base=tmp_path)
     source = _IMPORTED_MODULE.replace("import.trigger", "unknown.qualified")
     cursor = source.index("say(") + len("say(")
+    # The unknown line is one dropped fault, as if it were not there.
+    line = '  unknown.qualified "Welcome" "Imported Welcome" { slot "greeting" = greeting; }\n'
+    dropped = source.replace(line, "")
+    dropped_cursor = dropped.index("say(") + len("say(")
 
-    assert completions(source, cursor, context) == []
-    assert signature_help(source, cursor, context) is None
+    assert [item.label for item in completions(source, cursor, context)] == [
+        item.label for item in completions(dropped, dropped_cursor, context)
+    ]
+    assert signature_help(source, cursor, context) == signature_help(
+        dropped, dropped_cursor, context
+    )
 
 
 def test_authored_completions_respect_macro_and_template_scopes(context):

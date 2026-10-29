@@ -84,8 +84,11 @@ session. `--version` prints the `serverInfo.version` sent at `initialize`
   exact name tokens. A separate bounded editor view recovers completed
   declarations and successful binder selections around unfinished statements
   and imported files. It permits 32 syntax faults plus the ordinary source and
-  import budgets. Strict diagnostics and compilation still use the original
-  input. The editor view never reuses locations from an earlier buffer.
+  import budgets. In a module file, a top-level trigger is read as a trigger
+  of the module, so a stray `}` that closes the module early does not cost
+  the triggers after it their names. Strict diagnostics and compilation still
+  use the original input. The editor view never reuses locations from an
+  earlier buffer.
   Suggestions respect statement, value and event context, declaration scope and
   known expected types, and they keep distinct overloads.
 - Conditions and boolean value slots also offer operands for comparisons before
