@@ -61,7 +61,10 @@ session. `--version` prints the `serverInfo.version` sent at `initialize`
   and macro and template origins. A file with syntax errors shows each
   independent one (up to 25). It shows no binding errors until the syntax is
   clean. A shared library error appears once and keeps the related locations
-  from each open root.
+  from each open root. Each diagnostic's `codeDescription.href` links its code
+  to [diagnostic codes](reference/diagnostics.md) on the website
+  (`https://modulus.aa2d.net/reference/diagnostics/#CODE`). It is sent whether
+  or not the client advertises `codeDescriptionSupport`.
 - Unsaved library buffers take precedence over disk. Edits and closes refresh
   dependent open roots. The server checks observed disk imports every second.
   Missing libraries stay observed, so creating one can refresh diagnostics.
@@ -75,7 +78,9 @@ session. `--version` prints the `serverInfo.version` sent at `initialize`
   Built-ins show signatures, descriptions and policy defaults. Definitions
   navigate to authored variables, macro parameters and calls, template slots
   and uses, and import targets. Generated template-local names stay out of the
-  outline.
+  outline. Hover on a language word (a keyword, a type, `Card`, a raw-form
+  word, `true`, `false` or `@allow`) links to its section of the language
+  pages on the website.
 - `textDocument/documentLink` returns one link per import path token whose file
   was read, targeting that file. It agrees with definition on the path.
   Unresolved paths get no link, and neither do imports in untitled documents.
@@ -365,8 +370,9 @@ formal names. The server reads no documentation file.
 F12 on a built-in returns `aa2m-builtin:/<anchor>.md` at line 0. The server
 serves those pages itself through `workspace/textDocumentContent` (LSP 3.18).
 It renders them from the same entries `aa2modulus editor-data catalog` prints
-([development](development.md#checks)). An unknown anchor gets
-an "Unknown built-in" page.
+([development](development.md#checks)). Each page ends with a "View online
+documentation" link to the entry on the website. An unknown anchor gets an
+"Unknown built-in" page.
 
 `workspace/symbol` lists built-ins ranked by name, alias, native name and
 description (at most 200). Each is located at its page, so a client finds

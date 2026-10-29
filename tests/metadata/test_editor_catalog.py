@@ -32,7 +32,7 @@ def test_header_and_unique_ids(
     assert document["schema"] == "aa2modulus.editor-builtins.v1"
     assert document["languageVersion"] == context.source_policy.language_version
     assert document["catalogFingerprint"] == context.catalog.fingerprint
-    assert document["website"] is None
+    assert document["website"] == "https://modulus.aa2d.net/"
     ids = [entry["id"] for entry in document["entries"]]
     assert len(ids) == len(set(ids))
     assert {entry["kind"] for entry in document["entries"]} == {

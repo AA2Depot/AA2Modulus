@@ -6,8 +6,8 @@ from urllib.parse import unquote, urlsplit
 
 from lsprotocol import types
 
-from ....app.editor_catalog.document import DOCS_WEBSITE
 from ....app.editor_catalog.pages import page_text
+from ....language.documentation import DOCS_WEBSITE
 from ..app import AA2LanguageServer
 
 

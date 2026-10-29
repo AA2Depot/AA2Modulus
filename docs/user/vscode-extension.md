@@ -32,9 +32,11 @@ If you already have `aa2modulus` somewhere, run
 - Suggestions appear as you type, or with Ctrl+Space. Keywords like `trigger`
   or `if` insert a ready-made block you can Tab through.
 - Mistakes get a red underline and show up in Problems (Ctrl+Shift+M). When a
-  light bulb appears, Ctrl+. fixes the problem for you.
+  light bulb appears, Ctrl+. fixes the problem for you. Click the code next to
+  the message to read about it online.
 - Hover anything to see what it is. A `//` comment right above your own
-  variable, constant or macro shows up in its hover.
+  variable, constant or macro shows up in its hover. Hovering a keyword such
+  as `trigger` or `loop` links to its page in this documentation.
 - F12 on a built-in opens its documentation. On your own names it jumps to
   the declaration. Shift+F12 lists every use, and F2 renames it everywhere,
   libraries included.

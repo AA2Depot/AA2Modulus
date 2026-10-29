@@ -58,7 +58,7 @@ def sections(entry: Mapping[str, Any], *, website: str | None) -> list[str]:
         f"({escape_markdown(entry['category'])}). ID: {_code(entry['id'])}"
     )
     if website:
-        parts.append(f"[Full documentation]({website.rstrip('/')}/{entry['docPath']})")
+        parts.append(f"[View online documentation]({website.rstrip('/')}/{entry['docPath']})")
     return parts
 
 
