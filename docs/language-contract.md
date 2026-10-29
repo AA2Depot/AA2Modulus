@@ -395,7 +395,7 @@ module "Constants" {
 }
 ```
 
-See [constants.aa2m](../examples/constants.aa2m) for a compilable module. The type
+See [constants.aa2m](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/constants.aa2m) for a compilable module. The type
 (`int`, `bool`, `float`, `string`) is required and the value is a literal of
 that type (including `float_bits(...)`) or another constant of the same type.
 There are no operators. A reference binds to the constant's literal at the
@@ -603,7 +603,7 @@ module "Points" {
 ```
 
 Seat and target references are `card`. Use explicit numeric conversions where
-native actions need floats. See [the complete corrected example](../examples/macros.aa2m).
+native actions need floats. See [the complete corrected example](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/macros.aa2m).
 Definitions can appear before or after exactly one module and can call other
 macros. Names must be ordinary non-keyword identifiers. Macro lookup is
 case-insensitive, and formal references are case-sensitive.
@@ -750,7 +750,7 @@ case-sensitive strings. Templates and macros occupy separate namespaces.
 Each instantiated name must differ from every ordinary trigger and other
 instantiation in the module, including later items. Repeated instantiation is
 allowed with distinct names. Imported unused templates emit no trigger records.
-See [the complete nested-library example](../examples/library_imports.aa2m).
+See [the complete nested-library example](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/library_imports.aa2m).
 
 Slot declarations precede events, locals, and statements. Names must be ordinary
 non-keyword identifiers, even when quoted. Types are `card`, `int`, `bool`,

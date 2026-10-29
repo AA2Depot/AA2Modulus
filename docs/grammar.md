@@ -27,7 +27,7 @@ validation remains in force; tokens and precedence are unchanged.
 
 Production blocks and expression/statement snippets below describe syntax,
 not standalone input files. Complete compilable modules live in
-[examples](../examples), starting with [notification.aa2m](../examples/notification.aa2m).
+[examples](https://github.com/AA2Depot/AA2Modulus/tree/main/examples), starting with [notification.aa2m](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/notification.aa2m).
 
 ## Lexical Forms
 
@@ -311,7 +311,7 @@ provenance, children, branch presence, and scoped identities are preserved.
 Definition bodies also use ordinary SIR semantic validation; unused-body warnings
 are retained. Only invoked expanded bodies enter the module. Decompilation emits
 ordinary self-contained source; definition and invocation boundaries are not
-serialized. See [the complete example](../examples/macros.aa2m).
+serialized. See [the complete example](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/macros.aa2m).
 
 ## Expressions
 

@@ -2,7 +2,7 @@
 
 The standalone executable runs `inspect`, `validate`, `compile`, `decompile`,
 `editor-data` and `lsp-server` with no Python installation and no AAUnlimited
-checkout. The [release workflow](../.github/workflows/release.yml) builds it
+checkout. The [release workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/release.yml) builds it
 on Ubuntu 24.04 x64 and Windows Server 2025 x64 runners. Earlier builds were
 also checked by hand on Ubuntu 22.04 x64 and Windows 11 x64 (10.0.26100),
 including a run of the Windows `.exe` from WSL2.
@@ -31,7 +31,7 @@ The single-file executable is `dist/linux-x64/aa2modulus`. Try it:
 ## Windows build
 
 Use native Windows 10 or later, x64, with Python 3.13.15 and uv 0.12.15 to
-match [mise.toml](../mise.toml). `mise run build` works there too. Without
+match [mise.toml](https://github.com/AA2Depot/AA2Modulus/blob/main/mise.toml). `mise run build` works there too. Without
 mise, run this from the checkout in PowerShell:
 
 ```powershell
@@ -55,10 +55,10 @@ URIs.
 
 ## Recipe and outputs
 
-[The build script](../tools/build.py) uses the locked PyInstaller 6.22.3 from
+[The build script](https://github.com/AA2Depot/AA2Modulus/blob/main/tools/build.py) uses the locked PyInstaller 6.22.3 from
 the separate `build` dependency group. It builds one single-file console
 executable and then checks it. Its helpers live in
-[tools/standalone/](../tools/standalone/). Each output directory holds:
+[tools/standalone/](https://github.com/AA2Depot/AA2Modulus/tree/main/tools/standalone). Each output directory holds:
 
 | Output | Purpose |
 | --- | --- |
@@ -85,7 +85,7 @@ folder at startup; see
 
 ## Verification and editor launch
 
-[The verifier](../tools/standalone/verify.py) is a smoke check: `--version`
+[The verifier](https://github.com/AA2Depot/AA2Modulus/blob/main/tools/standalone/verify.py) is a smoke check: `--version`
 and `lsp-server --version` must exit 0, write nothing to stderr and print the
 source version. The test suite covers behaviour before the build.
 
@@ -96,7 +96,7 @@ and behaviour.
 
 Pushing a `v*.*.*` tag runs the release workflow. Each build job runs
 `mise run verify`, builds, and runs its own executable's `editor-data
-manifest`. [tools/release_manifest.py](../tools/release_manifest.py) requires
+manifest`. [tools/release_manifest.py](https://github.com/AA2Depot/AA2Modulus/blob/main/tools/release_manifest.py) requires
 the two fragments to match and publishes them as `aa2modulus-manifest.json`
 next to the zips (see the [client contract](lsp.md#client-contract)).
 

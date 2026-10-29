@@ -1,7 +1,7 @@
 # Development
 
-Run every command from the repository root. [mise.toml](../mise.toml) pins
-Python and uv, and [uv.lock](../uv.lock) records the dependencies.
+Run every command from the repository root. [mise.toml](https://github.com/AA2Depot/AA2Modulus/blob/main/mise.toml) pins
+Python and uv, and [uv.lock](https://github.com/AA2Depot/AA2Modulus/blob/main/uv.lock) records the dependencies.
 `mise run setup` prepares the environment. The project sets `package = false`
 on purpose: it ships only as a standalone executable, built with a separate
 dependency group and the [native build recipe](standalone.md).
@@ -40,10 +40,16 @@ Coverage also traces the CLI and LSP child processes that tests start
 (`patch = ["subprocess"]`). That makes `mise run coverage` about twice as
 slow as `mise run test`.
 
-Every push runs [the CI workflow](../.github/workflows/ci.yml): `lint`, plus
+Every push runs [the CI workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/ci.yml): `lint`, plus
 `test` on every other branch and `coverage` instead on `main`. The `main` run
 also writes the README coverage badge to `coverage.json` on the orphan
 `badges` branch.
+
+A push to `main` that changes `docs/` or `zensical.toml` runs
+[the docs workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/docs.yml).
+It runs `mise run docs:build` and deploys `site/` to GitHub Pages. The build
+is strict, so a broken link stops the deploy. Link files outside `docs/` by
+their GitHub URL on `main`.
 
 `mise run docs:builtins` regenerates `docs/reference/builtins/` (see
 [built-ins pages](metadata.md#built-ins-pages)). It is not part of `lint` or
@@ -69,10 +75,10 @@ aa2modulus editor-data lexicon --output <scratch>/lexicon.json
 aa2modulus editor-data manifest
 ```
 
-Tests live in five directories under [tests/](../tests/): `source`, `binary`,
+Tests live in five directories under [tests/](https://github.com/AA2Depot/AA2Modulus/tree/main/tests): `source`, `binary`,
 `metadata`, `cli` and `lsp`. The directory gives each test its marker, and
 collection fails on a test module outside them. Shared helpers live in
-[tests/support/](../tests/support/). Where the native fixtures came from is
+[tests/support/](https://github.com/AA2Depot/AA2Modulus/tree/main/tests/support). Where the native fixtures came from is
 recorded next to the
 [native binaries](https://github.com/AA2Depot/AA2Modulus/blob/main/tests/fixtures/modules/README.md).
 
@@ -84,7 +90,7 @@ them is the LSP workspace-symbol test, which indexes the folder. The suite
 does not test the developer tools or the VS Code extension.
 
 Ruff lint and formatting cover runtime code, tests and tools, with the rule
-set in [pyproject.toml](../pyproject.toml). Mypy checks runtime code and tools
+set in [pyproject.toml](https://github.com/AA2Depot/AA2Modulus/blob/main/pyproject.toml). Mypy checks runtime code and tools
 in strict mode. Lark's untyped `InteractiveParser` API is the one call target
 excluded from the untyped-call check. The ordinary checks do not install the
 `build` dependency group. [Code style](style.md) covers the conventions the
@@ -165,7 +171,7 @@ text.
 3. Run `mise run verify`.
 4. Merge the release commit into `main`.
 5. Tag `main` and push the tag: `git tag vX.Y.Z` and `git push origin vX.Y.Z`.
-   The [release workflow](../.github/workflows/release.yml) refuses a tag
+   The [release workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/release.yml) refuses a tag
    that differs from the project version.
 6. When the workflow finishes, check that the release has both zips and
    `aa2modulus-manifest.json`. Add the breaking wire changes to the generated

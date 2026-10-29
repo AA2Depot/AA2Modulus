@@ -1,5 +1,5 @@
 [project]
-site_url = "https://www.example.com/"
+site_url = "https://modulus.aa2d.net/"
 site_name = "AA2 Modulus"
 site_description = "Cross-platform AAUnlimited module reader, compiler, decompiler, and DSL tooling"
 site_author = "R00taryEngine"
