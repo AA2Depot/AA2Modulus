@@ -7,6 +7,7 @@ on:
     paths:
       - 'docs/**'
       - 'zensical.toml'
+      - 'tools/pygments-aa2m/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 

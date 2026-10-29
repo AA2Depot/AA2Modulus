@@ -2,7 +2,7 @@
 
 ## The project
 
-`aa2modulus` is an unreleased, cross-platform Python toolchain for AAUnlimited
+`aa2modulus` is a cross-platform Python toolchain for AAUnlimited
 trigger modules. Its source language is the unified `.aa2m`. Architecture and
 language choices can change when that serves the task better. When you change
 one, update the affected contracts, examples and acceptance tests in the same

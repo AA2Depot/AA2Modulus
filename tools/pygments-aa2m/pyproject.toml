@@ -1,0 +1,17 @@
+[project]
+name = "pygments-aa2m"
+version = "0.1.0"
+description = "Pygments lexer for .aa2m modules, used by the documentation website"
+requires-python = ">=3.13"
+license = "GPL-3.0-only"
+dependencies = ["pygments>=2.19"]
+
+[project.entry-points."pygments.lexers"]
+aa2m = "pygments_aa2m.lexer:Aa2mLexer"
+
+[build-system]
+requires = ["uv_build>=0.12.15,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""

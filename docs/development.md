@@ -18,6 +18,7 @@ dependency group and the [native build recipe](standalone.md).
 | `mise run verify` | Runs `lint` and `test`. Run it before you hand over work |
 | `mise run docs:serve` / `docs:build` | Previews or builds the documentation website |
 | `mise run docs:builtins` | Regenerates the built-ins pages from the editor catalog; add `--check` to compare only |
+| `mise run docs:lexer` | Regenerates the word lists of the website's `aa2m` highlighter; add `--check` to compare only |
 | `mise run registry --source-root <dir>` | Regenerates the registry from a pinned source checkout; add `--check` to compare only |
 | `mise run build` | Builds and verifies the native single-file executable (`tools/build.py`) |
 
@@ -54,6 +55,16 @@ their GitHub URL on `main`.
 `mise run docs:builtins` regenerates `docs/reference/builtins/` (see
 [built-ins pages](metadata.md#built-ins-pages)). It is not part of `lint` or
 `test`, and no test checks the built-ins pages.
+
+The website highlights `aa2m` code blocks with a Pygments lexer, a small
+package in `tools/pygments-aa2m/` that the `docs` dependency group installs.
+Pygments finds it through its `pygments.lexers` entry point, so the site
+configuration doesn't mention it. Its word lists come from the source lexicon
+and the editor catalog: run `mise run docs:lexer` after a grammar or catalog
+change. Like `docs:builtins`, it is not part of `lint` or `test`.
+`docs:serve` reuses Zensical's page cache in `.cache/`, so after a lexer
+change, run `mise run docs:build` once (its `--clean` clears the cache) to see
+the new highlighting.
 
 `editor-data` prints the JSON documents editor clients and tools read:
 

@@ -57,6 +57,10 @@ run = "uv run --locked --group docs zensical build --clean --strict"
 description = "Regenerate docs/reference/builtins/ from the editor catalog; add --check to compare only"
 run = "uv run --locked python tools/generate_builtins_pages.py"
 
+[tasks."docs:lexer"]
+description = "Regenerate the aa2m lexer's word lists from the lexicon and editor catalog; add --check to compare only"
+run = "uv run --locked python tools/generate_lexer_words.py"
+
 # Maintenance
 
 [tasks.registry]

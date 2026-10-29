@@ -13,6 +13,9 @@ Source = "https://github.com/AA2Depot/AA2Modulus"
 [tool.uv]
 package = false
 
+[tool.uv.sources]
+pygments-aa2m = { path = "tools/pygments-aa2m", editable = true }
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = [".*", "__pycache__"]
@@ -78,5 +81,6 @@ dev = [
     "ruff>=0.16.8",
 ]
 docs = [
+    "pygments-aa2m",
     "zensical>=0.0.71",
 ]
