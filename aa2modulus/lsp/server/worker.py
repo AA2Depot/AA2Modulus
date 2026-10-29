@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from ..workspace.documents import analyze_document
@@ -13,11 +14,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+DEBOUNCE_SECONDS = 0.2
+
 
 async def analyze_pending(server: AA2LanguageServer) -> None:
     while True:
         await server.wake.wait()
-        await asyncio.sleep(0.2)
+        with suppress(TimeoutError):
+            await asyncio.wait_for(server.urgent.wait(), DEBOUNCE_SECONDS)
+        server.urgent.clear()
         server.wake.clear()
         refresh = False
         while server.pending:

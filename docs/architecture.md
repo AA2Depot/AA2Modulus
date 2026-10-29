@@ -175,7 +175,8 @@ text, which the editor uses to check freshness.
 
 The CLI loads the LSP package and pygls only for `lsp-server`. Each stdio
 session owns immutable document snapshots and one compiler worker. The worker
-waits 200 ms after a change and merges the pending roots; work for a buffer or
+waits 200 ms after a change and merges the pending roots, unless a request is
+waiting for the analysis, which then starts at once; work for a buffer or
 dependency that has since changed is dropped, and cancelling a request never
 touches shared compiler state. The worker reads the captured overlays before
 the filesystem resolver, and a failed analysis keeps the earlier dependency
