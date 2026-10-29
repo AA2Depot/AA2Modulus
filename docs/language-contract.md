@@ -1,17 +1,18 @@
-# `.aa2m` Language Reference
+# `.aa2m` language reference
 
-Status: unified source language, version 16
+The source language version is `language_version` in
+[`policy.toml`](https://github.com/AA2Depot/AA2Modulus/blob/main/aa2modulus/language/policy.toml).
 
 `.aa2m` is one readable source language. It supports ordinary programming
 syntax while compiling through a separate Bound HIR into the AA2 Serialized IR.
 The normative grammar is in [grammar](grammar.md).
 
-Blocks containing a complete module can be compiled as files. Other blocks
-are expression, statement, or declaration fragments for the enclosing module,
-trigger, or library described in the text. See the [quick start](../README.md#quick-start)
-for a maintained input and executable CLI workflow.
+Blocks that contain a complete module compile as files. Other blocks are
+expression, statement or declaration fragments for the module, trigger or
+library the text describes. [Get started](quickstart.md) has a maintained input
+and an executable CLI workflow.
 
-## Basic Module
+## Basic module
 
 ```text
 module "Notification Example" {
@@ -28,8 +29,8 @@ The second `Notification` argument defaults to `false` and is inserted during
 binding, so Bound HIR and SIR both contain the explicit argument. Write it
 explicitly when it is `true`.
 
-A description that spans lines is a `"""` block; the closing `"""` sets the
-indentation that is removed (see [lexical forms](grammar.md#lexical-forms)):
+A description that spans lines is a `"""` block. The closing `"""` sets the
+indentation to remove (see [lexical forms](grammar.md#lexical-forms)):
 
 ```text
   description """
@@ -39,41 +40,42 @@ indentation that is removed (see [lexical forms](grammar.md#lexical-forms)):
     """;
 ```
 
-## Dependency Metadata
+## Dependency metadata
 
 Each `depends_on "Provider";` declaration appends one native dependency string.
-Strings retain their exact text and declaration order, including during decode,
+Strings keep their exact text and declaration order, including during decode,
 decompile, and structural parse/encode recovery. Omitting declarations writes an
-empty vector; no empty block is needed.
+empty vector, so no empty block is needed.
 
 The pinned AAUnlimited exporter derives these names from globals owned by attached
-modules, but its module loader does not resolve or enforce the names. `depends_on`
-does not load another module, supply globals, establish card membership/load order,
-or import `.aa2mi` definitions. Declare every global the module reads (see
+modules, but its module loader does not resolve or enforce them. `depends_on`
+does not load another module, supply globals, establish card membership or load
+order, or import `.aa2mi` definitions. Declare every global the module reads (see
 [undeclared variables](#undeclared-variables)) and use `import` for source
 definitions.
 
-Native export has further limits ([evidence](native-format.md#dependency-evidence)):
-it scans only action parameters, so a global used only in event parameters or
-local default expressions is missed and the module can export with empty globals
-and dependencies yet fail on a clean card. Ownership is by global name alone, the
-first attached module declaring it; there is no dependency graph or cycle
-handling because nothing consumes the strings. Unpacking a module copies its
-triggers and removes the module but keeps its globals, so exported dependencies
-are almost always empty (all 727 audited working modules had none), which
+Native export has further limits ([evidence](native-format.md#dependency-evidence)).
+It scans only action parameters. A global used only in event parameters or local
+default expressions is missed, so the module can export with empty globals and
+dependencies yet fail on a clean card. Ownership goes by global name alone, to
+the first attached module that declares it. There is no dependency graph or cycle
+handling, because nothing consumes the strings. Unpacking a module copies its
+triggers and removes the module but keeps its globals. Exported dependencies are
+therefore almost always empty (all 727 audited working modules had none), which
 supports the empty default.
 
-Strict source/model validation rejects empty or whitespace-only names, self names,
-and duplicate names with `INVALID_MODULE_DEPENDENCY` or
-`DUPLICATE_MODULE_DEPENDENCY`. The model APIs' explicit `profile="native"` reports all these metadata-policy
-findings as warnings. Variable resolution, types, and other native checks still
-apply under that profile. Source validation/compilation remains strict.
+Strict validation of source and models rejects empty or whitespace-only names,
+self names, and duplicate names with `INVALID_MODULE_DEPENDENCY` or
+`DUPLICATE_MODULE_DEPENDENCY`. The explicit `profile="native"` of the model APIs
+reports all these metadata-policy findings as warnings. Variable resolution,
+types and other native checks still apply under that profile. Source validation
+and compilation stay strict.
 
 Decompilation retains invalid dependency records and reports strict diagnostics
-alongside recovered source. The recovered source keeps those records; fix the
+alongside recovered source. The recovered source keeps those records. Fix the
 reported errors before compiling it.
 
-## Operators and Calls
+## Operators and calls
 
 ```text
 module "Expressions" {
@@ -89,28 +91,28 @@ module "Expressions" {
 ```
 
 Supported operators are `||`, `&&`, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
-`-`, `*`, `/`, and prefix `!`. Operator overloads are selected using operand
-types and the shipped metadata snapshot. Numeric conversions must be explicit,
+`-`, `*`, `/`, and prefix `!`. The compiler selects operator overloads from
+operand types and the shipped metadata snapshot. Numeric conversions must be explicit,
 for example `ToFloat(love)`.
 
 Precedence increases through `||`, `&&`, equality (`==`, `!=`), relational
 comparison (`<`, `<=`, `>`, `>=`), addition/subtraction, multiplication/division,
 and prefix `!`. Equality and relational tiers each permit one comparison;
-parenthesize nested comparisons. Version 4 separates those two tiers to match
-the shipped policy. Policy may select compatible overloads and defaults within the [fixed syntax contract](metadata.md#fixed-operator-syntax).
+parenthesize nested comparisons. The two tiers are separate to match the
+shipped policy. Policy may select compatible overloads and defaults within the [fixed syntax contract](metadata.md#fixed-operator-syntax).
 
 Float values use IEEE-754 binary32 wire semantics. Use `float_bits(0x...)` when
 exact recovery matters for signed zero, subnormals, infinities, or NaN payloads.
 The formatter emits this form automatically for unusual decoded float values.
 Ordinary decimal literals that overflow the finite binary32 range produce
 `FLOAT_OUT_OF_RANGE` during binding. Int literals outside the int32 range
-(`-2147483648` to `2147483647`) produce `INT_OUT_OF_RANGE` during binding; the
+(`-2147483648` to `2147483647`) produce `INT_OUT_OF_RANGE` during binding. The
 sign is part of the literal, so `-2147483648` is valid.
 
 Zero-parameter expressions use bare names such as `ThisCard` and
 `TriggeringCard`. Calls with parameters use ordinary function-call syntax.
 Use `Name()` to select a zero-argument expression over a variable or constant
-of the same name; `ThisCard` and `TriggeringCard` are [protected](#protected-names)
+of the same name. `ThisCard` and `TriggeringCard` are [protected](#protected-names)
 and never need it.
 
 ### Protected names
@@ -134,7 +136,7 @@ The formatter and decompiler emit this form. Constants, macro formals and
 template slots are not serialized, so they reject protected names even when
 quoted. `ThisCard()` remains a valid zero-argument call.
 
-Version 6 adds qualified built-ins and preferred policy names:
+Built-ins have qualified names and preferred policy names:
 
 ```text
 module "Storage" {
@@ -149,33 +151,34 @@ module "Storage" {
 }
 ```
 
-`Globals.*` exposes selected game state; `Context.*` exposes selected event
-values. These are runtime expressions, with native context requirements, rather
-than serialized constants. Qualified names bypass variable lookup. Dots must
+`Globals.*` exposes selected game state, and `Context.*` exposes selected event
+values. They are runtime expressions with native context requirements, and they
+are never serialized constants. Qualified names bypass variable lookup. Dots must
 touch their identifier segments, and keyword segments are invalid. A two-segment
 name that is not registered may be a [receiver call](#receiver-calls) on a
-variable. Storage getters require an explicit fallback;
-card storage keeps its leading integer card argument. Use `GetInt`, `GetFloat`,
+variable. Storage getters require an explicit fallback. Card storage keeps its
+leading integer card argument. Use `GetInt`, `GetFloat`,
 `GetString`, and `GetBool`, and the corresponding `Set*` names. Card storage
 also provides `RemoveInt`, `RemoveFloat`, `RemoveString`, and `RemoveBool`.
 
-Canonical names must be unambiguous for their exact role/signature. An
-overloaded name is resolved by exact argument and expected-result types;
-otherwise binding reports ambiguity. Operator operands receive
-those exact constraints through a bounded candidate search, without casts.
+Canonical names must be unambiguous for their exact role and signature. Binding
+resolves an overloaded name by exact argument and expected-result types, and
+reports ambiguity otherwise. Operator operands get the same constraints through a
+bounded candidate search, without casts.
 
 Every action, expression and named constant has a preferred name from the
 [naming convention](metadata.md#naming-convention) or, for a card-first built-in,
-a [receiver member](#receiver-calls): `Npc.*`, `Context.*`, `Conversation.*`,
+a [receiver member](#receiver-calls). The forms are the `Npc.*`, `Context.*`, `Conversation.*`,
 `H.*`, `Globals.*`, `ClassStorage.*`, `Lua.*`, `Math.*` and `Text.*` roots, the unqualified core
 (`ThisCard`, `Notification`, `WriteLog`, `StopThread`, `StopThreadIf`, `JumpIf`,
 `ToInt`, `ToFloat`, `ToString`) and `Constants.<Category>.<UPPER_SNAKE>`. The
-formatter and decompiler write these names. A target with a preferred
-name accepts only that spelling: native spellings such
+formatter and decompiler write these names.
+
+A target with a preferred name accepts only that spelling. Native spellings such
 as `AddLikePoints`, `NpcTalkTarget`, `ConditionalEndExecution`, `CardAddedToClass`
 or the label `LOVE` are unknown names, and the error names the canonical
 replacement. Targets without a preferred name (grammar-owned branch and loop
-actions, payload markers, `int:99`) keep their native spellings. `Conversation.Id` selects INT/62;
+actions, payload markers, `int:99`) keep their native spellings. `Conversation.Id` selects INT/62.
 `Constants.EventType.KEY_PRESS` selects native named INT/301, distinct from the
 `Context.KeyPress` getter. GUI templates with `%p` placeholders remain display provenance.
 Binding, formatting and editor queries share the immutable catalog's forms.
@@ -184,25 +187,25 @@ Verified qualified source values lower to primitive literals in expression slots
 `Constants.Room.SCHOOL_GATES` is INT/0 and `Constants.Period.EXAM` is INT/11.
 They are distinct from native named references. Unsafe old `SchoolGates`/`EXAM`
 aliases produce a targeted shadow-value diagnostic. Equivalent `OPINION_70` rows
-select one native INT/282 reference. Existing named wire IDs 298/352/365 preserve
-their actual native lookup and save behavior; recovery never replaces them with
+select one native INT/282 reference. Existing named wire IDs 298/352/365 keep
+their actual native lookup and save behavior. Recovery never replaces them with
 these literal aliases. Ordinary decoded literals stay numeric. Globals still
 require literal initializers under their existing grammar.
 
 The INT/100 getter, marked readable in the policy, formats as `Context.NpcOriginalResponse` while keeping
 its INT wire identity. Its native table declares BOOL, and native re-save produces
-unresolved BOOL/100. Strict compilation rejects the declared-type incompatibility;
+unresolved BOOL/100. Strict compilation rejects the declared-type incompatibility, and
 readable text does not repair that native defect. Event-dependent value types
-(policy `[event_values]`) are checked against every known event in the enclosing trigger, including expanded
-macro/template uses. See [metadata contracts](metadata.md#preferred-names-and-lookup).
+(policy `[event_values]`) are checked against every known event in the enclosing
+trigger, including expanded macro and template uses. See [metadata contracts](metadata.md#preferred-names-and-lookup).
 
-## Receiver Calls
+## Receiver calls
 
 Built-ins whose native slot 0 is a card seat are written as members of that
-[card](#cards). The language policy lists them in `[members]`; a card-first target
+[card](#cards). The language policy lists them in `[members]`. A card-first target
 has no flat qualified name, and its former spellings (`Character.SetVirtue(coach,
-3)`, native `SetVirtue(...)`) are rejected with a hint. Members with arguments
-and all actions are calls; an expression member with no explicit arguments is a
+3)`, native `SetVirtue(...)`) are rejected with a hint. Members with arguments,
+and all actions, are calls. An expression member with no explicit arguments is a
 property and takes no parentheses:
 
 ```text
@@ -213,9 +216,9 @@ coach.SetVirtue(virtue + 1);
 let love: int = coach.Love(Context.NpcTalkTarget);
 ```
 
-Bare built-in receivers: a registered zero-argument `int` expression is a
-receiver without parentheses: `ThisCard.Virtue`,
-`TriggeringCard.AddLike(coach, 5)`, `Globals.PlayerCharacter.SetVirtue(3)`.
+A registered zero-argument `int` expression is a receiver without parentheses,
+as in `ThisCard.Virtue`, `TriggeringCard.AddLike(coach, 5)` and
+`Globals.PlayerCharacter.SetVirtue(3)`.
 Other receivers are variables (`coach.Virtue`), `variable("any name").Virtue`,
 `(expression).Virtue`, call results, or another member (`coach.Target.Virtue`).
 
@@ -223,9 +226,9 @@ The receiver is bound once as native parameter 0 and the explicit arguments fill
 the remaining parameters in order, so evaluation order, argument counts and the
 serialized records equal the native call. Nothing is reordered, copied, defaulted or
 stored in a temporary variable. A receiver is a [`card`](#cards), so an `int`
-variable needs `Card(...)`; the type proves neither a live seat nor event
-context. Context requirements still come from the functions invoked, not from
-receiver syntax.
+variable needs `Card(...)`. The type proves neither a live seat nor event
+context. Context requirements come from the functions invoked. Receiver syntax
+adds none.
 
 Resolution of a dotted token such as `a.b.Member` (one lexed token) is ordered:
 
@@ -239,41 +242,50 @@ Resolution of a dotted token such as `a.b.Member` (one lexed token) is ordered:
 3. Otherwise the name is unknown.
 
 Any name whose first segment exactly equals a registered namespace root
-(`Context`, `Globals`, `ClassStorage`, ...) is a static path, so declaring a
-variable named `Context` never retargets `Context.NpcTalkTarget`; use
+(`Context`, `Globals`, `ClassStorage`, ...) is a static path. Declaring a
+variable named `Context` never retargets `Context.NpcTalkTarget`. Use
 `variable("Context").Virtue` or `(Context).Virtue` to select the variable.
-Namespace roots and variable names are case-sensitive; segments after the root,
+Namespace roots and variable names are case-sensitive. Segments after the root,
 members and unqualified built-ins are not, so `Context.npctalktarget` resolves
 while `context.npctalktarget` is an unknown name whose help names the whole
 canonical spelling, `Context.NpcTalkTarget`. When the tail is unknown or matches
-several spellings, the help corrects only the root and keeps the tail as typed. Quoted names containing dots are never split. Macro and template
-bodies resolve receivers in their own scope and cannot capture caller variables;
-a formal used as a receiver repeats its actual wherever the formal is used.
+several spellings, the help corrects only the root and keeps the tail as typed. Quoted names containing dots are never split.
 
-Diagnostics: `UNKNOWN_MEMBER`; `MEMBER_ARITY` (wrong argument count, or a member
-with arguments written as a property: `coach.Love` hints `coach.Love(...)`);
-`MEMBER_KIND` (an action used as a value, a value used as a statement, a property
-written with parentheses: `coach.Virtue()` hints `coach.Virtue`, or an action
-written without them: `coach.CancelAction;` is a `MEMBER_KIND` error that hints
-`coach.CancelAction(...)`); `MEMBER_ACTION_BLOCK`; `AMBIGUOUS_MEMBER`; and the
-usual `SOURCE_TYPE_MISMATCH` for receiver or argument types. Unknown flat
+Macro and template bodies resolve receivers in their own scope and cannot capture
+caller variables. A formal used as a receiver repeats its actual wherever the
+formal is used.
+
+Diagnostics:
+
+- `UNKNOWN_MEMBER`.
+- `MEMBER_ARITY`: wrong argument count, or a member with arguments written as a
+  property (`coach.Love` hints `coach.Love(...)`).
+- `MEMBER_KIND`: an action used as a value, a value used as a statement, a
+  property written with parentheses (`coach.Virtue()` hints `coach.Virtue`), or an
+  action written without them (`coach.CancelAction;` is a `MEMBER_KIND` error that
+  hints `coach.CancelAction(...)`).
+- `MEMBER_ACTION_BLOCK`.
+- `AMBIGUOUS_MEMBER`.
+- The usual `SOURCE_TYPE_MISMATCH` for receiver or argument types.
+
+Unknown flat
 spellings of card-first targets give the usual unknown-name error plus a hint that
 rewrites the call (`Character.SetVirtue(coach, 3)` hints `coach.SetVirtue(3)`,
 `Character.Virtue(1 + x)` hints `(1 + x).Virtue`), or `<card>.SetVirtue(...)` when
-the arguments do not fit. Formatting and decompilation write the member form: the
+the arguments do not fit. Formatting and decompilation write the member form. The
 receiver is a variable name (`variable("x")` for a non-identifier name or a
 namespace root), a bare zero-argument built-in, a built-in call
 (`Conversation.Actor(0).Virtue`), a chained member, or `(expr)` for literals,
-constants and operators; a receiver that cannot be written safely keeps the raw
+constants and operators. A receiver that cannot be written safely keeps the raw
 form. Add a member only in the policy's `[members]` table
-([contract](metadata.md#receiver-member-forms)); no method is inferred from a
+([contract](metadata.md#receiver-member-forms)). No method is inferred from a
 parameter type, a variable name or a GUI label.
 
 ## Cards
 
-Version 16 adds the source-only type `card` for seat values. It is written to
+`card` is a source-only type for seat values. It is written to
 the binary as `int`, so a module declaring `card` produces the same bytes as one
-declaring `int`; the type only lets the compiler catch a seat and a number
+declaring `int`. The type only lets the compiler catch a seat and a number
 passed in each other's place:
 
 ```text
@@ -316,13 +328,15 @@ about whether the current value identifies a character.
 
 A card is not checked to be a live seat (0..24) or a filled one, and seats
 returned outside their events (`Context.NpcTalkTarget` reads 0, a valid seat)
-are still cards; context checks report those reads. Decompilation declares an
-`int` variable `card` when its uses as a card are at least as frequent as the
-values written to it that are not cards, writes `Card(...)` around those values,
-and wraps every other `int` in a card position without changing native fields.
+are still cards. Context checks report those reads.
+
+Decompilation declares an `int` variable `card` when its uses as a card are at
+least as frequent as the values written to it that are not cards. It writes
+`Card(...)` around those values and wraps every other `int` in a card position,
+without changing native fields.
 Seats read back from card storage (`GetInt`) stay `Card(...)` reads.
 
-## Variables and Assignment
+## Variables and assignment
 
 ```text
 module "Variables" {
@@ -351,18 +365,18 @@ reserve longer identifiers: `true_flag` and `breakpoint` are ordinary names.
 Lookup searches module globals before locals in the current trigger. Every
 local declaration is visible to that trigger's events, defaults, and statements,
 including references to later declarations. Locals in other triggers are not
-visible. Duplicate globals and duplicate locals within a trigger are rejected;
-a local may share a global name, but the global wins. Complete local visibility
-is the version 3 scope rule. It uses native global-before-local search priority
-within the module environment, without promising runtime initialization order
-or safe self/cyclic defaults.
+visible. Duplicate globals and duplicate locals within a trigger are rejected.
+A local may share a global name, but the global wins. This scope rule follows the
+native global-before-local search priority within the module environment. It
+promises no runtime initialization order and no safe self-referencing or cyclic
+defaults.
 
 A variable the module never declares is undefined; see
 [undeclared variables](#undeclared-variables).
 
-## Compile-Time Constants
+## Compile-time constants
 
-Version 13 adds named, typed literal values that the binder substitutes in place:
+Constants are named, typed literal values that the binder substitutes in place:
 
 ```text
 const Tag: string = "Naive";                    // top level: module, macros, templates
@@ -381,12 +395,12 @@ module "Constants" {
 }
 ```
 
-See [constants.aa2m](../examples/constants.aa2m) for a compilable module. The type
+See [constants.aa2m](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/constants.aa2m) for a compilable module. The type
 (`int`, `bool`, `float`, `string`) is required and the value is a literal of
 that type (including `float_bits(...)`) or another constant of the same type.
 There are no operators. A reference binds to the constant's literal at the
 reference's source span, so the output is byte-identical to writing the literal
-by hand; constants are never serialized, unused ones emit nothing, and
+by hand. Constants are never serialized, unused ones emit nothing, and
 decompilation shows literals.
 
 Two reference forms, parallel to variables:
@@ -394,7 +408,7 @@ Two reference forms, parallel to variables:
 | Form | Use | Resolves |
 | --- | --- | --- |
 | `Limit` (bare name) | only when the name is an ordinary non-keyword identifier (`const Limit` or `const "ModuleName"`) | like a variable name: before unqualified built-ins; never across a dotted namespace root |
-| `const("Name")` | every constant; required for names that are not identifiers (spaces, punctuation) or are keywords (`const("true")`); also the explicit form that picks the constant when a variable shares the bare name | constants only (`UNDEFINED_CONST` otherwise), as `variable("Name")` resolves only variables |
+| `const("Name")` | every constant. Required for names that are not identifiers (spaces, punctuation) or are keywords (`const("true")`). Also the explicit form that picks the constant when a variable shares the bare name | constants only (`UNDEFINED_CONST` otherwise), as `variable("Name")` resolves only variables |
 
 `const("X")` is to constants what `variable("X")` is to variables; neither
 form sees the other kind, and raw `variable "X"` payloads name variables only.
@@ -403,19 +417,19 @@ A constant may be a receiver like a variable (`const LEAD: int = 0;` then
 `const` is a reserved keyword; `const_x` and `constant_x` remain identifiers
 and `"const"` may be a quoted name.
 
-Scope: top-level constants (outside the module, in module or library units)
-join the one transitive import namespace and are visible in the module, macro
-bodies and trigger templates. Module-item constants are visible only in their
-module (events, global initializers, local defaults, statements and
-`import.trigger` slot actuals), not in macros or templates, which stay
-hygienic. Both kinds share one namespace per operation: a duplicate name fails
-even when unused, and a definition reached through a diamond import is one
-definition. Declaration order does not matter.
+Top-level constants (outside the module, in module or library units) join the
+one transitive import namespace and are visible in the module, macro bodies and
+trigger templates. Module-item constants are visible only in their module
+(events, global initializers, local defaults, statements and `import.trigger`
+slot actuals). Macros and templates do not see them, because they stay hygienic.
+Both kinds share one namespace per operation. A duplicate name fails even when
+unused, and a definition reached through a diamond import is one definition.
+Declaration order does not matter.
 
-Collisions are errors, not shadowing: a constant may not share its exact name
+Collisions are errors, and nothing shadows. A constant may not share its exact name
 with a module global, trigger local, macro formal, template slot or template
 local in its visibility. After such a collision, a bare use of the name is
-`AMBIGUOUS_CONST`; write `const("X")` or `variable("X")`.
+`AMBIGUOUS_CONST`. Write `const("X")` or `variable("X")`.
 
 Diagnostics: `DUPLICATE_CONST`, `CONST_NAME_COLLISION`, `AMBIGUOUS_CONST`,
 `UNDEFINED_CONST`, `CONST_ASSIGNMENT` (assignment or `for` target naming a
@@ -423,18 +437,18 @@ constant), `CONST_CYCLE`, `CONST_NAME`, `CONST_TYPE`, `CONST_UNIT_REQUIRED`
 (module-only `parse_source_ast` given top-level constants), plus
 `SOURCE_TYPE_MISMATCH`, `INT_OUT_OF_RANGE` and `FLOAT_OUT_OF_RANGE` for the value.
 
-## Validation Profiles
+## Validation profiles
 
-`validate_module` and `compile_module` default to `profile="strict"`: declarations,
-references, assignments, and every original GUI expression are checked, including
-raw-marked model nodes. Source validation/compilation uses these authoring checks
-for readable and raw forms alike. Raw provenance selects source representation;
-it does not relax identity, signature, type or scope checks. Binary recovery
+`validate_module` and `compile_module` default to `profile="strict"`. Strict checks
+declarations, references, assignments, and every original GUI expression,
+including raw-marked model nodes. Source validation and compilation use these
+authoring checks for readable and raw forms alike. Raw provenance selects source
+representation and does not relax identity, signature, type or scope checks. Binary recovery
 (decode, then encode) keeps the bytes without claiming semantic validity.
 
 Event-data callbacks are listed in the policy's `[event_values]`. INT/100
 and INT/101 (`Context.NpcOriginalResponse`, `Context.NpcCurrentResponse`) read
-their answer only during `NPC_RESPONSE` (event8); in every other event the native
+their answer only during `NPC_RESPONSE` (event8). In every other event the native
 callback executes `return false`. INT/70 (`Conversation.IsAnswering`) reads a
 bool field in `PC_RESPONSE`/`PC_AFTER_RESPONSE` (events14/19). AAUnlimited's
 evaluator passes the result on without a type check, and a bool `Value` writes
@@ -442,11 +456,12 @@ only one byte of its value union, so an int read sees that byte plus leftover
 memory. The result is unspecified and can change between reads in one run (an
 in-game test read `1060439040`, then `0`). Strict validation reports
 `REVIEWED_VALUE_TYPE_MISMATCH` errors for those INT uses (warnings under
-`profile="native"`); the message names the events where the value exists and
+`profile="native"`). The message names the events where the value exists and
 what the native callback returns in the trigger's event. A trigger with missing
 or unknown events reports `REVIEWED_VALUE_CONTEXT_UNKNOWN` warnings that name the
-events where the value exists; known events are still checked individually. Context requirements follow expanded expressions
-through macros, imports and template slots without changing their identities.
+events where the value exists. Known events are still checked individually.
+Context requirements follow expanded expressions through macros, imports and
+template slots without changing their identities.
 Free macro definitions defer event checks to invocations.
 
 INT/100's declared BOOL mismatch is `EXPRESSION_METADATA_RETURN_TYPE_MISMATCH`
@@ -460,15 +475,15 @@ declared `int`, but the native function reads it as a string. Every use is a
 upstream bug is recorded in [native format](native-format.md) N12 and in the
 policy's `[defects]` table ([metadata](metadata.md#native-defects)).
 
-These three findings describe known AAUnlimited hazards, not authoring mistakes;
-source can acknowledge them with
+These three findings describe known AAUnlimited hazards. They are not authoring
+mistakes. Source can acknowledge them with
 [`@allow`](#acknowledging-native-hazards) when a module depends on the native
 behavior.
 
 `profile="native"` checks the pinned initialization projection. Conditional
-IF/ELSEIF/ELSE children start fresh loop state; Break/Continue without active
+IF/ELSEIF/ELSE children start fresh loop state. Break/Continue without active
 loop state is discarded before variable resolution. An inner loop establishes
-its own state; ordinary action children retain the enclosing loop state.
+its own state, and ordinary action children retain the enclosing loop state.
 Both profiles report located `NATIVE_DISCARDED_CONTROL` warnings. Readable source
 can preserve those controls and warns without changing its GUI records.
 
@@ -476,21 +491,21 @@ Native validation resolves variables in events, local defaults, and projected
 actions before checking registry signatures and types. Set Variable compares
 the target and value expression return types, using registry-declared return
 types. Reference/declaration type differences become `VARIABLE_TYPE_MISMATCH`
-warnings; assignment/declaration differences use `ASSIGNMENT_DECLARATION_TYPE`.
+warnings. Assignment/declaration differences use `ASSIGNMENT_DECLARATION_TYPE`.
 Unknown executed registry references, expression/signature errors, and unresolved
 variables remain errors. Malformed flow that cannot be projected safely reports
 `NATIVE_PROJECTION_ERROR`. Structural writer constraints always apply. Native
 validation never relaxes raw provenance. Compilation writes the original GUI
 tree, including discarded records, without coercing or repairing values.
-Event-value context and native re-save hazards are warnings in this profile;
-native declared-type consumer checks remain errors as required by initialization.
+Event-value context and native re-save hazards are warnings in this profile.
+Native declared-type consumer checks remain errors, as initialization requires.
 
-Passing native checks does not prove safe evaluation: native variable evaluation
+Passing native checks does not prove safe evaluation. Native variable evaluation
 returns the stored Value, whose type may differ from its expression's type.
 Global value/declaration mismatches and duplicate declarations are warnings in
 this profile. [Dependency metadata lint](#dependency-metadata) is also warning-only
-in the native profile; strict defaults retain errors. These are source-derived compatibility checks;
-native Windows/MSVC execution is separate.
+in the native profile, and strict defaults keep errors. These are source-derived
+compatibility checks. Native Windows/MSVC execution is separate.
 
 ### Undeclared variables
 
@@ -513,7 +528,7 @@ has a global with that name, AAUnlimited keeps the card's value. The
 declaration also adds the global to the compiled module, so the output is no
 longer byte-identical to the original binary.
 
-## Acknowledging Native Hazards
+## Acknowledging native hazards
 
 A strict error that reports a known AAUnlimited hazard can be acknowledged in
 source, so a module that relies on the native behavior still compiles:
@@ -533,8 +548,8 @@ local, trigger, trigger import, macro, trigger template or the module
 ([grammar](grammar.md#acknowledged-hazards)). It covers a finding whose location,
 or one of whose expansion origins (a macro call, a trigger import), lies inside
 that item. The innermost covering attribute is the one used. A covered error is
-reported as a warning with the note `acknowledged by @allow(CODE) at FILE:LINE:COL`;
-nothing is hidden and the module compiles. The attribute is source-only: it
+reported as a warning with the note `acknowledged by @allow(CODE) at FILE:LINE:COL`.
+Nothing is hidden and the module compiles. The attribute is source-only and
 changes no SIR or binary output.
 
 Only codes in the language policy's `acknowledgeable` list are accepted
@@ -547,15 +562,15 @@ Findings about the attribute itself:
 
 | Code | Severity | When |
 | --- | --- | --- |
-| `NATIVE_HAZARD_ALLOWED` | warning | every attribute code that acknowledged a finding: bypassing a hazard is not recommended; fix the problem and remove the `@allow` |
+| `NATIVE_HAZARD_ALLOWED` | warning | every attribute code that acknowledged a finding. Bypassing a hazard is not recommended, so fix the problem and remove the `@allow` |
 | `ALLOW_NOT_PERMITTED` | error | the code is not in the policy list |
-| `UNUSED_ALLOW` | error | the code acknowledged nothing, for example after the hazard was fixed or once an upstream fix removes the finding; an outer attribute whose finding an inner one already covers is also unused |
+| `UNUSED_ALLOW` | error | the code acknowledged nothing, for example after the hazard was fixed or once an upstream fix removes the finding. An outer attribute whose finding an inner one already covers is also unused |
 
 `UNUSED_ALLOW` needs a complete validation and is not reported for attributes
 inside macro or template definitions, whose findings depend on where they are
 expanded. A definition is validated on its own, without a call site, so a
 definition-time error such as `Text.Replace`'s defect needs the `@allow` inside
-the definition; an event-dependent finding appears only at an expansion and is
+the definition. An event-dependent finding appears only at an expansion and is
 covered by an `@allow` at the call site or inside the definition.
 
 `decompile` inserts `@allow(CODE)` before the smallest statement, event or local
@@ -564,9 +579,9 @@ statement) and reports the acknowledged warnings, so a real module with a known
 hazard recompiles byte-identically. Remove the attribute once the module no
 longer depends on the hazard.
 
-## Typed Statement Macros
+## Typed statement macros
 
-Version 7 adds typed statement macros outside the module:
+Typed statement macros are declared outside the module:
 
 ```text
 macro "update_points" {
@@ -587,23 +602,23 @@ module "Points" {
 }
 ```
 
-Seat/target references are `card`; use explicit numeric conversions where native
-actions need floats. See [the complete corrected example](../examples/macros.aa2m).
+Seat and target references are `card`. Use explicit numeric conversions where
+native actions need floats. See [the complete corrected example](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/macros.aa2m).
 Definitions can appear before or after exactly one module and can call other
-macros. Names must be ordinary non-keyword identifiers; macro lookup is
-case-insensitive, while formal references are case-sensitive.
+macros. Names must be ordinary non-keyword identifiers. Macro lookup is
+case-insensitive, and formal references are case-sensitive.
 All parameters are required and use `card`, `int`, `bool`, `float`, or `string`.
 Calls pass exactly one typed argument per parameter in declaration order,
 require a semicolon, and cannot have child or slot blocks. A macro with
-no parameters accepts `name();`. Native expression calls retain
-their own namespace; macros return no expression. Macro/action name collisions
+no parameters accepts `name();`. Native expression calls keep
+their own namespace, and macros return no expression. Macro/action name collisions
 under the operation policy are rejected.
 
 Actual expressions bind in the caller's ordinary variable scope. Raw-containing
-actuals also undergo strict semantic checks before substitution can discard them;
-unused raw arguments cannot hide invalid references or signatures. Substitution
-duplicates an expression at every formal use: `Math.RandomInt(...)` passed to a
-twice-used formal is evaluated twice; an unused argument is type-checked but
+actuals also undergo strict semantic checks before substitution can discard them.
+Unused raw arguments cannot hide invalid references or signatures. Substitution
+duplicates an expression at every formal use, so `Math.RandomInt(...)` passed to a
+twice-used formal is evaluated twice. An unused argument is type-checked but
 never evaluated. Macro calls do not insert temporary variables or conversions.
 Definition-intended built-ins bind with only formal variables in scope, so a
 caller variable cannot change their meaning. Pass caller state explicitly.
@@ -621,7 +636,7 @@ contains the expanded native actions; decompilation produces self-contained
 expanded source and cannot recover macro definitions or call boundaries.
 
 For staged use, `parse_source_unit` returns a `SourceUnit` with `.module` and
-`.macros` (and version 8 `.imports`/`.templates`); `bind_source_ast` accepts either that unit or
+`.macros`, `.imports` and `.templates`; `bind_source_ast` accepts either that unit or
 an ordinary `SourceModule`. `parse_source_ast` remains module-only and reports
 `MACRO_UNIT_REQUIRED` for definitions. Bound modules expose definition warnings
 in `.diagnostics`, alongside diagnostics from raw actuals; validation APIs merge
@@ -630,10 +645,10 @@ them with emitted-module diagnostics.
 Macro bodies see top-level and library [constants](#compile-time-constants)
 (`Prefix + text`) but not constants declared inside a module.
 
-## Library Imports
+## Library imports
 
-Version 8 adds `.aa2mi` source libraries. A library contains top-level imports,
-macros, trigger templates, and (version 13) constants, without a module. Empty libraries are valid. A module source may
+An `.aa2mi` source library contains top-level imports, macros, trigger
+templates and constants, without a module. Empty libraries are valid. A module source may
 place imports and macros before or after exactly one module:
 
 Save this complete example beside `examples/library_imports.aa2m`, so
@@ -652,13 +667,13 @@ module "Imported" {
 Imports require a path ending in `.aa2mi` (case-sensitive), resolve relative to
 each importing file, and never become `depends_on` records. The CLI resolves
 the root's imports from its directory. Filesystem identities use the host's
-real paths and case normalization; repeated imports, symlinks, and diamonds
+real paths and case normalization. Repeated imports, symlinks, and diamonds
 deduplicate by identity. Cycles fail. Prefer `/` separators for portable paths.
 Imports perform no downloading or runtime loading.
 
 All root and library definitions share one transitive operation namespace.
 There are no private exports, qualification, or order-dependent overrides.
-Macro names retain case-insensitive lookup; distinct definitions with the same
+Macro names keep case-insensitive lookup. Distinct definitions with the same
 name fail even when unused. All definitions and their bodies validate, while
 only invoked expanded statements enter output. Definitions in any loaded unit
 can call any macro in the operation namespace. Decompilation yields expanded
@@ -671,8 +686,8 @@ options conflict with each other; explicit options must match a supplied context
 implements `resolve(path, *, importer) -> str` and
 `read(identity, *, max_chars) -> str`: root importer is `None`, nested importer
 is the canonical identity, and reads must stop at `max_chars + 1` characters.
-Resolve returns a stable, nonempty identity before any read. UTF-8/filesystem
-failures become input diagnostics; a resolver's `ValueError` indicates an invalid
+Resolve returns a stable, nonempty identity before any read. UTF-8 and filesystem
+failures become input diagnostics. A resolver's `ValueError` indicates an invalid
 path. Other provider programming exceptions propagate.
 Providers control access and path semantics. Operation caches reset on every
 parse/compile/validation, including with a reused context, so file edits are seen.
@@ -684,21 +699,21 @@ validates all definitions and imports through the same binder with an empty
 internal module. `parse_and_validate_source` returns `None` for the model in
 library mode, including on success; inspect the validation result for errors.
 Compilation and direct binding require a module unit. CLI `validate lib.aa2mi`
-selects library validation; CLI `compile` rejects `.aa2mi` inputs with
-`LIBRARY_COMPILE`, while text compilation always requires a module. Module-only
+selects library validation. CLI `compile` rejects `.aa2mi` inputs with
+`LIBRARY_COMPILE`, and text compilation always requires a module. Module-only
 `parse_source_ast` reports `IMPORT_UNIT_REQUIRED` for imports. Imported syntax,
 binding, and semantic errors retain library locations and related import notes.
 
 Graph limits are inclusive: `max_import_files=128` unique imported libraries
 (root text is separate), `max_import_depth=32` edges on the longest import path,
 and `max_total_source_chars=16_777_216` characters in root plus unique libraries.
-File/depth checks precede reads; reads use the remaining aggregate/per-file
-character budget plus one. The graph also shares an aggregate AST `max_nodes`
+File and depth checks precede reads. Reads use the remaining aggregate and
+per-file character budget plus one. The graph also shares an aggregate AST `max_nodes`
 budget and the existing macro preparation/expansion budget. Cached diamonds
 still count their longest depth. CLI options are `--max-import-files`,
 `--max-import-depth`, and `--max-total-source-chars`. Graph failures use
 `IMPORT_FILE_LIMIT`, `IMPORT_DEPTH_LIMIT`, `IMPORT_SIZE_LIMIT`, or
-`SOURCE_NODE_LIMIT`; path/access failures use `IMPORT_PATH`,
+`SOURCE_NODE_LIMIT`; path and access failures use `IMPORT_PATH`,
 `IMPORT_RESOLVER_REQUIRED`, `IMPORT_READ_ERROR`, or `IMPORT_ENCODING`.
 `SourceImportError` carries input diagnostics for resolver/library failures;
 validation returns them and compilation wraps them in `CompileError`.
@@ -706,7 +721,7 @@ Library constants join the same namespace: duplicates fail even when unused (`DU
 Library modules fail with `LIBRARY_MODULE`; missing module roots use
 `MODULE_REQUIRED`. `import` and `slot` are reserved, with longer prefixes still valid.
 
-## Trigger Templates
+## Trigger templates
 
 Libraries declare reusable triggers with required typed slots:
 
@@ -728,17 +743,17 @@ import.trigger "Init" "Initialize" {
 }
 ```
 
-The second quoted string is an optional output trigger name; omit it to keep
+The second quoted string is an optional output trigger name. Omit it to keep
 `Init`. The binding block is required, including `{}` for a zero-slot template.
 There is no trailing semicolon. Template lookup and output names are exact,
 case-sensitive strings. Templates and macros occupy separate namespaces.
 Each instantiated name must differ from every ordinary trigger and other
 instantiation in the module, including later items. Repeated instantiation is
 allowed with distinct names. Imported unused templates emit no trigger records.
-See [the complete nested-library example](../examples/library_imports.aa2m).
+See [the complete nested-library example](https://github.com/AA2Depot/AA2Modulus/blob/main/examples/library_imports.aa2m).
 
 Slot declarations precede events, locals, and statements. Names must be ordinary
-non-keyword identifiers, even when quoted; types are `card`, `int`, `bool`,
+non-keyword identifiers, even when quoted. Types are `card`, `int`, `bool`,
 `float`, or `string`. All slots are required, without defaults or implicit
 conversions other than [card](#cards) widening and literals as cards.
 Bindings may use quoted names or identifiers and can appear in any order; missing,
@@ -748,15 +763,15 @@ They may use native calls or raw recovery expressions with the exact slot type.
 Raw variable payloads in actuals must reference declared module globals with
 their declared types; they cannot capture a template local or an undeclared name.
 Repeated slot uses repeat runtime evaluation; unused actuals type-check and emit
-nothing. Slots are values and cannot be assignment/for-loop targets, including
-native or raw assignment-target actions. Raw variable payloads cannot name slots;
-use readable references to slots inside raw parameter lists.
+nothing. Slots are values and cannot be assignment or for-loop targets, including
+native or raw assignment-target actions. Raw variable payloads cannot name slots.
+Use readable references to slots inside raw parameter lists.
 
 Template events, local defaults, and statements bind once in isolated slot/local
 scope. All template locals are visible throughout the definition, preserving
 declaration order. Caller globals cannot capture definition-intended native names.
-Explicit references to variables outside the template fail; pass them via slots.
-Slots cannot share names with locals. Locals may be read/written, including by
+Explicit references to variables outside the template fail. Pass them via slots.
+Slots cannot share names with locals. Locals may be read and written, including by
 assignments, for loops, and native/raw target actions. Raw variable references
 must name a declared template local with its declared type. Loop control requires
 a loop inside the template; nested macros retain their own definition-local rules.
@@ -767,7 +782,7 @@ local and all its bound reads/writes to the first unused `_aa2m_local_N` name
 (starting at zero in declaration order). Existing globals and template locals
 reserve those names. Noncolliding names remain intact. Caller-bound slot actuals
 keep their original global references. This makes native global-first lookup
-preserve the template's local intent; each trigger still has its own local scope.
+preserve the template's local intent. Each trigger still has its own local scope.
 Native identities, raw provenance, exact float bits, nested GUI children, empty
 branches, event/default vectors, and trigger ordering survive expansion.
 
@@ -777,7 +792,7 @@ slot/local declarations fail. Instantiation diagnostics retain definition, slot,
 actual and invocation origins; emitted semantic errors point to their library
 or actual location with related invocation notes. Expansion shares the macro
 aggregate work budget, with `TEMPLATE_EXPANSION_LIMIT` on template preflight
-failure. Template preparation counts complete trigger HIR; instantiation counts
+failure. Template preparation counts complete trigger HIR. Instantiation counts
 substituted expressions per occurrence and checks combined depth before cloning.
 All expanded behavior enters ordinary SIR; decompilation reconstructs expanded
 triggers without templates, slots, or libraries.
@@ -788,14 +803,14 @@ Template diagnostics include `TEMPLATE_LIBRARY_ONLY`, `TEMPLATE_NAME`,
 `TEMPLATE_SLOT_WRITE`, `TEMPLATE_SLOT_RAW_REFERENCE`, `TEMPLATE_LOOP_SCOPE`,
 `UNKNOWN_TEMPLATE`, `MISSING_SLOT`, `UNKNOWN_SLOT`, `DUPLICATE_SLOT_BINDING`,
 `TEMPLATE_TRIGGER_NAME`, and `TEMPLATE_TRIGGER_NAME_COLLISION`. Ordinary type,
-declaration, and source-budget diagnostics also apply. Slots belong to templates;
-macro calls continue to use positional typed parameters only.
+declaration, and source-budget diagnostics also apply. Slots belong to templates.
+Macro calls continue to use positional typed parameters only.
 
 Template bodies likewise see top-level and library constants, not module
 constants; `import.trigger` slot actuals are module expressions and may use
 module constants.
 
-## Control Flow
+## Control flow
 
 ```text
 if condition {
@@ -817,10 +832,10 @@ for counter from 0 to 3 {
 
 These constructs compile to nested GUI-action records. Runtime flattening and
 jump generation remain AAUnlimited responsibilities. A `for` target is a
-declared `int` or [`card`](#cards) variable; for a card target the start is a
+declared `int` or [`card`](#cards) variable. For a card target the start is a
 card or a literal (`for seat from 0 to 25 { seat.SetVirtue(1); }`).
 
-Version 5 retains empty branches: `if true {} else {}` produces separate IF
+Empty branches are kept: `if true {} else {}` produces separate IF
 and ELSE records, while `if true {}` produces only IF. Each `else if` also
 produces a separate sibling record. Conditions must be `bool`.
 
@@ -842,14 +857,14 @@ contiguous, compatible IF/ELSEIF*/ELSE sequence. Extra, orphaned, or interrupted
 branches remain standalone. Raw provenance, hidden branch actions, or missing
 or incompatible registry signatures require `raw_action` recovery. Formatting
 never changes sibling order or children. Ordinary actions still need
-parentheses; `ElseValue()` remains an automatic registry alias.
-The reserved `ElseIf` spelling requires a block; the ordinary registry alias
+parentheses, and `ElseValue()` remains an automatic registry alias.
+The reserved `ElseIf` spelling requires a block. The ordinary registry alias
 is `ElseIfValue(condition)` and can use a block or semicolon.
-Raw provenance is a source-only annotation honored when formatting a model;
-binary decompilation chooses readable or raw forms from the wire fields and
-operation metadata because that annotation is not serialized.
+Raw provenance is a source-only annotation honored when formatting a model.
+Binary decompilation chooses readable or raw forms from the wire fields and
+operation metadata, because that annotation is not serialized.
 
-## Exact Serialized State
+## Exact serialized state
 
 Concise globals use default runtime state:
 
@@ -867,7 +882,7 @@ global counter: int {
 }
 ```
 
-## Raw Recovery Forms
+## Raw recovery forms
 
 Unknown IDs and metadata-ambiguous records use raw productions in the same
 language:
@@ -880,20 +895,20 @@ raw_expression int 3 {
 ```
 
 Raw forms preserve numeric IDs, type scopes, payload branches, and nested
-children independently of metadata names. Version 9 checks every raw event,
-action and expression with the same strict semantic validator as readable/model
+children independently of metadata names. Every raw event,
+action and expression is checked with the same strict semantic validator as readable/model
 records. Unknown registry references, undefined variables, bad signatures,
 invalid assignment/loop targets and type mismatches fail ordinary validation
 and compilation. This includes raw descendants and unused local/imported macro
 and template definitions. Valid known raw records still compile. Raw forms do
 not apply source action defaults; structural writer constraints still apply.
 
-## Recovery Limits
+## Recovery limits
 
 The formatter accepts a module model, not a `DecodeResult`. Trailing bytes are
 reported separately by `decode_module` and are not retained in the model, so
 they are outside source round trips. The native loader does not check trailing
-bytes ([native format](native-format.md#no-header-no-trailing-byte-check)); the
+bytes ([native format](native-format.md#no-header-no-trailing-byte-check)). The
 report is this tool's hardening. The reader normalizes any nonzero boolean
 byte to `true`, and the writer emits canonical `0` or `1`; byte identity does
 not cover noncanonical boolean encodings.
@@ -902,16 +917,17 @@ not cover noncanonical boolean encodings.
 full semantic validation, so some malformed-but-writable models can be
 encoded. `validate_module` and `compile_module` default to strict authoring
 checks; an explicit native profile uses the checks described above. Binary
-recovery uses decode -> encode. It does not prove executable validity; invalid recovered source fails
+recovery uses decode -> encode. It does not prove executable validity. Invalid recovered source fails
 `validate_source` and `compile_source`. The formatter fails explicitly for
 invalid or unknown global/local declaration types and for mismatches the source
 grammar cannot preserve. Numeric type IDs remain available in raw expressions.
 
 ## CLI
 
-These paths are placeholders for your inputs and outputs. Run from the
-synchronized source-tree environment; the README quick start supplies an
-existing example and temporary output paths.
+The paths below stand for your own inputs and outputs. Run the commands from
+the synchronized source-tree environment, or use the standalone executable in
+place of `python -m aa2modulus`. [CLI usage](user/cli-usage.md) walks through a
+real example.
 
 ```bash
 python -m aa2modulus validate source.aa2m
@@ -919,6 +935,10 @@ python -m aa2modulus compile source.aa2m --output MODULE
 python -m aa2modulus decompile MODULE --output recovered.aa2m
 python -m aa2modulus inspect MODULE
 ```
+
+`editor-data` prints editor client data (built-ins catalog, lexicon or
+manifest). `lsp-server` runs the language server. See
+[development](development.md) and the [language server guide](lsp.md).
 
 There is no separate canonical or friendly source mode and no `--canonical`
 flag. Decompilation always emits unified source, using raw forms when readable
@@ -933,7 +953,7 @@ source projection), `2` for command usage errors, and `3` for registry/policy
 configuration failures. `validate`, `compile` and `decompile` print diagnostics
 and a closing summary line to stderr; stdout carries only the primary output
 (`valid: ...`, `compiled: ...`, recovered source, or `decompiled: ...`).
-`compile` fails without creating/overwriting output and prints warnings on success. `decompile` writes
+`compile` fails without creating or overwriting output and prints warnings on success. `decompile` writes
 recovered source to stdout (or the requested file), locates its diagnostics in
 that text (named by the `-o` path, or `<stdout>`), reports trailing bytes as a
 `TRAILING_BYTES` warning, and returns `0` on recovery success even when
@@ -943,7 +963,7 @@ Decode (`DECODE_ERROR`), unsupported projection and write failures return `1`.
 or trailing bytes. Its report lists diagnostics on stdout with a readable
 breadcrumb and hex offset instead of a source location.
 
-Inspection uses native GUI labels and keeps parameter types/IDs, diagnostics,
+Inspection uses native GUI labels and keeps parameter types and IDs, diagnostics,
 and nested action order visible. Exact known operator templates with matching
 signatures use precedence-aware grouping: `If (ThisCard == TriggerCard) then`
 has one condition wrapper, while `(a + b) * c`, `a - (b - c)`, and right-nested
@@ -954,11 +974,11 @@ serve as compilable `.aa2m` source; use `decompile` to recover source.
 
 `inspect --validation-profile strict|native` selects the checks independently
 of `--strict`, which controls the exit status. Source commands keep strict
-authoring semantics; the native option is inspection-only.
+authoring semantics. The native option is inspection-only.
 `inspect --strict --validation-profile native` succeeds when dependency metadata
 warnings are its only findings; unresolved variables and other errors still fail.
 
-See the executable [quick start](../README.md#quick-start) for a complete
+See [Get started](quickstart.md) for a complete
 workflow using the maintained notification example.
 
 ### Diagnostic output
@@ -970,7 +990,7 @@ workflow using the maintained notification example.
   related locations as `note:` blocks with their own snippets, and `= note:` /
   `= help:` lines. `short` prints one `file:line:col: severity[CODE]: message`
   line per finding (`file@0xOFFSET:` when it has only a binary location) plus
-  one `file:line:col: note: ...` line per related location; use it for grep,
+  one `file:line:col: note: ...` line per related location. Use it for grep,
   problem matchers and tests.
 - `--color auto|always|never` (default `auto`). `always` and `never` win.
   Under `auto`, a non-empty `NO_COLOR` disables color, a non-empty
@@ -1013,30 +1033,39 @@ A finding with only a binary location shows the breadcrumb (for example
 `trigger "NPC Flag" › If (…) then › parameter 1: … › return type`) in place of
 a snippet.
 
-## API Diagnostics
+## API diagnostics
 
 The Python entry points below describe internal use and maintainer tooling. The
 product ships as a standalone CLI and LSP server; Python embedding is not a
 supported compatibility contract.
 
-Syntax parsing raises `SourceParseError`; binding raises `SourceBindingError`;
-source library resolution raises `SourceImportError` for located input failures.
+Syntax parsing raises `SourceParseError`. Binding raises `SourceBindingError`.
+Source library resolution raises `SourceImportError` for located input failures.
 Source budget failures raise `SourceLimitError`, carrying a `Diagnostic`.
 `validate_source` returns a `ValidationResult`, and
 `parse_and_validate_source` also returns the model when parsing/binding succeeds.
 Budget checking stops at the first error. A failed parse reports every
-independent syntax error: the parser's own first error comes first, unchanged,
-then recovery resumes after each fault at the next `;`, `}`, declaration keyword
+independent syntax error. The parser's own first error comes first, unchanged.
+Then recovery resumes after each fault at the next `;`, `}`, declaration keyword
 or line, skipping whole `{ ... }` blocks whose header failed. At most one error
-is kept per statement (between `;`, `{` and `}`), a fault right after resuming
-is dropped as part of the previous one, and after any error a stray `}` or a
+is kept per statement (between `;`, `{` and `}`). A fault right after resuming
+is dropped as part of the previous one. After any error, a stray `}` or a
 missing `}` at the end of the file is not reported, since it is nearly always
 caused by the earlier error. Beyond `max_syntax_errors` one
 `SOURCE_SYNTAX_ERROR_LIMIT` error ends the list. Literal and structural errors
 found after a successful grammar parse (an out-of-range integer, a missing
-module declaration) stay single, and a library that fails to parse during an
-import reports only its first syntax error; validating the library itself
+module declaration) stay single. A library that fails to parse during an
+import reports only its first syntax error. Validating the library itself
 reports all of them. Binding does not run while any syntax error exists.
+
+An unbalanced brace is reported where the parser notices it, which can be far
+from its cause. When the braces do not balance, or a module file closes its
+module before a top-level trigger, the first error at or after the suspect
+brace also names the first `{`/`}` pair whose lines are indented differently,
+as `help` (or a note when the error already has `help`) with both braces as
+related locations. A `{` that is never closed, with no such pair, is named
+instead. The pair is a guess from indentation, so the error keeps its own
+location, and balanced braces never add the hint.
 
 Syntax and name errors carry a `help` line, and an exact fix where one exists,
 for common habits from other languages:
@@ -1058,13 +1087,13 @@ These words are not reserved: a macro or variable named `while` still works,
 and the name hints appear only when the name is otherwise unknown.
 
 Binding reports every
-independent error: each constant, macro, template, global, trigger, local, event
+independent error. Each constant, macro, template, global, trigger, local, event
 and statement is checked on its own, in source order. A failed declaration
 (`let x: int = bad;`, a global or a constant) stays declared with its type, so
-its uses report nothing further; a macro or template whose definition fails is
-reported once and its calls and instantiations report nothing. Inside one
+its uses report nothing further. A macro or template whose definition fails is
+reported once, and its calls and instantiations report nothing. Inside one
 statement, a call, member call, event, action or macro call with a single
-candidate reports every failing argument (nested calls included); overloaded
+candidate reports every failing argument (nested calls included). Overloaded
 calls and operators report the error of their closest candidate only. Duplicate
 constants, constant cycles, trigger-name collisions and definition-order errors
 still stop binding, keeping the errors found before them.
@@ -1080,20 +1109,20 @@ Use the structural parse/encode or decode/encode workflows described in
 
 `compile_source` and `compile_module` raise `CompileError` with structured
 diagnostics for input failures, including writer constraints that validation
-alone does not check. Wrong return types use `SOURCE_TYPE_MISMATCH`; wrong call
+alone does not check. Wrong return types use `SOURCE_TYPE_MISMATCH`. Wrong call
 argument counts use `EXPRESSION_ARITY`. Nested failures point to the offending
 expression. Writer failures point at the source node they came from.
-Catalog configuration
-errors raise `MetadataError` separately, and programming errors propagate.
+Catalog configuration errors raise `MetadataError` separately, and programming
+errors propagate.
 Macro binding errors point to a definition or offending actual expression.
 `Diagnostic.related` holds `RelatedLocation(span, message)` notes for formal
-declarations, definitions, and invocation chains; CLI rendering prints them as
+declarations, definitions, and invocation chains, and CLI rendering prints them as
 located notes. Expanded nodes retain these nonserialized origins in their spans.
 `Diagnostic.notes` holds unlocated context lines and `Diagnostic.help` a fix when
-one is known; `Diagnostic.fixes` holds the concrete `SourceFix(title, span,
+one is known. `Diagnostic.fixes` holds the concrete `SourceFix(title, span,
 replacement)` edits behind that help, which editors apply and printed forms
 never show. `path` (structural) and `offset` (binary) are evidence fields that
-the printed headline omits; `str(diagnostic)` is the `short` form
+the printed headline omits. `str(diagnostic)` is the `short` form
 `file:line:col: severity[CODE]: message`, or `file@0xOFFSET: ...` when a finding
 has only a binary location, followed by one `file:line:col: note: ...` line per
 related location.
@@ -1119,7 +1148,7 @@ Use `filename` for binary input names (default `<binary>` or the context filenam
 Library calls never print diagnostics. `format_module` remains a pure string
 utility with unchanged projection rules.
 
-## Source Resource Limits
+## Source resource limits
 
 Source text APIs accept `source_limits=SourceLimits(...)`. A reusable
 `SourceContext` carries the same immutable options; explicitly supplied options
@@ -1161,7 +1190,7 @@ and node bounds can be raised. Syntax depth has a supported ceiling of 512 and
 statement/expression nesting has a ceiling of 128, keeping the remaining
 recursive binding, lowering, validation, and writing within supported depths.
 Invalid option types raise `TypeError`; negative or unsupported depth values
-raise `ValueError`. The eight shipped fixtures fit the defaults with substantial
+raise `ValueError`. The shipped native fixtures fit the defaults with substantial
 headroom. These are compiler resource choices, not binary format restrictions.
 
 Tree inspection and AST transformation are iterative. Syntax depth comes from
@@ -1179,10 +1208,10 @@ The CLI exposes `--max-binding-work` for the aggregate binding budget,
 `--max-binding-errors` for the binding error cap and `--max-syntax-errors` for
 the syntax error cap.
 Size errors point to line 1,
-column 1; tree errors use the offending tree/token position. Record errors use
+column 1. Tree errors use the offending tree/token position. Record errors use
 the node's span or the closest available enclosing span, falling back to the
 context filename at line 1, column 1 for unlocated inputs. Validation APIs return
-these diagnostics;
+these diagnostics.
 `compile_source` wraps them in `CompileError`. Parsing, binding, and lowering
 entry points raise `SourceLimitError` directly.
 Macro work and call-chain overflow use `MACRO_EXPANSION_LIMIT` and
@@ -1213,40 +1242,19 @@ CLI `validate` and `compile` expose `--max-source-chars`, `--max-source-nodes`,
 Compilation writes output only after successful compilation. CLI text reads
 stop after the character budget plus one character, enough to report an
 oversized file without loading it in full.
-`--max-macro-nodes` and `--max-macro-depth` select the macro work/depth bounds;
-macro compilation failures also leave output files untouched.
+`--max-macro-nodes` and `--max-macro-depth` select the macro work and depth bounds.
+Macro compilation failures also leave output files untouched.
 
 ## Versioning
 
-- Changes to syntax, source-to-SIR meaning or semantic acceptance update the
-  source language version. Version 9 tightens raw validation without changing
-  grammar productions, policy/registry schema or binary fields. Version 11 adds
-  postfix receiver calls, `member_forms` and policy schema v4. Version 12 makes
-  registered namespace roots case-sensitive (policy roots start with an uppercase
-  ASCII letter and are unique ignoring case) and a target with a canonical
-  spelling accepts only that spelling and its aliases (native fallbacks are
-  rejected with a hint). Version 12 also makes the member form the only spelling of
-  the 213 card-first built-ins (property reads `coach.Virtue`, bare built-in
-  receivers `ThisCard.Virtue`); the `Character` root and the card-first
-  `Npc.*`/`CardStorage.*` names are retired. Policy schema v5
-  (TOML, no hash guards) changes the policy file format only; source meaning and
-  the language version are unchanged.
-- Version 13 adds `const` declarations and `const("Name")` references
-  (`const` becomes reserved) without changing serialized output.
-- Version 14 makes `TriggeringCard` (native `int:9`) an unqualified core name;
-  `Context.TriggeringCard` is retired. `ThisCard` and `TriggeringCard` become
-  protected names (policy schema v6, `protected_names`) that variables and
-  constants can no longer shadow. Serialized output is unchanged.
-- Version 15 adds source-only `@allow(CODE)` attributes that acknowledge known
-  native hazards (policy schema v10, `acknowledgeable`). Serialized output is
-  unchanged.
-- Version 16 adds the source-only [`card`](#cards) type and `Card(...)`
-  (`card` and `Card` become reserved). Card roles in policy now type values
-  (policy schema v11 adds `[parameter_roles]`); an `int` in a card position is
-  an error. Serialized output is unchanged.
+- The source language version is `language_version` in
+  `aa2modulus/language/policy.toml`, its only copy. Raise it when syntax,
+  the meaning of source in SIR or semantic acceptance changes. A change to
+  the policy file format alone, with source meaning unchanged, does not raise
+  it. Git history records what each version changed.
 - Generated metadata records source revision, generator version, schemas, and
   entry counts in `aa2modulus/metadata/registry/manifest.json`. The editable
-  default language policy lives at `aa2modulus/language/policy.toml`;
-  it is schema-validated and checked against the registry, but intentionally not
-  content-hash locked.
+  default language policy lives at `aa2modulus/language/policy.toml`.
+  It is schema-validated and checked against the registry. It is intentionally
+  not content-hash locked.
 - Raw forms remain the lossless escape for unknown or forward-versioned IDs.

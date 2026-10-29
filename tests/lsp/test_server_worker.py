@@ -1,4 +1,4 @@
-"""Discard analysis superseded while the bounded compiler worker is running."""
+"""The bounded compiler worker: superseded analyses are discarded, waiting requests run first."""
 
 from __future__ import annotations
 
@@ -105,6 +105,24 @@ def test_first_completion_waits_for_running_analysis_without_replacing_its_snaps
             assert analyses == [1]
         finally:
             release.set()
+            await server.stop_workers()
+
+    asyncio.run(session())
+
+
+def test_a_waiting_request_skips_the_debounce(monkeypatch, tmp_path):
+    monkeypatch.setattr(worker, "DEBOUNCE_SECONDS", 30)
+    uri = (tmp_path / "urgent.aa2m").as_uri()
+
+    async def session():
+        server = create_server()
+        monkeypatch.setattr(server, "text_document_publish_diagnostics", lambda params: None)
+        server.start_workers()
+        try:
+            server.enqueue(server.sources.open(uri, 'module "M" {}', 1))
+            snapshot = await asyncio.wait_for(server.current_snapshot(uri), timeout=5)
+            assert snapshot.document.version == 1
+        finally:
             await server.stop_workers()
 
     asyncio.run(session())

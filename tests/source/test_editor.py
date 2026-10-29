@@ -105,12 +105,33 @@ def test_editor_recovery_keeps_scope_and_bindings_after_an_invalid_statement(con
     assert "Count" in names
 
 
-def test_unrecoverable_source_kind_conflict_has_no_partial_authoring_unit(context):
+def test_editor_view_keeps_triggers_after_a_stray_closing_brace_in_the_module(context):
     named = dataclasses.replace(context, filename="module.aa2m")
-    source = 'trigger "T" { } module "M" {}'
+    source = (
+        'module "M" {\n'
+        "  global day: int = 0;\n"
+        '  trigger "A" {\n'
+        "    on CARD_ADDED;\n"
+        "    if true { }\n"
+        "    }\n"
+        "  }\n"
+        '  trigger "B" {\n'
+        "    on CARD_ADDED;\n"
+        "    day = 1;\n"
+        "  }\n"
+        "}\n"
+    )
+    analysis = analyze_source(source, context=named)
 
-    authoring = analyze_authoring(source, named)
+    authoring = analyze_authoring(source, named, analysis=analysis)
 
-    assert authoring.ast is None
-    assert authoring.unit is None
-    assert isinstance(authoring.failure, SourceParseError)
+    assert isinstance(analysis.failure, SourceParseError)
+    assert authoring.ast is not None
+    assert authoring.ast.templates == ()
+    module = authoring.ast.module
+    assert [item.name for item in module.triggers] == ["A", "B"]
+    assert (module.source_span.start_line, module.source_span.end_line) == (1, 11)
+    day = [item for item in authoring.references if item.name == "day"]
+    assert [(item.source_span.start_line, item.declaration is not None) for item in day] == [
+        (10, True)
+    ]

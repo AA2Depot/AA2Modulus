@@ -17,6 +17,7 @@ from ...syntax import ast
 from ...syntax.walk import walk_ast
 from ..documentation.builtins import BuiltinDocumentation
 from ..documentation.comments import declaration_documentation
+from ..documentation.keywords import language_word_hover
 from ..documentation.signatures import (
     constant_signature,
     declaration_signature,
@@ -79,7 +80,9 @@ def hover(
                 span = candidate
                 break
     if not text or span is None:
-        return None
+        return language_word_hover(
+            position_codec(snapshot.document.text, encoding=encoding), position
+        )
     return types.Hover(
         types.MarkupContent(types.MarkupKind.Markdown, text),
         range=position_codec(snapshot.document.text, encoding=encoding).range(span),

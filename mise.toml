@@ -47,11 +47,19 @@ depends = ["lint", "test"]
 
 [tasks."docs:serve"]
 description = "Preview the documentation website locally"
-run = "uv run --locked zensical serve"
+run = "uv run --locked --group docs zensical serve"
 
 [tasks."docs:build"]
 description = "Build the documentation website"
-run = "uv run --locked zensical build --clean --strict"
+run = "uv run --locked --group docs zensical build --clean --strict"
+
+[tasks."docs:builtins"]
+description = "Regenerate docs/reference/builtins/ from the editor catalog; add --check to compare only"
+run = "uv run --locked python tools/generate_builtins_pages.py"
+
+[tasks."docs:lexer"]
+description = "Regenerate the aa2m lexer's word lists from the lexicon and editor catalog; add --check to compare only"
+run = "uv run --locked python tools/generate_lexer_words.py"
 
 # Maintenance
 

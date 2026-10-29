@@ -1,141 +1,179 @@
 # Development
 
-Run commands from the repository root. [mise.toml](../mise.toml) pins Python and
-uv; [uv.lock](../uv.lock) records dependencies. `mise run setup` prepares the
-source-tree environment. `package = false` remains in place; executable builds
-use a separate dependency group and [native build recipe](standalone.md).
+Run every command from the repository root. [mise.toml](https://github.com/AA2Depot/AA2Modulus/blob/main/mise.toml) pins
+Python and uv, and [uv.lock](https://github.com/AA2Depot/AA2Modulus/blob/main/uv.lock) records the dependencies.
+`mise run setup` prepares the environment. The project sets `package = false`
+on purpose: it ships only as a standalone executable, built with a separate
+dependency group and the [native build recipe](standalone.md).
 
 ## Checks
 
-| Command | Coverage |
+| Command | What it does |
 | --- | --- |
-| `mise run setup` | Install the locked dependencies into `.venv` |
-| `mise run format` | Format the package, tests and tools with Ruff |
-| `mise run lint` | Ruff lint, the Ruff format check, mypy and the layer check |
-| `mise run test` | The full test suite in parallel; extra arguments go to pytest (`-n 0` runs it serially) |
-| `mise run coverage` | The test suite with branch coverage and the 85% floor |
-| `mise run verify` | `lint` and `test`; run it before handing over work |
-| `mise run docs:serve` / `docs:build` | Preview or build the documentation website |
-| `mise run registry --source-root <dir>` | Regenerate the registry from a pinned source checkout; add `--check` to compare only |
-| `mise run build` | Native single-file build and verification (`tools/build.py`) |
+| `mise run setup` | Installs the locked dependencies into `.venv` |
+| `mise run format` | Formats the package, tests and tools with Ruff |
+| `mise run lint` | Runs Ruff lint, the Ruff format check, mypy and the layer check |
+| `mise run test` | Runs the test suite in parallel. Extra arguments go to pytest; `-n 0` runs it serially |
+| `mise run coverage` | Runs the suite with branch coverage and an 85% floor |
+| `mise run verify` | Runs `lint` and `test`. Run it before you hand over work |
+| `mise run docs:serve` / `docs:build` | Previews or builds the documentation website |
+| `mise run docs:builtins` | Regenerates the built-ins pages from the editor catalog; add `--check` to compare only |
+| `mise run docs:lexer` | Regenerates the word lists of the website's `aa2m` highlighter; add `--check` to compare only |
+| `mise run registry --source-root <dir>` | Regenerates the registry from a pinned source checkout; add `--check` to compare only |
+| `mise run build` | Builds and verifies the native single-file executable (`tools/build.py`) |
 
-Pass pytest arguments to `test` to run part of the suite. Each test carries one
-area marker:
+To run part of the suite, pass pytest arguments to `test`. Every test carries
+the marker of its area:
 
 | Command | Area |
 | --- | --- |
-| `mise run test -m source` | Authoring, imports, macros, templates, diagnostics, and source limits |
-| `mise run test -m binary` | Native compatibility, recovery, codecs, validation, and wire limits |
-| `mise run test -m metadata` | Shipped spellings, policy effects, and resource-loading diagnostics |
-| `mise run test -m cli` | Commands, inspection, streams, exits, file preservation, and runtime isolation |
-| `mise run test -m lsp` | Stdio sessions, authoring, document edits, ranges, and URIs |
+| `mise run test -m source` | Authoring, imports, macros, templates, diagnostics and source limits |
+| `mise run test -m binary` | Native compatibility, recovery, codecs, validation and wire limits |
+| `mise run test -m metadata` | Shipped spellings, policy effects and resource-loading diagnostics |
+| `mise run test -m cli` | Commands, inspection, streams, exit codes, file preservation and runtime isolation |
+| `mise run test -m lsp` | Stdio sessions, authoring, document edits, ranges and URIs |
 
-`mise run test tests/cli/test_runtime_independence.py` runs the CLI from a copy
-holding only runtime code, resources and inputs, with original-project reads blocked.
+`mise run test tests/cli/test_runtime_independence.py` runs the CLI from a
+copy that holds only runtime code, resources and inputs, with reads from the
+original project blocked.
 
-Coverage also traces the CLI and LSP child processes the tests start
-(`patch = ["subprocess"]`), which makes the coverage run about twice as
+Coverage also traces the CLI and LSP child processes that tests start
+(`patch = ["subprocess"]`). That makes `mise run coverage` about twice as
 slow as `mise run test`.
 
-A push to any branch runs [the CI workflow](../.github/workflows/ci.yml):
-`lint` and `test`, with `coverage` in place of `test` on `main`. The `main` run
-writes the README coverage badge to `coverage.json` on the orphan `badges`
-branch.
+Every push runs [the CI workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/ci.yml): `lint`, plus
+`test` on every other branch and `coverage` instead on `main`. The `main` run
+also writes the README coverage badge to `coverage.json` on the orphan
+`badges` branch.
 
-`tools/export_reference.py --output-dir <dir>` exports the portable reference
-bundle on request; nothing in the repository keeps a copy (see
-[metadata maintenance](metadata.md#portable-language-and-metadata-reference)).
-These operations are outside `check`; neither examples nor reference generation
-is a pytest subject.
+A push to `main` that changes `docs/` or `zensical.toml` runs
+[the docs workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/docs.yml).
+It runs `mise run docs:build` and deploys `site/` to GitHub Pages. The build
+is strict, so a broken link stops the deploy. Link files outside `docs/` by
+their GitHub URL on `main`.
 
-The editor's compiled-example built-in documentation, `builtins.json`, belongs
-to the extension repository. The `editor-data catalog` command writes it, so a
-release executable produces the catalog that matches its own server.
-`editor-data lexicon` prints the lexicon and syntax fingerprint the server
-advertises, for the extension's grammar test. `editor-data manifest` prints the
-compatibility facts of the [release manifest](lsp.md#client-contract):
+`mise run docs:builtins` regenerates `docs/reference/builtins/` (see
+[built-ins pages](metadata.md#built-ins-pages)). It is not part of `lint` or
+`test`, and no test checks the built-ins pages.
+
+The website highlights `aa2m` code blocks with a Pygments lexer, a small
+package in `tools/pygments-aa2m/` that the `docs` dependency group installs.
+Pygments finds it through its `pygments.lexers` entry point, so the site
+configuration doesn't mention it. Its word lists come from the source lexicon
+and the editor catalog: run `mise run docs:lexer` after a grammar or catalog
+change. Like `docs:builtins`, it is not part of `lint` or `test`.
+`docs:serve` reuses Zensical's page cache in `.cache/`, so after a lexer
+change, run `mise run docs:build` once (its `--clean` clears the cache) to see
+the new highlighting.
+
+`editor-data` prints the JSON documents editor clients and tools read:
+
+- `editor-data catalog` prints the built-ins catalog (schema
+  `aa2modulus.editor-builtins.v1`) with compile-checked examples. The server
+  renders its `aa2m-builtin:` pages from the same entries, and
+  `mise run docs:builtins` renders the website's pages from them. No client
+  needs the file itself.
+- `editor-data lexicon` prints the lexicon and syntax fingerprint the server
+  advertises. The extension's `npm run test:server` check runs it against the
+  executable under test and compares it with the extension's TextMate grammar.
+- `editor-data manifest` prints the compatibility facts of the
+  [release manifest](lsp.md#client-contract). The release workflow runs it on
+  each built executable.
 
 ```bash
-aa2modulus editor-data catalog --output <extension>/docs/generated/builtins.json
-aa2modulus editor-data catalog | diff - <extension>/docs/generated/builtins.json
+aa2modulus editor-data catalog --output <scratch>/catalog.json
 aa2modulus editor-data lexicon --output <scratch>/lexicon.json
 aa2modulus editor-data manifest
 ```
 
-Tests live in five directories under [tests/](../tests/): `source`, `binary`,
-`metadata`, `cli`, and `lsp`. Each directory supplies its one focused marker.
-Collection rejects tests outside those owners. Shared helpers live in
-[tests/support/](../tests/support/); fixture provenance is recorded alongside
-the [native binaries](../tests/fixtures/modules/README.md).
+Tests live in five directories under [tests/](https://github.com/AA2Depot/AA2Modulus/tree/main/tests): `source`, `binary`,
+`metadata`, `cli` and `lsp`. The directory gives each test its marker, and
+collection fails on a test module outside them. Shared helpers live in
+[tests/support/](https://github.com/AA2Depot/AA2Modulus/tree/main/tests/support). Where the native fixtures came from is
+recorded next to the
+[native binaries](https://github.com/AA2Depot/AA2Modulus/blob/main/tests/fixtures/modules/README.md).
 
-For a focused edit, run its directory or module and the relevant quality checks.
-`test`, `check`, and `coverage` require no AAUnlimited checkout. Registry
-regeneration is infrequent manual maintenance, not a test gate. Examples are
-unfinished user illustrations and are not automated test inputs. The Python
-suite does not test developer tools or the independent VS Code extension.
+For a focused edit, run the affected directory or module and the quality
+checks that apply. `lint`, `test` and `coverage` need no AAUnlimited checkout.
+Registry regeneration is occasional manual maintenance and no check runs it.
+The files in `examples/` are illustrations for users; the only test that reads
+them is the LSP workspace-symbol test, which indexes the folder. The suite
+does not test the developer tools or the VS Code extension.
 
-Ruff lint and formatting cover runtime code, tests and development tools, with
-the rule set in [pyproject.toml](../pyproject.toml). Mypy checks runtime code and
-tools in strict mode; lark's untyped parser API is the one excluded call target.
-Ordinary checks do not install the optional build dependency group.
-Conventions the tools cannot check are in [Code style](style.md).
+Ruff lint and formatting cover runtime code, tests and tools, with the rule
+set in [pyproject.toml](https://github.com/AA2Depot/AA2Modulus/blob/main/pyproject.toml). Mypy checks runtime code and tools
+in strict mode. Lark's untyped `InteractiveParser` API is the one call target
+excluded from the untyped-call check. The ordinary checks do not install the
+`build` dependency group. [Code style](style.md) covers the conventions the
+tools cannot check.
 
-`tools/check_layers.py` (part of `lint`) assigns every `aa2modulus` module a layer
-and fails on an import of a higher layer, an `aa2modulus` import inside a function
-or class, an import of another module's `_private` name, or an import-time cycle.
-Each package imports only from its own or lower layers. Its `ALLOWED` list holds
-the one tolerated finding, the CLI's lazy `cli.main -> lsp.server.run` import that
-keeps pygls out of CLI startup; an entry that no longer matches is an error. Modules over 600 lines are reported as notes.
+`tools/check_layers.py` runs as part of `lint`. It assigns every `aa2modulus`
+module a layer, so each package imports only from its own layer or lower ones.
+It fails on:
+
+- an import from a higher layer,
+- an `aa2modulus` import inside a function or class,
+- an import of another module's `_private` name,
+- an import-time cycle.
+
+Its `ALLOWED` list holds the one tolerated finding: the CLI's lazy
+`cli.main -> lsp.server.run` import, which keeps pygls out of CLI startup. An
+`ALLOWED` entry that no longer matches anything is an error. Modules over 600
+lines are reported as notes.
 
 ## What the suite protects
 
-The product ships as a standalone executable with CLI and LSP interfaces.
-In-process compilation/decompilation entry points keep scenario tests efficient;
-they do not establish a supported Python embedding API.
+The product is a standalone executable with CLI and LSP interfaces. The tests
+call compilation and decompilation in-process because that is fast; those
+entry points are not a supported Python API.
 
-- Assert observable results: native IDs, operand order, GUI trees, exact bytes,
-  recovered source, diagnostic locations, command streams/exits, and editor replies.
-- Use hand-authored wire/source expectations and original native binaries.
-  Hashes pin input integrity; decoder-generated snapshots are not independent
-  evidence of decoder correctness. Do not refresh expected results to hide failures.
-- Exercise canonical spellings through source compilation and recovery, rather
-  than repeating registry-derived constructor and validator checks.
-- Keep focused edge tests where scenarios cannot efficiently demonstrate safety
-  or fidelity: allocation limits, binary32 bits, UTF-16, URI/position conversion,
-  editor recovery, and worker races. Avoid redundant helper and dataclass checks.
-- Native Windows/MSVC execution and real editor acceptance remain separate
-  evidence. Executable verification runs during native builds
-  ([standalone builds](standalone.md)); the extension has independent npm tasks.
+- Assert observable results: native IDs, operand order, GUI trees, exact
+  bytes, recovered source, diagnostic locations, command output and exit
+  codes, and editor replies.
+- Use expectations written by hand and original native binaries. Hashes pin
+  the inputs. A snapshot produced by the decoder is no evidence that the
+  decoder is right. Never refresh expected results to hide a failure.
+- Exercise canonical spellings by compiling and recovering source, rather than
+  repeating constructor and validator checks derived from the registry.
+- Keep a focused edge test where a scenario cannot show safety or fidelity
+  efficiently: allocation limits, binary32 bits, UTF-16, URI and position
+  conversion, editor recovery and worker races. Skip redundant tests of
+  helpers and dataclasses.
+- Native execution in the game (Windows, MSVC) and acceptance in a real editor
+  are separate evidence. The native build runs its own executable check
+  ([standalone builds](standalone.md)), and the extension has its own npm
+  tasks.
 
 ## Developer tools
 
-The VS Code extension lives in its own repository (`aa2modulus-extension`) with
-its own tasks and checks.
+The VS Code extension lives in its own repository,
+[`aa2modulus-vscode`](https://github.com/AA2Depot/aa2modulus-vscode), with its own npm tasks and checks.
 
-Regenerate source-derived facts only as an explicit development operation:
+Facts derived from the AAUnlimited source are regenerated only on purpose:
 
 ```bash
 mise run registry --source-root <dir>
 ```
 
-`<dir>` must be an existing directory holding a clean AAUnlimited source
-checkout at the pinned revision. The command reads it without changing it and updates
-`aa2modulus/metadata/registry/`.
-[Metadata editing](metadata.md) distinguishes generated facts from editable
-language policy. Runtime operations never read the source checkout.
+`<dir>` must be an existing directory with a clean AAUnlimited checkout at the
+pinned revision. The command reads it without changing it and updates
+`aa2modulus/metadata/registry/`. Runtime operations never read the checkout.
+[Metadata](metadata.md) explains which facts are generated and which language
+choices live in the editable policy.
 
-Adding `--check` regenerates into memory and reports missing, stale
-and extra registry files without writing. Both modes validate the generated
-files with the runtime loader. Facts that need judgment are not generated;
-they live in the language policy.
+With `--check`, the command regenerates in memory and reports missing, stale
+and extra registry files without writing anything. Both modes validate the
+generated files with the runtime loader. Facts that need judgment are never
+generated; they belong in the language policy.
 
 ## Version
 
 `aa2modulus/version.py` holds the toolchain version. `aa2modulus --version`,
-`lsp-server --version`, LSP `serverInfo.version` and the standalone `README.txt`
-report it. Change it together with `[project].version` in
-`pyproject.toml`; `tests/cli/test_cli_lsp.py` fails when they differ. There is
-no build identity: every build of one version reports the same text.
+`lsp-server --version`, the LSP `serverInfo.version` and the standalone
+`README.txt` all report it. Change it together with `[project].version` in
+`pyproject.toml`; `tests/cli/test_cli_lsp.py` fails when the two differ.
+There is no build identity, so every build of one version reports the same
+text.
 
 ### Release checklist
 
@@ -144,7 +182,7 @@ no build identity: every build of one version reports the same text.
 3. Run `mise run verify`.
 4. Merge the release commit into `main`.
 5. Tag `main` and push the tag: `git tag vX.Y.Z` and `git push origin vX.Y.Z`.
-   The [release workflow](../.github/workflows/release.yml) refuses a tag
+   The [release workflow](https://github.com/AA2Depot/AA2Modulus/blob/main/.github/workflows/release.yml) refuses a tag
    that differs from the project version.
 6. When the workflow finishes, check that the release has both zips and
    `aa2modulus-manifest.json`. Add the breaking wire changes to the generated
@@ -152,5 +190,5 @@ no build identity: every build of one version reports the same text.
 
 ## Project records
 
-Contributor rules, work-log format, plans and handover are in
-[AGENTS.md](../AGENTS.md); current status is the [roadmap](../plans/ROADMAP.md).
+Contributor rules, the work-log format, plans and handover are in
+[AGENTS.md](https://github.com/AA2Depot/AA2Modulus/blob/main/AGENTS.md).

@@ -12,6 +12,9 @@ from .values import SourceValue
 
 type DocumentedMetadata = NativeMetadata | SourceValue
 
+# The documentation website, the ``site_url`` of ``zensical.toml``.
+DOCS_WEBSITE = "https://modulus.aa2d.net/"
+
 
 def builtin_anchor(entry: DocumentedMetadata, *, ordinal: int | None = None) -> str:
     """Identify a native record, retaining duplicate constant positions.

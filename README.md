@@ -54,21 +54,50 @@ One executable, six commands:
 
 ## Getting started
 
-No releases yet.
-TODO: Need to expand on this.
+You don't need Python or anything else installed. aa2modulus ships as a
+single executable for Windows and Linux.
+
+The easiest way in is VS Code. Grab the latest `.vsix` from the
+[extension's releases](https://github.com/AA2Depot/aa2modulus-vscode/releases),
+install it with **Install from VSIX…** in the Extensions view, then open any
+`.aa2m` file and click **Download Server…** when it asks. The extension fetches
+the compiler for you.
+
+If you'd rather use the command line, download `aa2modulus-windows-x64.zip` or
+`aa2modulus-linux-x64.zip` from the
+[releases page](https://github.com/AA2Depot/AA2Modulus/releases), unzip it
+wherever you like and put that folder on your `PATH`. Save the module above as
+`notification.aa2m` and compile it:
+
+```bash
+aa2modulus compile notification.aa2m -o "Notification Example"
+```
+
+Module files have no extension, so leave it off the output name. Copy the
+result into `<game root>\data\override\module` and AA2Edit will list it when
+you edit a card. To read a module someone else made, run it the other way:
+
+```bash
+aa2modulus decompile "Notification Example" -o notification.aa2m
+```
+
+[Get started](docs/quickstart.md) walks through the same steps in more detail.
 
 ## Editor support
 
 `aa2modulus lsp-server` speaks the Language Server Protocol over stdio, so any
 editor with an LSP client can use it. You get diagnostics as you type,
 completion, hover, go to definition, rename and a few more. There's also a
-VS Code extension, which lives in its own repository (`aa2modulus-extension`).
-Setup for other editors is in [language server](docs/lsp.md).
+VS Code extension, which lives in its own repository
+([`aa2modulus-vscode`](https://github.com/AA2Depot/aa2modulus-vscode)).
+Setup for other editors is in [other editors](docs/user/lsp-usage.md).
 
 ## Docs
 
 - [Get started](docs/quickstart.md), the same thing as above but slower
-- [Language reference](docs/language.md), everything you can write
+- [Tour](docs/tour/index.md), the language explained with real modules
+- [Language reference](docs/language/index.md), everything you can write
+- [Built-ins](docs/reference/builtins/index.md), every event, action and value from the game
 - [Grammar](docs/grammar.md), if you want the exact syntax
 - [Metadata](docs/metadata.md), names, defaults and the language policy
 - [Native format](docs/native-format.md), the binary layout and where each fact comes from

@@ -1,4 +1,4 @@
-"""Ranked search over ``editor-data catalog`` entries, ported from the extension's ``search.ts``."""
+"""Ranked search over ``editor-data catalog`` entries."""
 
 from __future__ import annotations
 

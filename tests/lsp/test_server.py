@@ -118,12 +118,20 @@ def test_open_edit_and_navigation_round_trip_publishes_versioned_diagnostics(cli
 
 
 def test_incomplete_completion_signature_and_latest_version_after_cancellation(client):
+    # A request no longer waits out the debounce, so the canceled one needs a
+    # document whose analysis (about 0.2 s) outlasts reading the cancel frame.
+    slow = "untitled:IncompleteSlow"
+    source = 'module "M" { trigger "T" { ' + 'Notification("x"); ' * 300 + "Noti"
+    client.open(slow, source)
+    position = {"line": 0, "character": len(source)}
+    canceled = client.request_canceled(
+        "textDocument/hover", {"textDocument": {"uri": slow}, "position": position}
+    )
+    assert canceled["error"]["code"] == -32800
     uri = "untitled:Incomplete"
     source = 'module "M" { trigger "T" { Noti'
     client.open(uri, source)
     params = {"textDocument": {"uri": uri}, "position": {"line": 0, "character": len(source)}}
-    canceled = client.request_canceled("textDocument/hover", params)
-    assert canceled["error"]["code"] == -32800
     items = client.request("textDocument/completion", params)
     assert any(item["label"] == "Notification" for item in items)
     source = 'module "M" { trigger "T" { Notification('

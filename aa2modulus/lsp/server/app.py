@@ -87,6 +87,8 @@ class AA2LanguageServer(LanguageServer):
         # root or decompile output URI, then by the URI they are published on.
         self.command_findings: dict[str, dict[str, list[types.Diagnostic]]] = {}
         self.wake = asyncio.Event()
+        # Set by a request waiting for an analysis, which then skips the debounce.
+        self.urgent = asyncio.Event()
         self.ready = asyncio.Condition()
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="aa2m-analysis")
         # Closed workspace files are analyzed on their own thread, so a reference
@@ -211,6 +213,7 @@ class AA2LanguageServer(LanguageServer):
                 if uri not in self.analyzing and uri not in self.pending:
                     self.pending[uri] = None
                     self.wake.set()
+                self.urgent.set()
                 await self.ready.wait()
         return None
 

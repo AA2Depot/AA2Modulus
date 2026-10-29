@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Sequence
+from copy import copy
 from dataclasses import dataclass
 
 from lark import Lark, Token
@@ -150,6 +151,9 @@ def contextual_tokens(
     """
 
     interactive = parser.parse_interactive()
+    # Only the parser state matters here; building parse trees would double the work.
+    interactive.parser_state.parse_conf = copy(interactive.parser_state.parse_conf)
+    interactive.parser_state.parse_conf.callbacks = {}
     terminals = {terminal.name: terminal for terminal in parser.terminals}
     normalized: list[Token] = []
     for token in tokens:

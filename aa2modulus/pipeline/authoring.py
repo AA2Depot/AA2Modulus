@@ -123,9 +123,38 @@ def parse_editor_unit(
     if kind == "library" and transformed.module is not None:
         raise SourceParseError(context.filename, 1, 1, "library sources cannot declare a module")
     if transformed.module is not None and transformed.templates:
-        raise SourceParseError(context.filename, 1, 1, "trigger templates are library-only")
+        transformed = _fold_templates(transformed)
     check_source_ast(transformed, filename=context.filename, limits=context.source_limits)
     return transformed
+
+
+def _fold_templates(unit: source_ast.SourceUnit) -> source_ast.SourceUnit:
+    """Read a module file's top-level triggers as module triggers.
+
+    A module file cannot hold templates, so these are usually module triggers
+    after a stray `}` closed the module early. Strict analysis reports the
+    error; the editor view keeps them in the module, where its names resolve.
+    """
+
+    module = cast(source_ast.SourceModule, unit.module)
+    triggers = tuple(item.trigger for item in unit.templates)
+    span = module.source_span
+    spans = [item.source_span for item in triggers if item.source_span is not None]
+    if span is not None and spans:
+        start = min((span, *spans), key=lambda item: (item.start_line, item.start_column))
+        end = max(
+            (span, *spans),
+            key=lambda item: (item.end_line or item.start_line, item.end_column or 0),
+        )
+        span = replace(
+            span,
+            start_line=start.start_line,
+            start_column=start.start_column,
+            end_line=end.end_line,
+            end_column=end.end_column,
+        )
+    module = replace(module, triggers=(*module.triggers, *triggers), source_span=span)
+    return replace(unit, module=module, templates=())
 
 
 def analyze_authoring(

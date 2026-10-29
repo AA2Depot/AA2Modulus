@@ -55,7 +55,10 @@ def test_builtin_definition_points_at_a_page_the_server_serves(full_client):
     assert content["text"].startswith(
         "# Notification\n\n```aa2m\nNotification(text: string, isImportant: bool = false)\n```\n"
     )
-    assert content["text"].endswith("Native name: Notification (General). ID: `action-108`\n")
+    assert content["text"].endswith(
+        "Native name: Notification (General). ID: `action-108`\n\n[View online documentation]"
+        "(https://modulus.aa2d.net/reference/builtins/actions/general/#action-108)\n"
+    )
     unknown = full_client.request("workspace/textDocumentContent", {"uri": "aa2m-builtin:/nope.md"})
     assert unknown["text"].startswith("# Unknown built-in\n")
 

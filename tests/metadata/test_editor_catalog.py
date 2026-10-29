@@ -32,7 +32,7 @@ def test_header_and_unique_ids(
     assert document["schema"] == "aa2modulus.editor-builtins.v1"
     assert document["languageVersion"] == context.source_policy.language_version
     assert document["catalogFingerprint"] == context.catalog.fingerprint
-    assert document["website"] is None
+    assert document["website"] == "https://modulus.aa2d.net/"
     ids = [entry["id"] for entry in document["entries"]]
     assert len(ids) == len(set(ids))
     assert {entry["kind"] for entry in document["entries"]} == {
@@ -41,6 +41,12 @@ def test_header_and_unique_ids(
         "expression",
         "named_constant",
     }
+
+
+def test_doc_path_is_the_entry_anchor_on_the_builtins_page(
+    entries: dict[str, dict[str, Any]],
+) -> None:
+    assert entries["action-108"]["docPath"] == "reference/builtins/actions/general/#action-108"
 
 
 def test_flat_member_and_value_entries(entries: dict[str, dict[str, Any]]) -> None:

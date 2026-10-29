@@ -16,6 +16,7 @@ from lsprotocol import types
 
 from ...core.diagnostics import Diagnostic, SourceFix
 from ...core.locations import RelatedLocation, SourceSpan
+from ...language.documentation import DOCS_WEBSITE
 from ..workspace.documents import Snapshot, SourceWorkspace
 from .positions import position_codec
 
@@ -68,7 +69,9 @@ def lsp_diagnostic(
     related: Sequence[types.DiagnosticRelatedInformation] | None = None,
     data: dict[str, Any] | None = None,
 ) -> types.Diagnostic:
-    """One finding located in ``texts``; ``related`` replaces its own notes."""
+    """One finding located in ``texts``, its code linked to the website; ``related``
+    replaces its own notes.
+    """
 
     span = diagnostic.source_span or SourceSpan(
         diagnostic.filename, diagnostic.line, diagnostic.column
@@ -83,6 +86,9 @@ def lsp_diagnostic(
         message=with_details(diagnostic.message, diagnostic),
         severity=_SEVERITY[diagnostic.severity],
         code=diagnostic.code,
+        code_description=types.CodeDescription(
+            f"{DOCS_WEBSITE}reference/diagnostics/#{diagnostic.code}"
+        ),
         source=source,
         related_information=list(related) or None,
         data=data,

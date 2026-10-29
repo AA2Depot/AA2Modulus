@@ -1,4 +1,4 @@
-"""The ``builtins.json`` document editors read: header, entries and its JSON text."""
+"""The ``editor-data catalog`` document: header, entries and its JSON text."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ import json
 from typing import Any
 
 from ...context.operation import SourceContext
+from ...language.documentation import DOCS_WEBSITE
 from . import entries, examples
 from .entries import Report
 
 SCHEMA = "aa2modulus.editor-builtins.v1"
-DOCS_WEBSITE = None
 
 
 def editor_catalog(*, context: SourceContext | None = None) -> tuple[dict[str, Any], Report]:
