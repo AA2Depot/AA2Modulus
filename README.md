@@ -54,8 +54,34 @@ One executable, six commands:
 
 ## Getting started
 
-No releases yet.
-TODO: Need to expand on this.
+You don't need Python or anything else installed. aa2modulus ships as a
+single executable for Windows and Linux.
+
+The easiest way in is VS Code. Grab the latest `.vsix` from the
+[extension's releases](https://github.com/AA2Depot/aa2modulus-vscode/releases),
+install it with **Install from VSIX…** in the Extensions view, then open any
+`.aa2m` file and click **Download Server…** when it asks. The extension fetches
+the compiler for you.
+
+If you'd rather use the command line, download `aa2modulus-windows-x64.zip` or
+`aa2modulus-linux-x64.zip` from the
+[releases page](https://github.com/AA2Depot/AA2Modulus/releases), unzip it
+wherever you like and put that folder on your `PATH`. Save the module above as
+`notification.aa2m` and compile it:
+
+```bash
+aa2modulus compile notification.aa2m -o "Notification Example"
+```
+
+Module files have no extension, so leave it off the output name. Copy the
+result into `<game root>\data\override\module` and AA2Edit will list it when
+you edit a card. To read a module someone else made, run it the other way:
+
+```bash
+aa2modulus decompile "Notification Example" -o notification.aa2m
+```
+
+[Get started](docs/quickstart.md) walks through the same steps in more detail.
 
 ## Editor support
 
