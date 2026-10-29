@@ -1058,6 +1058,15 @@ module declaration) stay single. A library that fails to parse during an
 import reports only its first syntax error. Validating the library itself
 reports all of them. Binding does not run while any syntax error exists.
 
+An unbalanced brace is reported where the parser notices it, which can be far
+from its cause. When the braces do not balance, or a module file closes its
+module before a top-level trigger, the first error at or after the suspect
+brace also names the first `{`/`}` pair whose lines are indented differently,
+as `help` (or a note when the error already has `help`) with both braces as
+related locations. A `{` that is never closed, with no such pair, is named
+instead. The pair is a guess from indentation, so the error keeps its own
+location, and balanced braces never add the hint.
+
 Syntax and name errors carry a `help` line, and an exact fix where one exists,
 for common habits from other languages:
 

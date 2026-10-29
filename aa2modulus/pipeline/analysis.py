@@ -16,6 +16,7 @@ from ..semantics.allows import acknowledge, allow_diagnostics
 from ..semantics.binding.module import bind_source_ast
 from ..semantics.binding.state import SourceBindingError
 from ..syntax.ast import SourceModule, SourceUnit
+from ..syntax.braces import brace_hints
 from ..syntax.imports import (
     SourceDependency,
     SourceImportError,
@@ -132,7 +133,9 @@ def analyze_source(
             )
     except SourceParseError as exc:
         failure = exc
-        result = ValidationResult(syntax_diagnostics(source, exc, context))
+        result = ValidationResult(
+            brace_hints(source, syntax_diagnostics(source, exc, context), context)
+        )
     except SourceBindingError as exc:
         failure = exc
         result = ValidationResult(
